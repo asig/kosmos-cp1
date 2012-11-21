@@ -1021,7 +1021,7 @@ public class Cpu {
     //
     // Utilities
     //
-    public void dissassemble(int from, int to) {
+    public void disassemble(int from, int to) {
         int pos = from;
         while (pos < to) {
             int curPos = pos;
@@ -1549,7 +1549,7 @@ public class Cpu {
         try {
             Cpu cpu = new Cpu();
             cpu.loadMemory(new FileInputStream("CP1.bin"));
-            cpu.dissassemble(0, 0x800);
+            cpu.disassemble(0, 0x800);
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
