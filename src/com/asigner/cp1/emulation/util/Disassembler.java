@@ -1,12 +1,11 @@
 package com.asigner.cp1.emulation.util;
 
-import com.asigner.cp1.emulation.Ram;
-import com.asigner.cp1.emulation.Rom;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.asigner.cp1.emulation.Rom;
 
 public class Disassembler {
 

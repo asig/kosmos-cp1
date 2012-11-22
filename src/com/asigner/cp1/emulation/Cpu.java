@@ -1,13 +1,6 @@
 package com.asigner.cp1.emulation;
 
 
-import sun.plugin2.main.client.DisconnectedExecutionContext;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class Cpu {
@@ -23,18 +16,19 @@ public class Cpu {
     public static final int REGISTER_BANK_0_BASE = 0;
     public static final int REGISTER_BANK_1_BASE = 24;
 
-    // Interrupt pins, flipflops, additional flags
+    // Interrupt pins and flipflops
     private boolean TF; // Timer Flag
     private boolean notINT;
     private boolean T0;
     private boolean T1;
-    private boolean F1;
 
     private int T;
     private int A;
     private int PC;
     private int PSW;
     private int DBF;
+    private int F1;
+
     private boolean externalInterruptsEnabled;
     private boolean tcntInterruptsEnabled;
     private boolean counterRunning; // Whether counter is bound to T1 (STRT CNT)
@@ -56,13 +50,13 @@ public class Cpu {
         notINT = true;
         T0 = false;
         T1 = false;
-        F1 = false;
 
         // T is not affected by reset()
         A = 0;
         PC = 0;
         PSW = 0xf; // bit 3 is always rom.read as "1"
         DBF = 0; // memory bank 0
+        F1 = 0;
         externalInterruptsEnabled = false;
         tcntInterruptsEnabled = false;
         counterRunning = false;
@@ -576,7 +570,7 @@ public class Cpu {
                 addr = (PC & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
-                if (F1) {
+                if (F1 != 0) {
                     PC = addr;
                 }
             }
@@ -631,8 +625,8 @@ public class Cpu {
                 cycles++;
                 tick();
                 int data = fetch();
-                int val = readBus();
-                writeBus((readBus() | data) & 0xff);
+                int bus = readBus();
+                writeBus((bus | data) & 0xff);
             }
             break;
 
@@ -693,8 +687,8 @@ public class Cpu {
                 cycles++;
                 tick();
                 int data = fetch();
-                int val = readBus();
-                writeBus((readBus() & data) & 0xff);
+                int bus = readBus();
+                writeBus((bus & data) & 0xff);
             }
             break;
 
@@ -731,7 +725,7 @@ public class Cpu {
             break;
 
             case 0xa5: { // CLR F1
-                F1 = false;
+                F1 = 0;
             }
             break;
 
@@ -763,7 +757,7 @@ public class Cpu {
             break;
 
             case 0xb5: { // CPL F1
-                F1 = !F1;
+                F1 = 1 - F1;
             }
             break;
 
