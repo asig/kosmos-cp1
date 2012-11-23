@@ -80,24 +80,22 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Cpu.java" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Cpu.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/Cpu.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="988" column="0" selection-start="26524" selection-end="26524" vertical-scroll-proportion="-10.054545">
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
+            <state line="411" column="40" selection-start="10714" selection-end="10714" vertical-scroll-proportion="14.463007">
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Disassembler.java" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="Disassembler.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/util/Disassembler.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="572" column="47" selection-start="20060" selection-end="20060" vertical-scroll-proportion="0.556962">
+            <state line="571" column="47" selection-start="20022" selection-end="20022" vertical-scroll-proportion="0.0">
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#999#1005#0" expanded="true" />
+                <element signature="e#961#967#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -135,7 +133,7 @@
       <file leaf-file-name="Ram.java" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/Ram.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="37" selection-start="568" selection-end="568" vertical-scroll-proportion="0.0">
+            <state line="4" column="13" selection-start="75" selection-end="75" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -187,8 +185,8 @@
         <option value="$PROJECT_DIR$/src/com/asigner/cp1/emulation/Writeable.java" />
         <option value="$PROJECT_DIR$/src/com/asigner/cp1/emulation/Ram.java" />
         <option value="$PROJECT_DIR$/src/com/asigner/cp1/emulation/Rom.java" />
-        <option value="$PROJECT_DIR$/src/com/asigner/cp1/emulation/Cpu.java" />
         <option value="$PROJECT_DIR$/src/com/asigner/cp1/emulation/util/Disassembler.java" />
+        <option value="$PROJECT_DIR$/src/com/asigner/cp1/emulation/Cpu.java" />
       </list>
     </option>
   </component>
@@ -247,6 +245,20 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="kosmos-cp1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="kosmos-cp1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="kosmos-cp1" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -547,7 +559,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.67310166" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32689834" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32689834" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32947233" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -656,13 +668,6 @@
         <state line="9" column="25" selection-start="214" selection-end="214" vertical-scroll-proportion="0.0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/Ram.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="37" selection-start="568" selection-end="568" vertical-scroll-proportion="0.0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/assembler/Assembler.java">
       <provider selected="true" editor-type-id="text-editor">
         <state line="13" column="44" selection-start="283" selection-end="283" vertical-scroll-proportion="0.0">
@@ -679,22 +684,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/Cpu.java">
+    <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/util/Disassembler.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="988" column="0" selection-start="26524" selection-end="26524" vertical-scroll-proportion="-10.054545">
+        <state line="571" column="47" selection-start="20022" selection-end="20022" vertical-scroll-proportion="0.0">
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#961#967#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/util/Disassembler.java">
+    <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/Ram.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="572" column="47" selection-start="20060" selection-end="20060" vertical-scroll-proportion="0.556962">
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#999#1005#0" expanded="true" />
-          </folding>
+        <state line="4" column="13" selection-start="75" selection-end="75" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/com/asigner/cp1/emulation/Cpu.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="411" column="40" selection-start="10714" selection-end="10714" vertical-scroll-proportion="14.463007">
+          <folding />
         </state>
       </provider>
     </entry>

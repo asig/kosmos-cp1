@@ -193,7 +193,24 @@ public class Cpu {
         setAuxCarry(oldLoNibble > loNibble);
     }
 
-    private int executeSingleInstr() {
+    private void handleInterrupts() {
+        if (!inInterrupt) {
+            // not handling an interrupt, so let's check if we need to.
+            if (!notINT && externalInterruptsEnabled) {
+                // handle external interrupt
+                push();
+                PC = 3;
+                inInterrupt = true;
+            } else if (TF && tcntInterruptsEnabled) {
+                // handle timer interrupt
+                push();
+                PC = 7;
+                inInterrupt = true;
+            }
+        }
+    }
+
+    public int executeSingleInstr() {
         int cycles = 1;
         int op = fetch();
         tick();
@@ -954,30 +971,13 @@ public class Cpu {
                 logger.info(String.format("Illegal op-code 0x%02x", op));
                 break;
         }
+        handleInterrupts();
         return cycles;
     }
 
-    private void handleInterrupts() {
-        if (!inInterrupt) {
-            // not handling an interrupt, so let's check if we need to.
-            if (!notINT && externalInterruptsEnabled) {
-                // handle external interrupt
-                push();
-                PC = 3;
-                inInterrupt = true;
-            } else if (TF && tcntInterruptsEnabled) {
-                // handle timer interrupt
-                push();
-                PC = 7;
-                inInterrupt = true;
-            }
-        }
-    }
-
-    void run(int cycles) {
+    void execute(int cycles) {
         while (cycles > 0) {
             cycles -= executeSingleInstr();
-            handleInterrupts();
         }
     }
 
