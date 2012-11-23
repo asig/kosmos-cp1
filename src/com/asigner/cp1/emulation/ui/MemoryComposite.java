@@ -13,9 +13,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.wb.swt.SWTResourceManager;
 
+import com.asigner.cp1.emulation.MemoryModifiedListener;
 import com.asigner.cp1.emulation.Ram;
 
-public class MemoryComposite extends Composite {
+public class MemoryComposite extends Composite implements MemoryModifiedListener {
 
     private static final int BYTES_PER_LINE = 16;
 
@@ -25,6 +26,8 @@ public class MemoryComposite extends Composite {
     private static final Color FG_SEL = SWTResourceManager.getColor(SWT.COLOR_YELLOW);
 
     private Ram ram;
+    private int lastWritten = -1;
+
     private final FontMetrics fontMetrics;
     private final int totalLineHeight;
 
@@ -54,7 +57,13 @@ public class MemoryComposite extends Composite {
     }
 
     public void setRam(Ram ram) {
+        if (this.ram != null) {
+            this.ram.removeListener(this);
+        }
         this.ram = ram;
+        if (this.ram != null) {
+            this.ram.addListener(this);
+        }
         setSize(computeSize(SWT.DEFAULT, SWT.DEFAULT, true));
     }
 
@@ -70,18 +79,31 @@ public class MemoryComposite extends Composite {
         gc.setBackground(BG);
         gc.setForeground(FG);
         int lines = getLineCount();
+        int cw = fontMetrics.getAverageCharWidth();
+        int curX = 0;
         for (int i = 0; i < lines; i++) {
-            StringBuffer lineBuf = new StringBuffer();
-            lineBuf.append(String.format("%04x:", i * BYTES_PER_LINE));
+            int curY =  i * totalLineHeight;
+            curX = 0;
+            gc.drawText(String.format("%04x:", i * BYTES_PER_LINE), curX, curY);
+            curX = 5 * cw;
             for(int j = 0; j < BYTES_PER_LINE; j++) {
                 int pos = i * BYTES_PER_LINE + j;
                 if (pos < ram.size()) {
-                    lineBuf.append(String.format(" %02x", ram.read(pos)));
-                } else {
-                    lineBuf.append("   ");
+                    if (pos != lastWritten) {
+                        gc.drawText(String.format(" %02x", ram.read(pos)), curX, i * totalLineHeight);
+                        curX += 3 * cw;
+                    } else {
+                        gc.drawText(String.format(" ", ram.read(pos)), curX, i * totalLineHeight);
+                        curX += cw;
+                        gc.setBackground(BG_SEL);
+                        gc.setForeground(FG_SEL);
+                        gc.drawText(String.format("%02x", ram.read(pos)), curX, i * totalLineHeight);
+                        curX += 2 * cw;
+                        gc.setBackground(BG);
+                        gc.setForeground(FG);
+                    }
                 }
             }
-            gc.drawText(lineBuf.toString(), 0, i * totalLineHeight);
         }
     }
 
@@ -92,6 +114,22 @@ public class MemoryComposite extends Composite {
     @Override
     protected void checkSubclass() {
         // Disable the check that prevents subclassing of SWT components
+    }
+
+    @Override
+    public void memoryWritten(int addr, int value) {
+        if (addr != lastWritten) {
+            lastWritten = addr;
+            redraw();
+        }
+    }
+
+    @Override
+    public void memoryCleared() {
+        if (lastWritten != -1) {
+            lastWritten = -1;
+            redraw();
+        }
     }
 
 }
