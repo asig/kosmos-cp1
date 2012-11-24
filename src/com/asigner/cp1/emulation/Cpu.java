@@ -1,11 +1,14 @@
 package com.asigner.cp1.emulation;
 
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class Cpu {
-
     private static final Logger logger = Logger.getLogger(Cpu.class.getName());
+
+    private List<CpuListener> listeners = new LinkedList<CpuListener>();
 
     // Bits in PSW
     public static final int CY_BIT = 7;
@@ -45,6 +48,46 @@ public class Cpu {
         reset();
     }
 
+    public Ram getRam() {
+        return ram;
+    }
+
+    public Rom getRom() {
+        return rom;
+    }
+
+    public int getT() {
+        return T;
+    }
+
+    public int getA() {
+        return A;
+    }
+
+    public int getPC() {
+        return PC;
+    }
+
+    public int getPSW() {
+        return PSW;
+    }
+
+    public int getDBF() {
+        return DBF;
+    }
+
+    public int getF1() {
+        return F1;
+    }
+
+    public void addListener(CpuListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(CpuListener listener) {
+        listeners.remove(listener);
+    }
+
     public void reset() {
         TF = false;
         notINT = true;
@@ -54,7 +97,7 @@ public class Cpu {
         // T is not affected by reset()
         A = 0;
         PC = 0;
-        PSW = 0xf; // bit 3 is always rom.read as "1"
+        PSW = 0x8; // bit 3 is always rom.read as "1"
         DBF = 0; // memory bank 0
         F1 = 0;
         externalInterruptsEnabled = false;
@@ -63,6 +106,8 @@ public class Cpu {
         timerRunning = false;
         inInterrupt = false;
         ram.clear();
+
+        fireCpuReset();
     }
 
     //
@@ -737,7 +782,7 @@ public class Cpu {
                 cycles++;
                 tick();
                 int pos = (PC & 0xf00) | (A & 0xff);
-                A = ram.read(pos);
+                A = rom.read(pos);
             }
             break;
 
@@ -863,7 +908,7 @@ public class Cpu {
                 cycles++;
                 tick();
                 int pos = 0x300 | (A & 0xff);
-                A = ram.read(pos);
+                A = rom.read(pos);
             }
             break;
 
@@ -972,13 +1017,25 @@ public class Cpu {
                 break;
         }
         handleInterrupts();
+        fireInstructionExecuted();
         return cycles;
     }
 
-    void execute(int cycles) {
+    public void execute(int cycles) {
         while (cycles > 0) {
             cycles -= executeSingleInstr();
         }
     }
 
+    private void fireInstructionExecuted() {
+        for (CpuListener listener : listeners) {
+            listener.instructionExecuted();
+        }
+    }
+
+    private void fireCpuReset() {
+        for (CpuListener listener : listeners) {
+            listener.cpuReset();
+        }
+    }
 }

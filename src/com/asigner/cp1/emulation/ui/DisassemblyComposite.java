@@ -88,6 +88,12 @@ public class DisassemblyComposite extends Composite {
 
     public void selectAddress(int address) {
         this.selectedLine = pcToLine[address];
+        // make sure the selected line is visible
+        if (selectedLine < lineOfs) {
+            lineOfs = selectedLine;
+        } else if (selectedLine >= lineOfs + getVisibleLineCount()) {
+            lineOfs = selectedLine - getVisibleLineCount()/2; // set it in the middle of the screen
+        }
         redraw();
     }
 
@@ -101,7 +107,7 @@ public class DisassemblyComposite extends Composite {
             for(int j = l.getAddress(); j < filledTo; j++) {
                 pcToLine[j] = i;
             }
-            filledTo = i;
+            filledTo = l.getAddress();
         }
         lineOfs = 0;
         colOfs = 0;
