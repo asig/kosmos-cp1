@@ -1,11 +1,16 @@
 package com.asigner.cp1.emulation.ui;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -14,10 +19,13 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.wb.swt.SWTResourceManager;
 
@@ -31,13 +39,21 @@ public class DisassemblyComposite extends Composite {
     private static final Color BG_SEL = SWTResourceManager.getColor(SWT.COLOR_RED);
     private static final Color FG_SEL = SWTResourceManager.getColor(SWT.COLOR_YELLOW);
 
-    private static final int MAX_LINE_WIDTH = 29; // Depends on the formatting
+    private static final int DECORATION_WIDTH = 2;
+    private static final int MAX_LINE_WIDTH = 29 + DECORATION_WIDTH; // Depends on the formatting
 
+    private final List<BreakpointChangedListener> listeners = new LinkedList<BreakpointChangedListener>();
+
+    private final Image breakpointImage = SWTResourceManager.getImage(DisassemblyComposite.class, "bullet_red.png");
+    private final int breakpointImgWidth = breakpointImage.getBounds().width;
+    private final int breakpointImgHeight = breakpointImage.getBounds().height;
     private final FontMetrics fontMetrics;
     private final int totalLineHeight;
 
     private Disassembler.Line[] lines = new Disassembler.Line[0];
     private int[] pcToLine;
+    private Set<Integer> breakpoints = new HashSet<Integer>();
+
     private String emptyLine;
     private int selectedLine;
     private int lineOfs;
@@ -49,7 +65,7 @@ public class DisassemblyComposite extends Composite {
      * @param style
      */
     public DisassemblyComposite(Composite parent, int style) {
-        super(parent, style | SWT.V_SCROLL | SWT.H_SCROLL);
+        super(parent, style | SWT.V_SCROLL | SWT.H_SCROLL | SWT.NO_BACKGROUND);
 
         Font terminalFont = JFaceResources.getFont(JFaceResources.TEXT_FONT);
         GC gc = new GC(Display.getDefault());
@@ -74,6 +90,18 @@ public class DisassemblyComposite extends Composite {
             }
         });
 
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                toggleBreakpoint(e.x, e.y);
+            }
+
+//            @Override
+//            public void mouseDown(MouseEvent e) {
+//                showContextMenu(e.x, e.y);
+//            }
+        });
+
         getVerticalBar().addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent evt) {
@@ -86,6 +114,14 @@ public class DisassemblyComposite extends Composite {
             }});
     }
 
+    public void addListener(BreakpointChangedListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(BreakpointChangedListener listener) {
+        listeners.remove(listener);
+    }
+
     public void selectAddress(int address) {
         this.selectedLine = pcToLine[address];
         // make sure the selected line is visible
@@ -94,6 +130,7 @@ public class DisassemblyComposite extends Composite {
         } else if (selectedLine >= lineOfs + getVisibleLineCount()) {
             lineOfs = selectedLine - getVisibleLineCount()/2; // set it in the middle of the screen
         }
+        getVerticalBar().setSelection(lineOfs);
         redraw();
     }
 
@@ -129,27 +166,44 @@ public class DisassemblyComposite extends Composite {
     }
 
     private void paint(GC gc) {
+        long start = System.currentTimeMillis();
         int visibleLines = getVisibleLineCount();
         for (int i = 0; i < visibleLines; i++) {
-            String s = "";
-            int line = lineOfs + i;
-            if (line < lines.length) {
-                if (line == selectedLine) {
-                    gc.setBackground(BG_SEL);
-                    gc.setForeground(FG_SEL);
-                } else {
-                    gc.setBackground(BG);
-                    gc.setForeground(FG);
-                }
-                Disassembler.Line l = lines[lineOfs + i];
-                s = String.format("%04x: [ %s ] %s", l.getAddress(), l.getBytes(), l.getDisassembly());
+            drawLine(gc, lineOfs + i, i * totalLineHeight);
+        }
+        long end = System.currentTimeMillis();
+        System.err.println("painting: " + (end-start) + " millis");
+    }
+
+    private void drawLine(GC gc, int line, int y) {
+        String s = "";
+        Disassembler.Line l = null;
+        if (line < lines.length) {
+            l = lines[line];
+            if (line == selectedLine) {
+                gc.setBackground(BG_SEL);
+                gc.setForeground(FG_SEL);
+            } else {
+                gc.setBackground(BG);
+                gc.setForeground(FG);
             }
 
-            if (s.length() < emptyLine.length()) {
-                s += emptyLine.substring(s.length());
-            }
-            gc.drawText(s.substring(colOfs), 0, i * totalLineHeight);
+            // draw Text
+            s = String.format("%04x: [ %s ] %s", l.getAddress(), l.getBytes(), l.getDisassembly());
         }
+
+        // Draw decoration
+        int decoWidth = DECORATION_WIDTH * fontMetrics.getAverageCharWidth();
+        gc.fillRectangle(0, y, decoWidth, totalLineHeight);
+        if (l != null && breakpoints.contains(l.getAddress())) {
+            gc.drawImage(breakpointImage, (decoWidth - breakpointImgWidth)/2, y + (fontMetrics.getAscent()  + fontMetrics.getLeading() - breakpointImgHeight)/2);
+        }
+
+        // Draw text
+        if (s.length() < emptyLine.length()) {
+            s += emptyLine.substring(s.length());
+        }
+        gc.drawText(s.substring(colOfs), DECORATION_WIDTH * fontMetrics.getAverageCharWidth(), y);
     }
 
     private void onVerticalScrollbarSelected(int selection) {
@@ -200,6 +254,52 @@ public class DisassemblyComposite extends Composite {
     private int getVisibleColCount() {
         Rectangle clientArea = getClientArea();
         return (clientArea.width + fontMetrics.getAverageCharWidth() - 1) / fontMetrics.getAverageCharWidth();
+    }
+
+    private void showContextMenu(int x, int y) {
+        int line = y / totalLineHeight + lineOfs;
+        if (line < 0 || line >= lines.length) {
+            return;
+        }
+        final int addr = lines[line].getAddress();
+        Menu menu = new Menu (this.getShell(), SWT.POP_UP);
+        final MenuItem item = new MenuItem (menu, SWT.CHECK);
+        item.setText ("Enable breakpoint");
+        item.setSelection(breakpoints.contains(addr));
+        item.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean enabled = item.getSelection();
+                fireBreakpointChanged(addr, enabled);
+            }});
+        menu.setLocation(toDisplay(x, y));
+        menu.setVisible(true);
+        while (!menu.isDisposed () && menu.isVisible ()) {
+            if (!this.getDisplay().readAndDispatch ()) this.getDisplay().sleep ();
+        }
+        menu.dispose ();
+    }
+
+    private void toggleBreakpoint(int x, int y) {
+        int line = y / totalLineHeight + lineOfs;
+        if (line < 0 || line >= lines.length) {
+            return;
+        }
+        int addr = lines[line].getAddress();
+        boolean enabled = breakpoints.contains(addr);
+        fireBreakpointChanged(addr, !enabled);
+    }
+
+    private void fireBreakpointChanged(int addr, boolean enabled) {
+        if (enabled) {
+            breakpoints.add(addr);
+        } else {
+            breakpoints.remove(addr);
+        }
+        redraw();
+        for (BreakpointChangedListener listener : listeners) {
+            listener.breakpointChanged(addr, enabled);
+        }
     }
 }
 

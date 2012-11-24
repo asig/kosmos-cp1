@@ -2,6 +2,8 @@ package com.asigner.cp1.emulation.ui;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -22,6 +24,8 @@ import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
 
 public class CpuUI implements CpuListener {
+
+    private final Set<Integer> breakpoints = new HashSet<Integer>();
 
     protected Shell shell;
     private Cpu cpu;
@@ -66,6 +70,15 @@ public class CpuUI implements CpuListener {
 
                 disassemblyComposite = new DisassemblyComposite(group, SWT.NONE);
                 disassemblyComposite.setRom(cpu.getRom());
+                disassemblyComposite.addListener(new BreakpointChangedListener() {
+                    @Override
+                    public void breakpointChanged(int addr, boolean enabled) {
+                        if (enabled) {
+                            breakpoints.add(addr);
+                        } else {
+                            breakpoints.remove(addr);
+                        }
+                    }});
 
         Composite composite = new Composite(shell, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
