@@ -120,8 +120,8 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     public void memoryWritten(int addr, int value) {
         if (addr != lastWritten) {
             lastWritten = addr;
-            redraw();
         }
+        redraw();
     }
 
     @Override
