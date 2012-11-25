@@ -209,6 +209,8 @@ public class Cpu {
         if (restoreState) {
             PSW = (byte)(ram.read(9+2*sp) & 0xf0 | 0x8 | (sp & 0x7));
             inInterrupt = false;
+        } else {
+        	PSW = PSW & 0xf0 | 0x8 | (sp & 0x7);
         }
     }
 
