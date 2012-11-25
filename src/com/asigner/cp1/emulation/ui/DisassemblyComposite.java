@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -34,6 +35,8 @@ import com.asigner.cp1.emulation.util.Disassembler;
 
 public class DisassemblyComposite extends Composite {
 
+	private static final Logger logger = Logger.getLogger(DisassemblyComposite.class.getName());
+	
     private static final Color BG = SWTResourceManager.getColor(SWT.COLOR_WHITE);
     private static final Color FG = SWTResourceManager.getColor(SWT.COLOR_BLACK);
     private static final Color BG_SEL = SWTResourceManager.getColor(SWT.COLOR_RED);
@@ -172,7 +175,7 @@ public class DisassemblyComposite extends Composite {
             drawLine(gc, lineOfs + i, i * totalLineHeight);
         }
         long end = System.currentTimeMillis();
-        System.err.println("painting: " + (end-start) + " millis");
+        logger.finest("painting took " + (end-start) + " millis");
     }
 
     private void drawLine(GC gc, int line, int y) {
