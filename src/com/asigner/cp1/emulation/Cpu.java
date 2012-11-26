@@ -9,6 +9,7 @@ public class Cpu {
     private static final Logger logger = Logger.getLogger(Cpu.class.getName());
 
     private List<CpuListener> listeners = new LinkedList<CpuListener>();
+    private boolean notificationsEnabled = true;
 
     // Bits in PSW
     public static final int CY_BIT = 7;
@@ -86,6 +87,11 @@ public class Cpu {
 
     public void removeListener(CpuListener listener) {
         listeners.remove(listener);
+    }
+
+    public void enableNotifications(boolean enabled) {
+        notificationsEnabled = enabled;
+        ram.enableNotifications(enabled);
     }
 
     public void reset() {
@@ -1034,14 +1040,19 @@ public class Cpu {
             cycles -= executeSingleInstr();
         }
     }
-
     private void fireInstructionExecuted() {
+        if (!notificationsEnabled) {
+            return;
+        }
         for (CpuListener listener : listeners) {
             listener.instructionExecuted();
         }
     }
 
     private void fireCpuReset() {
+        if (!notificationsEnabled) {
+            return;
+        }
         for (CpuListener listener : listeners) {
             listener.cpuReset();
         }

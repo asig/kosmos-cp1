@@ -117,19 +117,27 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     }
 
     @Override
-    public void memoryWritten(int addr, int value) {
-        if (addr != lastWritten) {
-            lastWritten = addr;
-        }
-        redraw();
+    public void memoryWritten(final int addr, int value) {
+        getDisplay().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (addr != lastWritten) {
+                    lastWritten = addr;
+                }
+                redraw();
+            }});
     }
 
     @Override
     public void memoryCleared() {
-        if (lastWritten != -1) {
-            lastWritten = -1;
-            redraw();
-        }
+        getDisplay().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (lastWritten != -1) {
+                    lastWritten = -1;
+                }
+                redraw();
+            }});
     }
 
 }

@@ -8,6 +8,7 @@ public class Ram implements Readable, Writeable {
 
     private byte[] memory;
     private List<MemoryModifiedListener> listeners = new LinkedList<MemoryModifiedListener>();
+    private boolean notifcationsEnabled = true;
 
     public Ram(int size) {
         memory = new byte[size];
@@ -19,6 +20,10 @@ public class Ram implements Readable, Writeable {
 
     public void removeListener(MemoryModifiedListener listener) {
         listeners.remove(listener);
+    }
+
+    public void enableNotifications(boolean enabled) {
+        notifcationsEnabled = enabled;
     }
 
     @Override
@@ -44,12 +49,18 @@ public class Ram implements Readable, Writeable {
     }
 
     private void fireMemoryWritten(int addr, int value) {
+        if (!notifcationsEnabled) {
+            return;
+        }
         for (MemoryModifiedListener listener : listeners) {
             listener.memoryWritten(addr,  value);
         }
     }
 
     private void fireMemoryCleared() {
+        if (!notifcationsEnabled) {
+            return;
+        }
         for (MemoryModifiedListener listener : listeners) {
             listener.memoryCleared();
         }
