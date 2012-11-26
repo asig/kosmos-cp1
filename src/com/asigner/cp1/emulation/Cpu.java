@@ -142,29 +142,35 @@ public class Cpu {
     }
 
     private int readPort(int port) {
+    	logger.info(String.format("reading from port 0x%02x", port));
         // IMPLEMENT ME
         return 0;
     }
 
     private void writePort(int port, int data) {
+    	logger.info(String.format("writing to port 0x%02x: value 0x%02x", port, data));
         // IMPLEMENT ME
     }
 
     private int readBus() {
+    	logger.info("reading from bus");
         // IMPLEMENT ME
         return 0;
     }
 
     private void writeBus(int data) {
+    	logger.info(String.format("writing to bus: value 0x%02x", data));
         // IMPLEMENT ME
     }
 
     private int readExternal(int addr) {
+    	logger.info(String.format("reading from external memory at address 0x%02x", addr));
         // IMPLEMENT ME
         return 0;
     }
 
     private void writeExternal(int addr, int data) {
+    	logger.info(String.format("writing to external memory at address 0x%02x: value 0x%02x", addr, data));
         // IMPLEMENT ME
     }
 
