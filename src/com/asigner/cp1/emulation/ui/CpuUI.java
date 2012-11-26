@@ -32,6 +32,9 @@ public class CpuUI implements CpuListener {
 
     private StatusComposite statusComposite;
     private DisassemblyComposite disassemblyComposite;
+    private Button btnRun;
+    private Button btnStop;
+    private Button btnStep;
 
     public CpuUI(Cpu cpu) throws IOException {
         this.cpu = cpu;
@@ -103,7 +106,7 @@ public class CpuUI implements CpuListener {
                 grpCommands.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
                 grpCommands.setText("Commands");
 
-                Button btnStep = new Button(grpCommands, SWT.NONE);
+                btnStep = new Button(grpCommands, SWT.NONE);
                 btnStep.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -112,7 +115,7 @@ public class CpuUI implements CpuListener {
                 });
                 btnStep.setText("Step");
 
-                Button btnRun = new Button(grpCommands, SWT.NONE);
+                btnRun = new Button(grpCommands, SWT.NONE);
                 btnRun.setText("Run");
                 btnRun.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -120,9 +123,9 @@ public class CpuUI implements CpuListener {
                         runClicked();
                     }
                 });
-                btnRun.setEnabled(false);
+                btnRun.setEnabled(true);
 
-                Button btnStop = new Button(grpCommands, SWT.NONE);
+                btnStop = new Button(grpCommands, SWT.NONE);
                 btnStop.setText("Stop");
                 btnStop.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -147,11 +150,15 @@ public class CpuUI implements CpuListener {
     }
 
     private void runClicked() {
-        // NOT IMPLEMENTED YET
+    	btnRun.setEnabled(false);
+    	btnStep.setEnabled(false);
+    	btnStop.setEnabled(true);
     }
 
     private void stopClicked() {
-        // NOT IMPLEMENTED YET
+    	btnRun.setEnabled(true);
+    	btnStep.setEnabled(true);
+    	btnStop.setEnabled(false);
     }
 
     private void resetClicked() {
