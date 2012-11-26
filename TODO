@@ -1,0 +1,10 @@
+Emulation:
+( ) Switch to a simple event bus, get rid of all the listeners
+( ) more breakpoint types?
+( ) menu bar
+( ) toolbar
+( ) more actions:
+    ( ) load state
+    ( ) save state
+    ( ) save disassembly
+
