@@ -17,7 +17,8 @@ public class ExecutorThread extends Thread {
     public enum Command {
         SINGLE_STEP,
         START,
-        STOP
+        STOP,
+        RESET
     };
 
     private final BlockingQueue<Command> commands = new LinkedBlockingQueue<Command>();
@@ -60,22 +61,36 @@ public class ExecutorThread extends Thread {
             } else {
                 switch(command) {
                 case SINGLE_STEP:
-                    isRunning = false;
+                    stopExecution();
                     executeInstr();
                     break;
                 case START:
-                    isRunning = true;
-                    cpu.enableNotifications(false);
+                    startExecution();
                     executeInstr();
                     break;
                 case STOP:
-                    isRunning = false;
-                    cpu.enableNotifications(true);
+                    stopExecution();
+                    break;
+                case RESET:
+                    stopExecution();
+                    cpu.reset();
+                    break;
+                default:
                     break;
                 }
             }
             yield();
         }
+    }
+
+    private void stopExecution() {
+        isRunning = false;
+        cpu.enableNotifications(true);
+    }
+
+    private void startExecution() {
+        isRunning = true;
+        cpu.enableNotifications(false);
     }
 
     private Command fetchCommand() {

@@ -4,8 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -14,15 +12,25 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import com.asigner.cp1.emulation.Cpu;
 import com.asigner.cp1.emulation.CpuListener;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
-import com.asigner.cp1.emulation.ui.ExecutorThread.Command;
+import com.asigner.cp1.emulation.ui.actions.ResetAction;
+import com.asigner.cp1.emulation.ui.actions.RunAction;
+import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
+import com.asigner.cp1.emulation.ui.actions.StopAction;
 
 public class CpuUI implements CpuListener, BreakpointHitListener {
+
+    private RunAction runAction;
+    private StopAction stopAction;
+    private SingleStepAction singleStepAction;
+    private ResetAction resetAction;
+
     protected Shell shell;
     private Cpu cpu;
     private ExecutorThread executorThread;
@@ -36,11 +44,22 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
 
     public CpuUI(Cpu cpu) throws IOException {
         this.cpu = cpu;
-        this.executorThread = new ExecutorThread(cpu);
+        this.cpu.addListener(this);
+
+        executorThread = new ExecutorThread(cpu);
         executorThread.addListener(this);
-        cpu.addListener(this);
         executorThread.start();
+
+        resetAction = new ResetAction(executorThread);
+        runAction = new RunAction(executorThread);
+        stopAction = new StopAction(executorThread, this);
+        singleStepAction = new SingleStepAction(executorThread);
+
+        resetAction.setDependentActions(singleStepAction, runAction, stopAction);
+        runAction.setDependentActions(singleStepAction, stopAction);
+        stopAction.setDependentActions(singleStepAction, runAction);
     }
+
 
     /**
      * Open the window.
@@ -59,7 +78,6 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
 
     /**
      * Create contents of the window.
-     * @wbp.parser.entryPoint
      */
     protected void createContents() {
         shell = new Shell();
@@ -89,6 +107,8 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
 
         statusComposite = new StatusComposite(composite, SWT.NONE);
         statusComposite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
+        new Label(statusComposite, SWT.NONE);
+        new Label(statusComposite, SWT.NONE);
 
         Group grpMemory = new Group(composite, SWT.NONE);
         grpMemory.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -103,66 +123,11 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
         grpCommands.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
         grpCommands.setText("Commands");
 
-        btnStep = new Button(grpCommands, SWT.NONE);
-        btnStep.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                stepClicked();
-            }
-        });
-        btnStep.setText("Step");
-
-        btnRun = new Button(grpCommands, SWT.NONE);
-        btnRun.setText("Run");
-        btnRun.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                runClicked();
-            }
-        });
-        btnRun.setEnabled(true);
-
-        btnStop = new Button(grpCommands, SWT.NONE);
-        btnStop.setText("Stop");
-        btnStop.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                stopClicked();
-            }
-        });
-        btnStop.setEnabled(false);
-
-        Button btnReset = new Button(grpCommands, SWT.NONE);
-        btnReset.setText("Reset");
-        btnReset.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                resetClicked();
-            }
-        });
-    }
-
-    private void stepClicked() {
-        executorThread.postCommand(Command.SINGLE_STEP);
-    }
-
-    private void runClicked() {
-        btnRun.setEnabled(false);
-        btnStep.setEnabled(false);
-        btnStop.setEnabled(true);
-        executorThread.postCommand(Command.START);
-    }
-
-    private void stopClicked() {
-        btnRun.setEnabled(true);
-        btnStep.setEnabled(true);
-        btnStop.setEnabled(false);
-        executorThread.postCommand(Command.STOP);
-        updateView();
-    }
-
-    private void resetClicked() {
-        cpu.reset();
+        btnStep = new ActionButton(grpCommands, SWT.NONE, singleStepAction);
+        btnRun = new ActionButton(grpCommands, SWT.NONE, runAction);
+        stopAction.setEnabled(false);
+        btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
+        Button btnReset = new ActionButton(grpCommands, SWT.NONE, resetAction);
     }
 
     @Override
@@ -197,13 +162,18 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
             statusComposite.setPsw(cpu.getPSW());
             statusComposite.setPc(cpu.getPC());
             disassemblyComposite.selectAddress(cpu.getPC());
-        }};
+            memoryComposite.redraw();
+        }
+    };
 
-    private void updateView() {
+    public void updateView() {
         shell.getDisplay().syncExec(updateViewRunnable);
     }
 
-    public static void main(String ... args) {
+    /**
+     * @wbp.parser.entryPoint
+     */
+    private static void wbpEntryPoint() {
         try {
             Ram ram = new Ram(256);
             Rom rom = new Rom(new FileInputStream("CP1.bin"));
@@ -214,5 +184,4 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
             e.printStackTrace();
         }
     }
-
 }
