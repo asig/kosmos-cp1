@@ -12,6 +12,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
@@ -20,8 +22,12 @@ import com.asigner.cp1.emulation.Cpu;
 import com.asigner.cp1.emulation.CpuListener;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
+import com.asigner.cp1.emulation.ui.actions.AboutAction;
+import com.asigner.cp1.emulation.ui.actions.LoadStateAction;
 import com.asigner.cp1.emulation.ui.actions.ResetAction;
 import com.asigner.cp1.emulation.ui.actions.RunAction;
+import com.asigner.cp1.emulation.ui.actions.SaveDisassemblyAction;
+import com.asigner.cp1.emulation.ui.actions.SaveStateAction;
 import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
 import com.asigner.cp1.emulation.ui.actions.StopAction;
 
@@ -31,6 +37,10 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
     private StopAction stopAction;
     private SingleStepAction singleStepAction;
     private ResetAction resetAction;
+    private SaveDisassemblyAction saveDisassemblyAction;
+    private LoadStateAction loadStateAction;
+    private SaveStateAction saveStateAction;
+    private AboutAction aboutAction;
 
     protected Shell shell;
     private Cpu cpu;
@@ -55,6 +65,10 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
         runAction = new RunAction(executorThread);
         stopAction = new StopAction(executorThread, this);
         singleStepAction = new SingleStepAction(executorThread);
+        saveDisassemblyAction = new SaveDisassemblyAction(cpu);
+        loadStateAction = new LoadStateAction(cpu);
+        saveStateAction = new SaveStateAction(cpu);
+        aboutAction = new AboutAction();
 
         resetAction.setDependentActions(singleStepAction, runAction, stopAction);
         runAction.setDependentActions(singleStepAction, stopAction);
@@ -68,6 +82,7 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
     public void open() {
         Display display = Display.getDefault();
         createContents();
+        shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
         while (!shell.isDisposed()) {
@@ -75,6 +90,28 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
                 display.sleep();
             }
         }
+    }
+
+    protected Menu createMenuBar() {
+        Menu menu = new Menu(shell, SWT.BAR);
+
+        Menu fileMenu = new Menu(menu);
+        new ActionMenuItem(fileMenu, SWT.NONE, saveDisassemblyAction);
+        new MenuItem(fileMenu, SWT.SEPARATOR);
+        new ActionMenuItem(fileMenu, SWT.NONE, loadStateAction);
+        new ActionMenuItem(fileMenu, SWT.NONE, saveStateAction);
+
+        Menu helpMenu = new Menu(menu);
+        new ActionMenuItem(helpMenu, SWT.NONE, aboutAction);
+
+        MenuItem fileItem = new MenuItem(menu, SWT.CASCADE);
+        fileItem.setText("&File");
+        fileItem.setMenu(fileMenu);
+        MenuItem helpItem = new MenuItem(menu, SWT.CASCADE);
+        helpItem.setText("Help");
+        helpItem.setMenu(helpMenu);
+
+        return menu;
     }
 
     /**
@@ -97,7 +134,7 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
         composite_1.setLayout(new GridLayout(2, false));
 
                 Group group = new Group(composite_1, SWT.NONE);
-                group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+                group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
                 group.setLayout(new FillLayout(SWT.HORIZONTAL));
                 group.setText("Disassembly");
 

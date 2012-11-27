@@ -39,6 +39,10 @@ public class Disassembler {
         this.rom = rom;
     }
 
+    public List<Line> disassemble() {
+        return disassemble(0, rom.size());
+    }
+
     public List<Line> disassemble(int from, int to) {
         List<Line> lines = new LinkedList<Line>();
         int pos = from;

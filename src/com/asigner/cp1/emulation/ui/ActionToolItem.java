@@ -1,6 +1,7 @@
 package com.asigner.cp1.emulation.ui;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -12,7 +13,10 @@ public class ActionToolItem extends ToolItem {
 
     public ActionToolItem(ToolBar parent, int style, final Action action) {
         super(parent, style);
-        this.setImage(action.getImageDescriptor().createImage());
+        ImageDescriptor imageDescriptor = action.getImageDescriptor();
+        if (imageDescriptor != null) {
+            this.setImage(imageDescriptor.createImage());
+        }
         this.setText(action.getText());
         this.setEnabled(action.isEnabled());
         this.addSelectionListener(new SelectionAdapter() {
