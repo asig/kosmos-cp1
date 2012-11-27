@@ -23,6 +23,7 @@ public class Cpu {
     // Interrupt pins and flipflops
     private boolean TF; // Timer Flag
     private boolean notINT;
+    private boolean timerInterruptRequested;
     private boolean T0;
     private boolean T1;
 
@@ -99,6 +100,7 @@ public class Cpu {
         notINT = true;
         T0 = false;
         T1 = false;
+        timerInterruptRequested = false;
 
         // T is not affected by reset()
         A = 0;
@@ -228,6 +230,7 @@ public class Cpu {
 
     private void incCounter() {
         TF = TF ||  T == 0xff;
+        timerInterruptRequested = timerInterruptRequested || T == 0xff;
         T = (T + 1) & 0xff;
     }
 
@@ -260,8 +263,9 @@ public class Cpu {
                 push();
                 PC = 3;
                 inInterrupt = true;
-            } else if (TF && tcntInterruptsEnabled) {
+            } else if (timerInterruptRequested && tcntInterruptsEnabled) {
                 // handle timer interrupt
+            	timerInterruptRequested = false;
                 push();
                 PC = 7;
                 inInterrupt = true;
@@ -460,6 +464,7 @@ public class Cpu {
 
             case 0x35: { // DIS TCNTI
                 tcntInterruptsEnabled = false;
+                timerInterruptRequested = false;
             }
             break;
 
