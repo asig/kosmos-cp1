@@ -12,8 +12,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 
 import com.asigner.cp1.emulation.Cpu;
 import com.asigner.cp1.emulation.CpuListener;
@@ -83,51 +84,59 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
         shell = new Shell();
         shell.setSize(620, 400);
         shell.setText("Intel MCS-48 Emulator");
-        shell.setLayout(new GridLayout(2, false));
+        shell.setLayout(new GridLayout(1, false));
 
-        Group group = new Group(shell, SWT.NONE);
-        group.setLayout(new FillLayout(SWT.HORIZONTAL));
-        group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        group.setText("Disassembly");
+        ToolBar toolbar = new ToolBar(shell, SWT.FLAT);
+        ToolItem toolItem1 = new ActionToolItem(toolbar, SWT.PUSH, singleStepAction);
+        ToolItem toolItem2 = new ActionToolItem(toolbar, SWT.PUSH, runAction);
+        ToolItem toolItem3 = new ActionToolItem(toolbar, SWT.PUSH, stopAction);
+        ToolItem toolItem4 = new ActionToolItem(toolbar, SWT.PUSH, resetAction);
 
-        disassemblyComposite = new DisassemblyComposite(group, SWT.NONE);
-        disassemblyComposite.setRom(cpu.getRom());
-        disassemblyComposite.addListener(new BreakpointChangedListener() {
-            @Override
-            public void breakpointChanged(int addr, boolean enabled) {
-                executorThread.enableBreakpoint(addr, enabled);
-            }});
+        Composite composite_1 = new Composite(shell, SWT.NONE);
+        composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        composite_1.setLayout(new GridLayout(2, false));
 
-        Composite composite = new Composite(shell, SWT.NONE);
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-        GridLayout layout = new GridLayout(1, false);
-        layout.marginWidth = 0;
-        layout.marginHeight = 0;
-        composite.setLayout(layout);
+                Group group = new Group(composite_1, SWT.NONE);
+                group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+                group.setLayout(new FillLayout(SWT.HORIZONTAL));
+                group.setText("Disassembly");
 
-        statusComposite = new StatusComposite(composite, SWT.NONE);
-        statusComposite.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
-        new Label(statusComposite, SWT.NONE);
-        new Label(statusComposite, SWT.NONE);
+                        disassemblyComposite = new DisassemblyComposite(group, SWT.NONE);
+                        disassemblyComposite.setRom(cpu.getRom());
+                        disassemblyComposite.addListener(new BreakpointChangedListener() {
+                            @Override
+                            public void breakpointChanged(int addr, boolean enabled) {
+                                executorThread.enableBreakpoint(addr, enabled);
+                            }});
 
-        Group grpMemory = new Group(composite, SWT.NONE);
-        grpMemory.setLayout(new FillLayout(SWT.HORIZONTAL));
-        grpMemory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-        grpMemory.setText("Memory");
+                                Composite composite = new Composite(composite_1, SWT.NONE);
+                                composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+                                GridLayout layout = new GridLayout(1, false);
+                                layout.marginWidth = 0;
+                                layout.marginHeight = 0;
+                                composite.setLayout(layout);
 
-        memoryComposite = new MemoryComposite(grpMemory, SWT.NONE);
-        memoryComposite.setRam(cpu.getRam());
+                                        statusComposite = new StatusComposite(composite, SWT.NONE);
+                                        statusComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 
-        Group grpCommands = new Group(composite, SWT.NONE);
-        grpCommands.setLayout(new RowLayout(SWT.HORIZONTAL));
-        grpCommands.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-        grpCommands.setText("Commands");
+                                        Group grpMemory = new Group(composite, SWT.NONE);
+                                        grpMemory.setLayout(new FillLayout(SWT.HORIZONTAL));
+                                        grpMemory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+                                        grpMemory.setText("Memory");
 
-        btnStep = new ActionButton(grpCommands, SWT.NONE, singleStepAction);
-        btnRun = new ActionButton(grpCommands, SWT.NONE, runAction);
-        stopAction.setEnabled(false);
-        btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
-        Button btnReset = new ActionButton(grpCommands, SWT.NONE, resetAction);
+                                                memoryComposite = new MemoryComposite(grpMemory, SWT.NONE);
+                                                memoryComposite.setRam(cpu.getRam());
+
+                                        Group grpCommands = new Group(composite, SWT.NONE);
+                                        grpCommands.setLayout(new RowLayout(SWT.HORIZONTAL));
+                                        grpCommands.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
+                                        grpCommands.setText("Commands");
+
+                                                btnStep = new ActionButton(grpCommands, SWT.NONE, singleStepAction);
+                                                btnRun = new ActionButton(grpCommands, SWT.NONE, runAction);
+                                                btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
+                                                Button btnReset = new ActionButton(grpCommands, SWT.NONE, resetAction);
+                                                stopAction.setEnabled(false);
     }
 
     @Override
