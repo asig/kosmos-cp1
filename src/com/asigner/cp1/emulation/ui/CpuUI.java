@@ -29,6 +29,11 @@ import com.asigner.cp1.emulation.ui.actions.SaveDisassemblyAction;
 import com.asigner.cp1.emulation.ui.actions.SaveStateAction;
 import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
 import com.asigner.cp1.emulation.ui.actions.StopAction;
+import com.asigner.cp1.emulation.ui.widgets.ActionButton;
+import com.asigner.cp1.emulation.ui.widgets.ActionMenuItem;
+import com.asigner.cp1.emulation.ui.widgets.ActionToolItem;
+import com.asigner.cp1.emulation.ui.widgets.MemoryComposite;
+import com.asigner.cp1.emulation.ui.widgets.StatusComposite;
 
 public class CpuUI implements ExecutionListener {
 

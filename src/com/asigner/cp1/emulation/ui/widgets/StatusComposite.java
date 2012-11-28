@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui;
+package com.asigner.cp1.emulation.ui.widgets;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;

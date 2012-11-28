@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui;
+package com.asigner.cp1.emulation.ui.widgets;
 
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
