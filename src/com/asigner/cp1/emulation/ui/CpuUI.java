@@ -19,7 +19,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.asigner.cp1.emulation.Cpu;
-import com.asigner.cp1.emulation.CpuListener;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
 import com.asigner.cp1.emulation.ui.actions.AboutAction;
@@ -31,7 +30,7 @@ import com.asigner.cp1.emulation.ui.actions.SaveStateAction;
 import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
 import com.asigner.cp1.emulation.ui.actions.StopAction;
 
-public class CpuUI implements CpuListener, BreakpointHitListener {
+public class CpuUI implements ExecutionListener {
 
     private RunAction runAction;
     private StopAction stopAction;
@@ -55,7 +54,6 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
 
     public CpuUI(Cpu cpu) throws IOException {
         this.cpu = cpu;
-        this.cpu.addListener(this);
 
         executorThread = new ExecutorThread(cpu);
         executorThread.addListener(this);
@@ -177,12 +175,26 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
     }
 
     @Override
-    public void instructionExecuted() {
+    public void executionStarted() {
+    }
+
+    @Override
+    public void executionStopped() {
+        updateView();
+        shell.getDisplay().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                memoryComposite.redraw();
+            }});
+    }
+
+    @Override
+    public void singleStepped() {
         updateView();
     }
 
     @Override
-    public void cpuReset() {
+    public void resetExecuted() {
         updateView();
     }
 
@@ -208,7 +220,6 @@ public class CpuUI implements CpuListener, BreakpointHitListener {
             statusComposite.setPsw(cpu.getPSW());
             statusComposite.setPc(cpu.getPC());
             disassemblyComposite.selectAddress(cpu.getPC());
-            memoryComposite.redraw();
         }
     };
 

@@ -9,11 +9,9 @@ public class StopAction extends BaseAction {
 
     private SingleStepAction singleStepAction;
     private RunAction runAction;
-    private CpuUI cpuUi;
 
     public StopAction(ExecutorThread executorThread, CpuUI cpuUi) {
         super(executorThread, "Stop", SWTResourceManager.getImage(StopAction.class, "control-stop-square.png"));
-        this.cpuUi = cpuUi;
     }
 
     public void setDependentActions(SingleStepAction singleStepAction, RunAction runAction) {
@@ -27,6 +25,5 @@ public class StopAction extends BaseAction {
         this.runAction.setEnabled(true);
         this.setEnabled(false);
         executorThread.postCommand(ExecutorThread.Command.STOP);
-        cpuUi.updateView();
     }
 }

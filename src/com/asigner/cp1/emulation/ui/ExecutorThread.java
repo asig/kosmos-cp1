@@ -23,7 +23,7 @@ public class ExecutorThread extends Thread {
 
     private final BlockingQueue<Command> commands = new LinkedBlockingQueue<Command>();
     private final Set<Integer> breakpoints = new HashSet<Integer>();
-    private final List<BreakpointHitListener> listeners = new LinkedList<BreakpointHitListener>();
+    private final List<ExecutionListener> listeners = new LinkedList<ExecutionListener>();
     private final Cpu cpu;
     private boolean isRunning = false;
 
@@ -31,11 +31,11 @@ public class ExecutorThread extends Thread {
         this.cpu = cpu;
     }
 
-    public void addListener(BreakpointHitListener listener) {
+    public void addListener(ExecutionListener listener) {
         listeners.add(listener);
     }
 
-    public void removeListener(BreakpointHitListener listener) {
+    public void removeListener(ExecutionListener listener) {
         listeners.remove(listener);
     }
 
@@ -63,17 +63,21 @@ public class ExecutorThread extends Thread {
                 case SINGLE_STEP:
                     stopExecution();
                     executeInstr();
+                    fireSingleStepped();
                     break;
                 case START:
                     startExecution();
                     executeInstr();
+                    fireExecutionStarted();
                     break;
                 case STOP:
                     stopExecution();
+                    fireExecutionStopped();
                     break;
                 case RESET:
                     stopExecution();
                     cpu.reset();
+                    fireResetExecuted();
                     break;
                 default:
                     break;
@@ -119,8 +123,33 @@ public class ExecutorThread extends Thread {
         }
     }
 
+    private void fireExecutionStarted() {
+        for (ExecutionListener listener : listeners) {
+            listener.executionStarted();
+        }
+    }
+
+    private void fireExecutionStopped() {
+        for (ExecutionListener listener : listeners) {
+            listener.executionStopped();
+        }
+    }
+
+    private void fireSingleStepped() {
+        for (ExecutionListener listener : listeners) {
+            listener.singleStepped();
+        }
+    }
+
+    private void fireResetExecuted() {
+        for (ExecutionListener listener : listeners) {
+            listener.resetExecuted();
+        }
+    }
+
+
     private void fireBreakpointHit(int addr) {
-        for (BreakpointHitListener listener : listeners) {
+        for (ExecutionListener listener : listeners) {
             listener.breakpointHit(addr);
         }
     }
