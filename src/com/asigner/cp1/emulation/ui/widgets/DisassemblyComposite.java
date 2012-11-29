@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui;
+package com.asigner.cp1.emulation.ui.widgets;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.asigner.cp1.emulation.Rom;
+import com.asigner.cp1.emulation.ui.BreakpointChangedListener;
 import com.asigner.cp1.emulation.util.Disassembler;
 
 public class DisassemblyComposite extends Composite {
