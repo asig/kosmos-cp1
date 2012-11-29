@@ -32,6 +32,7 @@ import com.asigner.cp1.emulation.ui.actions.StopAction;
 import com.asigner.cp1.emulation.ui.widgets.ActionButton;
 import com.asigner.cp1.emulation.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.emulation.ui.widgets.ActionToolItem;
+import com.asigner.cp1.emulation.ui.widgets.DisassemblyComposite;
 import com.asigner.cp1.emulation.ui.widgets.MemoryComposite;
 import com.asigner.cp1.emulation.ui.widgets.StatusComposite;
 
