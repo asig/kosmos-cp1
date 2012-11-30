@@ -12,6 +12,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -19,6 +20,8 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.asigner.cp1.emulation.Cpu;
+import com.asigner.cp1.emulation.DataPort;
+import com.asigner.cp1.emulation.DataPortListener;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
 import com.asigner.cp1.emulation.ui.actions.AboutAction;
@@ -32,6 +35,7 @@ import com.asigner.cp1.emulation.ui.actions.StopAction;
 import com.asigner.cp1.emulation.ui.widgets.ActionButton;
 import com.asigner.cp1.emulation.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.emulation.ui.widgets.ActionToolItem;
+import com.asigner.cp1.emulation.ui.widgets.BitsetWidget;
 import com.asigner.cp1.emulation.ui.widgets.DisassemblyComposite;
 import com.asigner.cp1.emulation.ui.widgets.MemoryComposite;
 import com.asigner.cp1.emulation.ui.widgets.StatusComposite;
@@ -54,9 +58,10 @@ public class CpuUI implements ExecutionListener {
     private StatusComposite statusComposite;
     private DisassemblyComposite disassemblyComposite;
     private MemoryComposite memoryComposite;
-    private Button btnRun;
-    private Button btnStop;
-    private Button btnStep;
+
+    private BitsetWidget busWidget;
+    private BitsetWidget p1Widget;
+    private BitsetWidget p2Widget;
 
     public CpuUI(Cpu cpu) throws IOException {
         this.cpu = cpu;
@@ -157,8 +162,50 @@ public class CpuUI implements ExecutionListener {
                                 layout.marginHeight = 0;
                                 composite.setLayout(layout);
 
-                                        statusComposite = new StatusComposite(composite, SWT.NONE);
-                                        statusComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+                                        Group group_1 = new Group(composite, SWT.NONE);
+                                        group_1.setText("Status");
+                                        group_1.setLayout(new GridLayout(3, false));
+                                        group_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+
+                                                statusComposite = new StatusComposite(group_1, SWT.NONE);
+                                                statusComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
+
+                                                DataPort bus = cpu.getPort(0);
+                                                new Label(group_1, SWT.NONE).setText("BUS");
+                                                busWidget = new BitsetWidget(group_1, 8, SWT.NONE);
+                                                bus.addListener(new DataPortListener() {
+                                                    @Override
+                                                    public void valueChanged(int oldValue, final int newValue) {
+                                                        shell.getDisplay().syncExec(new Runnable() {
+                                                            @Override
+                                                            public void run() { busWidget.setValue(newValue); }
+                                                        });
+                                                    }});
+
+                                                DataPort p1 = cpu.getPort(1);
+                                                new Label(group_1, SWT.NONE).setText("P1");
+                                                p1Widget = new BitsetWidget(group_1, 8, SWT.NONE);
+                                                p1.addListener(new DataPortListener() {
+                                                    @Override
+                                                    public void valueChanged(int oldValue, final int newValue) {
+                                                        shell.getDisplay().syncExec(new Runnable() {
+                                                            @Override
+                                                            public void run() { p1Widget.setValue(newValue); }
+                                                        });
+                                                    }});
+
+                                                DataPort p2 = cpu.getPort(2);
+                                                new Label(group_1, SWT.NONE).setText("P2");
+                                                p2Widget = new BitsetWidget(group_1, 8, SWT.NONE);
+                                                p2.addListener(new DataPortListener() {
+                                                    @Override
+                                                    public void valueChanged(int oldValue, final int newValue) {
+                                                        shell.getDisplay().syncExec(new Runnable() {
+                                                            @Override
+                                                            public void run() { p2Widget.setValue(newValue); }
+                                                        });
+                                                    }});
+
 
                                         Group grpMemory = new Group(composite, SWT.NONE);
                                         grpMemory.setLayout(new FillLayout(SWT.HORIZONTAL));
@@ -173,15 +220,22 @@ public class CpuUI implements ExecutionListener {
                                         grpCommands.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
                                         grpCommands.setText("Commands");
 
-                                                btnStep = new ActionButton(grpCommands, SWT.NONE, singleStepAction);
-                                                btnRun = new ActionButton(grpCommands, SWT.NONE, runAction);
-                                                btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
+                                                Button btnStep = new ActionButton(grpCommands, SWT.NONE, singleStepAction);
+                                                Button btnRun = new ActionButton(grpCommands, SWT.NONE, runAction);
+                                                Button btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
                                                 Button btnReset = new ActionButton(grpCommands, SWT.NONE, resetAction);
                                                 stopAction.setEnabled(false);
     }
 
     @Override
     public void executionStarted() {
+        shell.getDisplay().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                singleStepAction.setEnabled(false);
+                stopAction.setEnabled(true);
+                runAction.setEnabled(false);
+            }});
     }
 
     @Override
@@ -190,7 +244,13 @@ public class CpuUI implements ExecutionListener {
         shell.getDisplay().syncExec(new Runnable() {
             @Override
             public void run() {
+                singleStepAction.setEnabled(true);
+                stopAction.setEnabled(false);
+                runAction.setEnabled(true);
                 memoryComposite.redraw();
+                busWidget.redraw();
+                p1Widget.redraw();
+                p2Widget.redraw();
             }});
     }
 
@@ -201,6 +261,13 @@ public class CpuUI implements ExecutionListener {
 
     @Override
     public void resetExecuted() {
+        shell.getDisplay().syncExec(new Runnable() {
+            @Override
+            public void run() {
+                singleStepAction.setEnabled(true);
+                stopAction.setEnabled(false);
+                runAction.setEnabled(true);
+            }});
         updateView();
     }
 
@@ -209,9 +276,6 @@ public class CpuUI implements ExecutionListener {
         shell.getDisplay().syncExec(new Runnable() {
             @Override
             public void run() {
-                btnRun.setEnabled(true);
-                btnStep.setEnabled(true);
-                btnStop.setEnabled(false);
                 memoryComposite.redraw();
             }});
         updateView();
@@ -225,6 +289,7 @@ public class CpuUI implements ExecutionListener {
             statusComposite.setF1(cpu.getF1());
             statusComposite.setPsw(cpu.getPSW());
             statusComposite.setPc(cpu.getPC());
+
             disassemblyComposite.selectAddress(cpu.getPC());
         }
     };
@@ -240,7 +305,7 @@ public class CpuUI implements ExecutionListener {
         try {
             Ram ram = new Ram(256);
             Rom rom = new Rom(new FileInputStream("CP1.bin"));
-            CpuUI cpuUI = new CpuUI(new Cpu(ram, rom));
+            CpuUI cpuUI = new CpuUI(new Cpu(ram, rom, new DataPort("BUS"), new DataPort("P1"), new DataPort("P2")));
             cpuUI.open();
         } catch (IOException e) {
             // TODO Auto-generated catch block

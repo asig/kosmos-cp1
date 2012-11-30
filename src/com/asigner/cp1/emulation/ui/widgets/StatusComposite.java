@@ -5,10 +5,9 @@ import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 
-public class StatusComposite extends Group {
+public class StatusComposite extends Composite {
     private CLabel lblCy;
     private CLabel lblAc;
     private CLabel lblF0;
@@ -36,8 +35,7 @@ public class StatusComposite extends Group {
      * @param style
      */
     public StatusComposite(Composite parent, int style) {
-        super(parent, SWT.BORDER);
-        setText("Status");
+        super(parent, style);
         setLayout(new GridLayout(6, true));
 
         Label l1 = new Label(this, SWT.CENTER);

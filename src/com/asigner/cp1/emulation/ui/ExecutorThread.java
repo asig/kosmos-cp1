@@ -63,7 +63,6 @@ public class ExecutorThread extends Thread {
                 case SINGLE_STEP:
                     stopExecution();
                     executeInstr();
-                    fireSingleStepped();
                     break;
                 case START:
                     startExecution();
@@ -89,12 +88,10 @@ public class ExecutorThread extends Thread {
 
     private void stopExecution() {
         isRunning = false;
-        cpu.enableNotifications(true);
     }
 
     private void startExecution() {
         isRunning = true;
-        cpu.enableNotifications(false);
     }
 
     private Command fetchCommand() {
@@ -116,10 +113,11 @@ public class ExecutorThread extends Thread {
 
     private void executeInstr() {
         cpu.executeSingleInstr();
+        fireSingleStepped();
         if (breakpoints.contains(cpu.getPC())) {
-            cpu.enableNotifications(true);
             isRunning = false;
             fireBreakpointHit(cpu.getPC());
+            fireExecutionStopped();
         }
     }
 
