@@ -1,0 +1,31 @@
+<ivy-module version="2.0">
+    <info organisation="com.asigner" module="advanscene"/>
+    <configurations>
+        <conf name="common" visibility="private"/>
+        <conf name="linux-x86_64" description="Linux specific dependencies"/>
+        <conf name="macosx-x86_64" description="Mac OS X specific dependencies"/>
+        <conf name="win32" description="Windows specific dependencies"/>
+        <conf name="test" extends="common"/>
+    </configurations>
+    <dependencies>
+        <!-- common dependencies 
+        <dependency org="com.google.code.guice" name="guice" rev="2.0" conf="common->default"/>
+        -->
+
+        <!-- architecture dependent -->
+        <!--
+        <dependency org="org.eclipse" name="platform-minimal" rev="3.7.0" conf="linux->linux-gtk"/>
+        <dependency org="org.eclipse" name="platform-minimal" rev="3.7.0" conf="macosx->macosx-cocoa"/>
+        -->
+        <dependency org="org.eclipse" name="platform-minimal" rev="3.7.0" conf="win32->win32"/>
+        <dependency org="org.eclipse" name="platform-minimal" rev="3.7.0" conf="linux-x86_64->linux-gtk-x86_64"/>
+        <dependency org="org.eclipse" name="platform-minimal" rev="3.7.0" conf="macosx-x86_64->macosx-cocoa-x86_64"/>
+        <!--
+        <dependency org="org.eclipse" name="platform-minimal" rev="3.7.0" conf="win32-x86_64->win32-x86_64"/>
+        -->
+
+        <!-- test only -->
+        <dependency org="junit" name="junit" rev="4.4" conf="test->default"/>
+    </dependencies>
+</ivy-module>
+

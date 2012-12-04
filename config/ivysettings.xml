@@ -1,0 +1,25 @@
+<ivysettings>
+    <property name="ivy.internal.default.root"             value="/mnt/gimli/jpository-ivy" override="false"/>
+    <property name="ivy.internal.default.ivy.pattern"      value="[organisation]/[module]/[revision]/[type]s/[artifact].[ext]" override="false"/>
+    <property name="ivy.internal.default.artifact.pattern" value="[organisation]/[module]/[revision]/[type]s/[artifact].[ext]" override="false"/>
+
+    <settings defaultResolver="default" />
+    
+    <credentials host="legolas.asigner.com" realm="ivy Repository" username="ivyrepo" passwd="r3p0s1tory"/>
+
+    <resolvers>
+        <filesystem name="internal">
+            <ivy      pattern="${ivy.internal.default.root}/${ivy.internal.default.ivy.pattern}" />
+            <artifact pattern="${ivy.internal.default.root}/${ivy.internal.default.artifact.pattern}" />
+        </filesystem>
+        <url name="https">
+            <ivy      pattern="https://legolas.asigner.com/repository/${ivy.internal.default.ivy.pattern}" />
+            <artifact pattern="https://legolas.asigner.com/repository/${ivy.internal.default.artifact.pattern}" />
+        </url>  
+        <chain name="default" returnFirst="true" checkmodified="true">
+            <resolver ref="internal"/>
+            <resolver ref="https"/>
+        </chain>
+    </resolvers>
+
+</ivysettings>
