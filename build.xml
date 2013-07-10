@@ -163,7 +163,7 @@
             <fileset dir="lib/common" erroronmissingdir="false">
                 <include name="*.jar"/>
             </fileset>
-        
+
             <path refid="osdep.classpath"/>
 
             <!-- the generated productinfo.jar. doesn't matter which one, so use linux -->
@@ -357,7 +357,7 @@ public String getSettingsPropertiesName() { return "${settings.properties.name}"
             source="${compile.source}"
             compiler="${compile.compiler}"
             target="${compile.target}">
-           
+
         <src path="${test-src.dir}" />
         <include name="**/*.java"/>
         <classpath refid="test.classpath"/>
@@ -474,12 +474,12 @@ public String getSettingsPropertiesName() { return "${settings.properties.name}"
     <target name="run" depends="jars">
         <java classname="com.asigner.cp1.emulation.Main" fork="true">
             <classpath refId="runtime.classpath"/>
+            <classpath>
+                <!-- resources -->
+                <pathelement location="${src.dir}"/>
+            </classpath>
             <jvmarg value="${vm.params}"/>
-            <!--
-            <jvmarg value="-Djava.library.path=${SWT_HOME}/linux-gtk:${MOZILLA_FIVE_HOME} -Dfile.encoding=utf8"/>
-            <env key="LD_LIBRARY_PATH" value="${MOZILLA_FIVE_HOME}"/>
-            -->
-            <env key="LIBOVERLAY_SCROLLBAR" value="0"/>  <!-- fix for stupid ubuntu 11.04 scrollbar crap (http://askubuntu.com/questions/39743/naughty-narwahl-has-eaten-my-eclipse-scrollbars) -->
+            <env key="LIBOVERLAY_SCROLLBAR" value="0"/>  <!-- use proper scrollbars -->
         </java>
     </target>
 
@@ -489,9 +489,14 @@ public String getSettingsPropertiesName() { return "${settings.properties.name}"
     <target name="debug" depends="jars">
         <java classname="com.asigner.cp1.emulation.Main" fork="true">
             <classpath refId="runtime.classpath"/>
+            <classpath>
+                <!-- resources -->
+                <pathelement location="${src.dir}"/>
+            </classpath>
         	<jvmarg value="${vm.params}"/>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8000"/>
+            <env key="LIBOVERLAY_SCROLLBAR" value="0"/>  <!-- use proper scrollbars -->
         </java>
     </target>
 
