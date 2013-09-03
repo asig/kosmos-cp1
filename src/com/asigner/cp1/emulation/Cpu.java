@@ -168,39 +168,16 @@ public class Cpu {
     }
 
     private int readPort(int port) {
-        logger.info(String.format("reading from port 0x%02x", port));
         return ports[port].read();
     }
 
     private void writePort(int port, int data) {
-        logger.info(String.format("writing to port 0x%02x: value 0x%02x", port, data));
         DataPort p = ports[port];
         if (p != null) {
             p.write(data);
         } else {
-            logger.info(String.format("Port 0x%02x not configured", port));
+            logger.severe(String.format("Port 0x%02x not configured", port));
         }
-    }
-
-    private int readBus() {
-        logger.info("reading from bus");
-        return ports[0].read();
-    }
-
-    private void writeBus(int data) {
-        logger.info(String.format("writing to bus: value 0x%02x", data));
-        ports[0].write(data);
-    }
-
-    private int readExternal(int addr) {
-        logger.info(String.format("reading from external memory at address 0x%02x", addr));
-        // IMPLEMENT ME
-        return 0;
-    }
-
-    private void writeExternal(int addr, int data) {
-        logger.info(String.format("writing to external memory at address 0x%02x: value 0x%02x", addr, data));
-        // IMPLEMENT ME
     }
 
     //
@@ -256,7 +233,7 @@ public class Cpu {
     }
 
     private void tick() {
-        // "executes" another cycle, and performs some period stuff (e.g. counting after a STRT T, or interrupt checks
+        // "executes" another cycle, and performs some periodic stuff (e.g. counting after a STRT T, or interrupt checks
         if (state.timerRunning) {
             state.cyclesUntilCount--;
             if (state.cyclesUntilCount == 0) {
@@ -305,7 +282,7 @@ public class Cpu {
         case 0x02: { // OUTL BUS, A
             cycles++;
             tick();
-            writeBus(state.A);
+            ports[0].write(state.A);
         }
         break;
 
@@ -339,7 +316,7 @@ public class Cpu {
         case 0x08: { // INS A, BUS
             cycles++;
             tick();
-            state.A = readBus();
+            state.A = ports[0].read();
         }
         break;
 
@@ -693,10 +670,11 @@ public class Cpu {
         break;
 
         case 0x80: case 0x81: { // MOVX A, @Rr
+            int pos = readReg(op & 0x1);
+            ports[0].write(pos); // emit address to read from
             cycles++;
             tick();
-            int pos = readReg(op & 0x1);
-            state.A = readExternal(pos);
+            state.A = ports[0].read();
         }
         break;
 
@@ -727,8 +705,8 @@ public class Cpu {
             cycles++;
             tick();
             int data = fetch();
-            int bus = readBus();
-            writeBus((bus | data) & 0xff);
+            int bus = ports[0].read();
+            ports[0].write((bus | data) & 0xff);
         }
         break;
 
@@ -750,10 +728,11 @@ public class Cpu {
         break;
 
         case 0x90: case 0x91: { // MOVX @R, A
+            int pos = readReg(op & 0x1);
+            ports[0].write(pos); // emit address to write to
             cycles++;
             tick();
-            int pos = readReg(op & 0x1);
-            writeExternal(pos, state.A);
+            ports[0].write(state.A);
         }
         break;
 
@@ -789,8 +768,8 @@ public class Cpu {
             cycles++;
             tick();
             int data = fetch();
-            int bus = readBus();
-            writeBus((bus & data) & 0xff);
+            int bus = ports[0].read();
+            ports[0].write((bus & data) & 0xff);
         }
         break;
 
