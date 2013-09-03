@@ -479,6 +479,7 @@ public String getSettingsPropertiesName() { return "${settings.properties.name}"
                 <pathelement location="${src.dir}"/>
             </classpath>
             <jvmarg value="${vm.params}"/>
+            <jvmarg value="-Djava.util.logging.SimpleFormatter.format=%1$tc: %4$7s: %5$s%6$s%n"/>
             <env key="LIBOVERLAY_SCROLLBAR" value="0"/>  <!-- use proper scrollbars -->
         </java>
     </target>
