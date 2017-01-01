@@ -1,0 +1,10 @@
+repositories {
+    mavenCentral()
+    ivy {
+        url "lib"
+        layout "pattern", {
+            ivy "[organisation]/[module]/[revision]/[type]s/[artifact].[ext]"
+            artifact "[organisation]/[module]/[revision]/[type]s/[artifact].[ext]"
+        }
+    }
+}
