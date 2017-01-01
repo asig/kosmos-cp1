@@ -1,6 +1,8 @@
 package com.asigner.cp1.emulation;
 
 
+import com.asigner.cp1.emulation.util.Disassembler;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -47,9 +49,12 @@ public class Cpu {
     private State state;
     private DataPort[] ports;
 
+    private Disassembler disassembler;
+
     public Cpu(Ram ram, Rom rom, DataPort bus, DataPort p1, DataPort p2) {
         this.ram = ram;
         this.rom = rom;
+        this.disassembler = new Disassembler(rom);
         this.state = new State();
         this.ports = new DataPort[] { bus, p1, p2, null, null, null, null, null };
         reset();
@@ -272,6 +277,10 @@ public class Cpu {
     }
 
     public int executeSingleInstr() {
+
+        Disassembler.Line line = disassembler.disassemble(state.PC);
+        logger.info(String.format("Executing instr: %04x %s", line.getAddress(), line.getDisassembly()));
+
         int cycles = 1;
         int op = fetch();
         tick();
@@ -1032,7 +1041,7 @@ public class Cpu {
         case 0xe1:
         case 0xe2:
         case 0xf3:
-            logger.info(String.format("Illegal op-code 0x%02x", op));
+            logger.info(String.format("Illegal op-code 0x%02x at %04x", op, state.PC - 1));
             break;
         }
         handleInterrupts();
