@@ -116,7 +116,7 @@ public class Disassembler {
 
                 case 0x14: case 0x34: case 0x54: case 0x74: case 0x94: case 0xb4: case 0xd4: case 0xf4:
                     addr = (op & 0xe0) << 3 | (rom.read(pos++) & 0xff);
-                    lines.add(emit(curPos, 1, "CALL", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "CALL", String.format("%04x", addr)));
                     break;
 
                 case 0x15:
@@ -574,7 +574,7 @@ public class Disassembler {
 
     public static void main(String ... args) {
         try {
-            Rom rom = new Rom(new FileInputStream("CP1.bin"));
+            Rom rom = new Rom(Disassembler.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
             List<Line> lines = new Disassembler(rom).disassemble(0, 0x800);
             for(Line line : lines) {
                 System.out.printf("%04x: [ %s ] %s\n", line.getAddress(), line.getBytes(), line.getDisassembly());

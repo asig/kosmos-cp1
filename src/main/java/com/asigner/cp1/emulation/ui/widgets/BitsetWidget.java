@@ -1,6 +1,6 @@
 package com.asigner.cp1.emulation.ui.widgets;
 
-import org.eclipse.swt.SWT;
+import com.asigner.cp1.emulation.ui.SWTResources;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -8,7 +8,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.wb.swt.SWTResourceManager;
 
 public class BitsetWidget extends Label {
 
@@ -26,8 +25,8 @@ public class BitsetWidget extends Label {
 
     private final int size;
 
-    private Color bgCol = SWTResourceManager.getColor(SWT.COLOR_WHITE);
-    private Color fgCol = SWTResourceManager.getColor(SWT.COLOR_BLACK);
+    private Color bgCol = SWTResources.WHITE;
+    private Color fgCol = SWTResources.BLACK;
 
     private int value = 0;
 

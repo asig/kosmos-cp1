@@ -1,6 +1,6 @@
 package com.asigner.cp1.emulation.ui.actions;
 
-import org.eclipse.wb.swt.SWTResourceManager;
+import com.asigner.cp1.emulation.ui.SWTResources;
 
 import com.asigner.cp1.emulation.ui.CpuUI;
 import com.asigner.cp1.emulation.ui.ExecutorThread;
@@ -11,7 +11,7 @@ public class StopAction extends BaseAction {
     private RunAction runAction;
 
     public StopAction(ExecutorThread executorThread, CpuUI cpuUi) {
-        super(executorThread, "Stop", SWTResourceManager.getImage(StopAction.class, "control-stop-square.png"));
+        super(executorThread, "Stop", SWTResources.getImage("/com/asigner/cp1/emulation/ui/actions/control-stop-square.png"));
     }
 
     public void setDependentActions(SingleStepAction singleStepAction, RunAction runAction) {

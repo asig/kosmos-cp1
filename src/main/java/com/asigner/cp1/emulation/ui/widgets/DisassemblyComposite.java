@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.asigner.cp1.emulation.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -28,7 +29,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ScrollBar;
-import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.asigner.cp1.emulation.Rom;
 import com.asigner.cp1.emulation.ui.BreakpointChangedListener;
@@ -38,17 +38,17 @@ public class DisassemblyComposite extends Composite {
 
 	private static final Logger logger = Logger.getLogger(DisassemblyComposite.class.getName());
 	
-    private static final Color BG = SWTResourceManager.getColor(SWT.COLOR_WHITE);
-    private static final Color FG = SWTResourceManager.getColor(SWT.COLOR_BLACK);
-    private static final Color BG_SEL = SWTResourceManager.getColor(SWT.COLOR_RED);
-    private static final Color FG_SEL = SWTResourceManager.getColor(SWT.COLOR_YELLOW);
+    private static final Color BG = SWTResources.WHITE;
+    private static final Color FG = SWTResources.BLACK;
+    private static final Color BG_SEL = SWTResources.RED;
+    private static final Color FG_SEL = SWTResources.YELLOW;
 
     private static final int DECORATION_WIDTH = 2;
     private static final int MAX_LINE_WIDTH = 29 + DECORATION_WIDTH; // Depends on the formatting
 
     private final List<BreakpointChangedListener> listeners = new LinkedList<BreakpointChangedListener>();
 
-    private final Image breakpointImage = SWTResourceManager.getImage(DisassemblyComposite.class, "bullet_red.png");
+    private final Image breakpointImage = SWTResources.getImage("/com/asigner/cp1/emulation/ui/widgets/bullet_red.png");
     private final int breakpointImgWidth = breakpointImage.getBounds().width;
     private final int breakpointImgHeight = breakpointImage.getBounds().height;
     private final FontMetrics fontMetrics;

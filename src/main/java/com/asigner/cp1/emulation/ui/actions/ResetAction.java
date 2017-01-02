@@ -1,6 +1,6 @@
 package com.asigner.cp1.emulation.ui.actions;
 
-import org.eclipse.wb.swt.SWTResourceManager;
+import com.asigner.cp1.emulation.ui.SWTResources;
 
 import com.asigner.cp1.emulation.ui.ExecutorThread;
 
@@ -11,7 +11,7 @@ public class ResetAction extends BaseAction {
     private StopAction stopAction;
 
     public ResetAction(ExecutorThread executorThread) {
-        super(executorThread, "Reset", SWTResourceManager.getImage(RunAction.class, "arrow-circle-135-left.png"));
+        super(executorThread, "Reset", SWTResources.getImage("/com/asigner/cp1/emulation/ui/actions/arrow-circle-135-left.png"));
     }
 
     public void setDependentActions(SingleStepAction singleStepAction, RunAction runAction, StopAction stopAction) {

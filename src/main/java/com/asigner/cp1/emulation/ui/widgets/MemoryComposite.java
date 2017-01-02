@@ -1,5 +1,6 @@
 package com.asigner.cp1.emulation.ui.widgets;
 
+import com.asigner.cp1.emulation.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -11,7 +12,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.wb.swt.SWTResourceManager;
 
 import com.asigner.cp1.emulation.MemoryModifiedListener;
 import com.asigner.cp1.emulation.Ram;
@@ -20,10 +20,10 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
 
     private static final int BYTES_PER_LINE = 16;
 
-    private static final Color BG = SWTResourceManager.getColor(SWT.COLOR_WHITE);
-    private static final Color FG = SWTResourceManager.getColor(SWT.COLOR_BLACK);
-    private static final Color BG_SEL = SWTResourceManager.getColor(SWT.COLOR_RED);
-    private static final Color FG_SEL = SWTResourceManager.getColor(SWT.COLOR_YELLOW);
+    private static final Color BG = SWTResources.WHITE;
+    private static final Color FG = SWTResources.BLACK;
+    private static final Color BG_SEL = SWTResources.RED;
+    private static final Color FG_SEL = SWTResources.YELLOW;
 
     private Ram ram;
     private int lastWritten = -1;

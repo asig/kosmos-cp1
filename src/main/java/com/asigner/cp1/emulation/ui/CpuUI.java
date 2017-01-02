@@ -3,6 +3,7 @@ package com.asigner.cp1.emulation.ui;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import com.asigner.cp1.emulation.ui.widgets.CP1Button;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -225,6 +226,23 @@ public class CpuUI implements ExecutionListener {
                                                 Button btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
                                                 Button btnReset = new ActionButton(grpCommands, SWT.NONE, resetAction);
                                                 stopAction.setEnabled(false);
+
+        Group cp1Buttons = new Group(composite, SWT.NONE);
+        cp1Buttons.setLayout(new RowLayout(SWT.HORIZONTAL));
+        cp1Buttons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        cp1Buttons.setText("Commands");
+
+        CP1Button button = new CP1Button(cp1Buttons, SWT.NONE);
+        button.setSize((int)(3.2*40),40);
+        button.setText("CAL");
+        button.setSubText("Cass. laden");
+//
+//        CP1Button button2 = new CP1Button(cp1Buttons, SWT.NONE);
+//        button2.setSize((int)(1.1*40),40);
+
+//        CP1Button button3 = new CP1Button(cp1Buttons, SWT.NONE);
+//        button3.setSize((int)(1.4*40),40);
+//        button3.setText("1");
     }
 
     @Override

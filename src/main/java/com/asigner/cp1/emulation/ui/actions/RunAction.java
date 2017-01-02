@@ -1,6 +1,6 @@
 package com.asigner.cp1.emulation.ui.actions;
 
-import org.eclipse.wb.swt.SWTResourceManager;
+import com.asigner.cp1.emulation.ui.SWTResources;
 
 import com.asigner.cp1.emulation.ui.ExecutorThread;
 
@@ -10,7 +10,7 @@ public class RunAction extends BaseAction {
     private StopAction stopAction;
 
     public RunAction(ExecutorThread executorThread) {
-        super(executorThread, "Start", SWTResourceManager.getImage(RunAction.class, "control.png"));
+        super(executorThread, "Start", SWTResources.getImage("/com/asigner/cp1/emulation/ui/actions/control.png"));
     }
 
     public void setDependentActions(SingleStepAction singleStepAction, StopAction stopAction) {
