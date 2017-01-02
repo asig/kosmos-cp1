@@ -842,7 +842,7 @@ public class Cpu {
         case 0xb3: { // JMPP @A
             cycles++;
             tick();
-            state.PC = ram.read(state.A & 0xff);
+            state.PC = (state.PC & 0xff00 ) | ram.read(state.A & 0xff);
         }
         break;
 
