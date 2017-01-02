@@ -279,7 +279,7 @@ public class Cpu {
     public int executeSingleInstr() {
 
         Disassembler.Line line = disassembler.disassemble(state.PC);
-        logger.info(String.format("Executing instr: %04x %s", line.getAddress(), line.getDisassembly()));
+        logger.finest(String.format("Executing instr: %04x %s", line.getAddress(), line.getDisassembly()));
 
         int cycles = 1;
         int op = fetch();
@@ -842,7 +842,7 @@ public class Cpu {
         case 0xb3: { // JMPP @A
             cycles++;
             tick();
-            state.PC = state.PC & 0xf00 | state.A & 0xff;
+            state.PC = ram.read(state.A & 0xff);
         }
         break;
 
