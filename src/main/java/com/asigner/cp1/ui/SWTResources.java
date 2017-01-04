@@ -1,6 +1,6 @@
 // Copyright 2017 Andreas Signer. All rights reserved.
 
-package com.asigner.cp1.emulation.ui;
+package com.asigner.cp1.ui;
 
 import com.google.common.collect.Maps;
 import org.eclipse.swt.graphics.Color;
@@ -23,6 +23,7 @@ public class SWTResources {
 
     public static final Color WHITE = getColor(new RGB(255,255,255));
     public static final Color BLACK = getColor(new RGB(0,0,0));
+    public static final Color GRAY50 = getColor(new RGB(128,128,128));
     public static final Color YELLOW = getColor(new RGB(255,255,0));
     public static final Color RED = getColor(new RGB(255,0,0));
 
@@ -55,7 +56,8 @@ public class SWTResources {
     }
 
     static {
-        loadFont("/com/asigner/cp1/emulation/ui/Pragmatica_black_regular.ttf");
+        loadFont("/com/asigner/cp1/ui/helvetica-light-586c33cdd0018.ttf");
+        loadFont("/com/asigner/cp1/ui/helvetica-black-586c33de4b4d0.otf");
     }
 
     private static void loadFont(String path) {

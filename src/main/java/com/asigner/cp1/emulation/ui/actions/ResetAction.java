@@ -1,6 +1,6 @@
 package com.asigner.cp1.emulation.ui.actions;
 
-import com.asigner.cp1.emulation.ui.SWTResources;
+import com.asigner.cp1.ui.SWTResources;
 
 import com.asigner.cp1.emulation.ui.ExecutorThread;
 

@@ -3,7 +3,6 @@ package com.asigner.cp1.emulation.ui;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import com.asigner.cp1.emulation.ui.widgets.CP1Button;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -69,8 +68,11 @@ public class CpuUI implements ExecutionListener {
 
         executorThread = new ExecutorThread(cpu);
         executorThread.addListener(this);
-        executorThread.start();
+        executorThread.start();       
+    }
 
+
+    private void createActions() {
         resetAction = new ResetAction(executorThread);
         runAction = new RunAction(executorThread);
         stopAction = new StopAction(executorThread, this);
@@ -84,13 +86,13 @@ public class CpuUI implements ExecutionListener {
         runAction.setDependentActions(singleStepAction, stopAction);
         stopAction.setDependentActions(singleStepAction, runAction);
     }
-
-
+    
     /**
      * Open the window.
      */
     public void open() {
         Display display = Display.getDefault();
+        createActions();
         createContents();
         shell.setMenuBar(createMenuBar());
         shell.open();
@@ -129,7 +131,7 @@ public class CpuUI implements ExecutionListener {
      */
     protected void createContents() {
         shell = new Shell();
-        shell.setSize(620, 400);
+        shell.setSize(620, 477);
         shell.setText("Intel MCS-48 Emulator");
         shell.setLayout(new GridLayout(1, false));
 
@@ -198,6 +200,8 @@ public class CpuUI implements ExecutionListener {
                                                 DataPort p2 = cpu.getPort(2);
                                                 new Label(group_1, SWT.NONE).setText("P2");
                                                 p2Widget = new BitsetWidget(group_1, 8, SWT.NONE);
+                                                new Label(group_1, SWT.NONE);
+                                                new Label(group_1, SWT.NONE);
                                                 p2.addListener(new DataPortListener() {
                                                     @Override
                                                     public void valueChanged(int oldValue, final int newValue) {
@@ -226,23 +230,6 @@ public class CpuUI implements ExecutionListener {
                                                 Button btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
                                                 Button btnReset = new ActionButton(grpCommands, SWT.NONE, resetAction);
                                                 stopAction.setEnabled(false);
-
-        Group cp1Buttons = new Group(composite, SWT.NONE);
-        cp1Buttons.setLayout(new RowLayout(SWT.HORIZONTAL));
-        cp1Buttons.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        cp1Buttons.setText("Commands");
-
-        CP1Button button = new CP1Button(cp1Buttons, SWT.NONE);
-        button.setSize((int)(3.2*40),40);
-        button.setText("CAL");
-        button.setSubText("Cass. laden");
-//
-//        CP1Button button2 = new CP1Button(cp1Buttons, SWT.NONE);
-//        button2.setSize((int)(1.1*40),40);
-
-//        CP1Button button3 = new CP1Button(cp1Buttons, SWT.NONE);
-//        button3.setSize((int)(1.4*40),40);
-//        button3.setText("1");
     }
 
     @Override

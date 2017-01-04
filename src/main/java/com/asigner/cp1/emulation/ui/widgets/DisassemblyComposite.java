@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import com.asigner.cp1.emulation.ui.SWTResources;
+import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
