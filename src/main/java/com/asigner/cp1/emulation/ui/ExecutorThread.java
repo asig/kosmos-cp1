@@ -8,7 +8,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
-import com.asigner.cp1.emulation.Cpu;
+import com.asigner.cp1.emulation.Intel8049;
 
 public class ExecutorThread extends Thread {
 
@@ -18,16 +18,17 @@ public class ExecutorThread extends Thread {
         SINGLE_STEP,
         START,
         STOP,
-        RESET
+        RESET,
+        QUIT
     };
 
     private final BlockingQueue<Command> commands = new LinkedBlockingQueue<Command>();
     private final Set<Integer> breakpoints = new HashSet<Integer>();
     private final List<ExecutionListener> listeners = new LinkedList<ExecutionListener>();
-    private final Cpu cpu;
+    private final Intel8049 cpu;
     private boolean isRunning = false;
 
-    public ExecutorThread(Cpu cpu) {
+    public ExecutorThread(Intel8049 cpu) {
         this.cpu = cpu;
     }
 
@@ -60,26 +61,28 @@ public class ExecutorThread extends Thread {
                 executeInstr();
             } else {
                 switch(command) {
-                case SINGLE_STEP:
-                    stopExecution();
-                    executeInstr();
-                    break;
-                case START:
-                    startExecution();
-                    executeInstr();
-                    fireExecutionStarted();
-                    break;
-                case STOP:
-                    stopExecution();
-                    fireExecutionStopped();
-                    break;
-                case RESET:
-                    stopExecution();
-                    cpu.reset();
-                    fireResetExecuted();
-                    break;
-                default:
-                    break;
+                    case SINGLE_STEP:
+                        stopExecution();
+                        executeInstr();
+                        break;
+                    case START:
+                        startExecution();
+                        executeInstr();
+                        fireExecutionStarted();
+                        break;
+                    case STOP:
+                        stopExecution();
+                        fireExecutionStopped();
+                        break;
+                    case RESET:
+                        stopExecution();
+                        cpu.reset();
+                        fireResetExecuted();
+                        break;
+                    case QUIT:
+                        return;
+                    default:
+                        break;
                 }
             }
             yield();

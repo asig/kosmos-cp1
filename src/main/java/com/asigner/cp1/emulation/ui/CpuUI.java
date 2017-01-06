@@ -11,15 +11,17 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
-import com.asigner.cp1.emulation.Cpu;
+import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.DataPortListener;
 import com.asigner.cp1.emulation.Ram;
@@ -40,6 +42,8 @@ import com.asigner.cp1.emulation.ui.widgets.DisassemblyComposite;
 import com.asigner.cp1.emulation.ui.widgets.MemoryComposite;
 import com.asigner.cp1.emulation.ui.widgets.StatusComposite;
 
+import static com.asigner.cp1.emulation.ui.ExecutorThread.Command.QUIT;
+
 public class CpuUI implements ExecutionListener {
 
     private RunAction runAction;
@@ -52,7 +56,7 @@ public class CpuUI implements ExecutionListener {
     private AboutAction aboutAction;
 
     protected Shell shell;
-    private Cpu cpu;
+    private Intel8049 cpu;
     private ExecutorThread executorThread;
 
     private StatusComposite statusComposite;
@@ -63,12 +67,12 @@ public class CpuUI implements ExecutionListener {
     private BitsetWidget p1Widget;
     private BitsetWidget p2Widget;
 
-    public CpuUI(Cpu cpu) throws IOException {
+    public CpuUI(Intel8049 cpu) throws IOException {
         this.cpu = cpu;
 
         executorThread = new ExecutorThread(cpu);
         executorThread.addListener(this);
-        executorThread.start();       
+        executorThread.start();
     }
 
 
@@ -134,6 +138,11 @@ public class CpuUI implements ExecutionListener {
         shell.setSize(620, 477);
         shell.setText("Intel MCS-48 Emulator");
         shell.setLayout(new GridLayout(1, false));
+        shell.addListener(SWT.Close, new Listener() {
+            public void handleEvent(Event event) {
+                executorThread.postCommand(QUIT);
+            }
+        });
 
         ToolBar toolbar = new ToolBar(shell, SWT.FLAT);
         ToolItem toolItem1 = new ActionToolItem(toolbar, SWT.PUSH, singleStepAction);
@@ -310,7 +319,7 @@ public class CpuUI implements ExecutionListener {
         try {
             Ram ram = new Ram(256);
             Rom rom = new Rom(new FileInputStream("CP1.bin"));
-            CpuUI cpuUI = new CpuUI(new Cpu(ram, rom, new DataPort("BUS"), new DataPort("P1"), new DataPort("P2")));
+            CpuUI cpuUI = new CpuUI(new Intel8049(ram, rom, new DataPort("BUS"), new DataPort("P1"), new DataPort("P2")));
             cpuUI.open();
         } catch (IOException e) {
             // TODO Auto-generated catch block
