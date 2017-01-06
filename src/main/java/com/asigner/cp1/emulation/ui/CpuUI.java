@@ -3,12 +3,11 @@ package com.asigner.cp1.emulation.ui;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import com.asigner.cp1.emulation.Intel8155;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -34,7 +33,6 @@ import com.asigner.cp1.emulation.ui.actions.SaveDisassemblyAction;
 import com.asigner.cp1.emulation.ui.actions.SaveStateAction;
 import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
 import com.asigner.cp1.emulation.ui.actions.StopAction;
-import com.asigner.cp1.emulation.ui.widgets.ActionButton;
 import com.asigner.cp1.emulation.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.emulation.ui.widgets.ActionToolItem;
 import com.asigner.cp1.emulation.ui.widgets.BitsetWidget;
@@ -57,18 +55,21 @@ public class CpuUI implements ExecutionListener {
 
     protected Shell shell;
     private Intel8049 cpu;
+    private Intel8155 pid;
     private ExecutorThread executorThread;
 
     private StatusComposite statusComposite;
     private DisassemblyComposite disassemblyComposite;
-    private MemoryComposite memoryComposite;
+    private MemoryComposite memory8049Composite;
+    private MemoryComposite memory8155Composite;
 
     private BitsetWidget busWidget;
     private BitsetWidget p1Widget;
     private BitsetWidget p2Widget;
 
-    public CpuUI(Intel8049 cpu) throws IOException {
+    public CpuUI(Intel8049 cpu, Intel8155 pid) throws IOException {
         this.cpu = cpu;
+        this.pid = pid;
 
         executorThread = new ExecutorThread(cpu);
         executorThread.addListener(this);
@@ -135,12 +136,12 @@ public class CpuUI implements ExecutionListener {
      */
     protected void createContents() {
         shell = new Shell();
-        shell.setSize(620, 477);
         shell.setText("Intel MCS-48 Emulator");
         shell.setLayout(new GridLayout(1, false));
         shell.addListener(SWT.Close, new Listener() {
             public void handleEvent(Event event) {
                 executorThread.postCommand(QUIT);
+                System.exit(0);
             }
         });
 
@@ -224,21 +225,22 @@ public class CpuUI implements ExecutionListener {
                                         Group grpMemory = new Group(composite, SWT.NONE);
                                         grpMemory.setLayout(new FillLayout(SWT.HORIZONTAL));
                                         grpMemory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-                                        grpMemory.setText("Memory");
+                                        grpMemory.setText("Memory (8049)");
 
-                                                memoryComposite = new MemoryComposite(grpMemory, SWT.NONE);
-                                                memoryComposite.setRam(cpu.getRam());
+                                                memory8049Composite = new MemoryComposite(grpMemory, SWT.NONE);
+                                                memory8049Composite.setRam(cpu.getRam());
 
-                                        Group grpCommands = new Group(composite, SWT.NONE);
-                                        grpCommands.setLayout(new RowLayout(SWT.HORIZONTAL));
-                                        grpCommands.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, true, 1, 1));
-                                        grpCommands.setText("Commands");
+        Group grpMemory8155 = new Group(composite, SWT.NONE);
+        grpMemory8155.setLayout(new FillLayout(SWT.HORIZONTAL));
+        grpMemory8155.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        grpMemory8155.setText("Memory (8155)");
 
-                                                Button btnStep = new ActionButton(grpCommands, SWT.NONE, singleStepAction);
-                                                Button btnRun = new ActionButton(grpCommands, SWT.NONE, runAction);
-                                                Button btnStop = new ActionButton(grpCommands, SWT.NONE, stopAction);
-                                                Button btnReset = new ActionButton(grpCommands, SWT.NONE, resetAction);
+        memory8155Composite = new MemoryComposite(grpMemory8155, SWT.NONE);
+        memory8155Composite.setRam(pid.getRam());
+
                                                 stopAction.setEnabled(false);
+
+                                                shell.pack();
     }
 
     @Override
@@ -261,7 +263,8 @@ public class CpuUI implements ExecutionListener {
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
-                memoryComposite.redraw();
+                memory8049Composite.redraw();
+                memory8155Composite.redraw();
                 busWidget.redraw();
                 p1Widget.redraw();
                 p2Widget.redraw();
@@ -290,7 +293,8 @@ public class CpuUI implements ExecutionListener {
         shell.getDisplay().syncExec(new Runnable() {
             @Override
             public void run() {
-                memoryComposite.redraw();
+                memory8049Composite.redraw();
+                memory8155Composite.redraw();
             }});
         updateView();
     }
@@ -319,7 +323,11 @@ public class CpuUI implements ExecutionListener {
         try {
             Ram ram = new Ram(256);
             Rom rom = new Rom(new FileInputStream("CP1.bin"));
-            CpuUI cpuUI = new CpuUI(new Intel8049(ram, rom, new DataPort("BUS"), new DataPort("P1"), new DataPort("P2")));
+            DataPort bus = new DataPort("BUS");
+            CpuUI cpuUI = new CpuUI(
+                    new Intel8049(ram, rom, bus, new DataPort("P1"), new DataPort("P2")),
+                    new Intel8155(bus, new Ram(256))
+            );
             cpuUI.open();
         } catch (IOException e) {
             // TODO Auto-generated catch block

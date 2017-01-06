@@ -36,15 +36,17 @@ import com.asigner.cp1.emulation.util.Disassembler;
 
 public class DisassemblyComposite extends Composite {
 
-	private static final Logger logger = Logger.getLogger(DisassemblyComposite.class.getName());
-	
+
+    private static final Logger logger = Logger.getLogger(DisassemblyComposite.class.getName());
+
     private static final Color BG = SWTResources.WHITE;
     private static final Color FG = SWTResources.BLACK;
     private static final Color BG_SEL = SWTResources.RED;
     private static final Color FG_SEL = SWTResources.YELLOW;
 
     private static final int DECORATION_WIDTH = 2;
-    private static final int MAX_LINE_WIDTH = 29 + DECORATION_WIDTH; // Depends on the formatting
+    private static final int MARGIN = 1;
+    private static final int MAX_LINE_WIDTH = 29 + DECORATION_WIDTH + 2 * MARGIN; // Depends on the formatting
 
     private final List<BreakpointChangedListener> listeners = new LinkedList<BreakpointChangedListener>();
 
@@ -197,17 +199,18 @@ public class DisassemblyComposite extends Composite {
         }
 
         // Draw decoration
+        int marginWidth = MARGIN * fontMetrics.getAverageCharWidth();
         int decoWidth = DECORATION_WIDTH * fontMetrics.getAverageCharWidth();
-        gc.fillRectangle(0, y, decoWidth, totalLineHeight);
+        gc.fillRectangle(marginWidth, y, decoWidth, totalLineHeight);
         if (l != null && breakpoints.contains(l.getAddress())) {
-            gc.drawImage(breakpointImage, (decoWidth - breakpointImgWidth)/2, y + (fontMetrics.getAscent()  + fontMetrics.getLeading() - breakpointImgHeight)/2);
+            gc.drawImage(breakpointImage, marginWidth + (decoWidth - breakpointImgWidth)/2, y + (fontMetrics.getAscent()  + fontMetrics.getLeading() - breakpointImgHeight)/2);
         }
 
         // Draw text
         if (s.length() < emptyLine.length()) {
             s += emptyLine.substring(s.length());
         }
-        gc.drawText(s.substring(colOfs), DECORATION_WIDTH * fontMetrics.getAverageCharWidth(), y);
+        gc.drawText(s.substring(colOfs), (MARGIN + DECORATION_WIDTH) * fontMetrics.getAverageCharWidth(), y);
     }
 
     private void onVerticalScrollbarSelected(int selection) {

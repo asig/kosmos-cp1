@@ -19,17 +19,11 @@ public class DataPort {
     }
 
     public int read() {
-        int res = value & 0xff;
-        String binVal = String.format("%8s", Integer.toBinaryString(res)).replace(' ', '0');
-        String message = String.format("Port %3s: reading 0x%02x (0b%s)", name, res, binVal);
-        logger.info(message);
-        return res;
+        return value;
     }
 
     public void write(int value) {
-        String binVal = String.format("%8s", Integer.toBinaryString(value)).replace(' ', '0');
-        String message = String.format("Port %3s: writing 0x%02x (0b%s)", name, value, binVal);
-        logger.info(message);
+        value = value & 0xff;
         if (value != this.value) {
             int oldValue = this.value;
             this.value = value;

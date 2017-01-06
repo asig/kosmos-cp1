@@ -9,15 +9,15 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 
-import com.asigner.cp1.emulation.Cpu;
+import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.util.Disassembler;
 import com.asigner.cp1.emulation.util.Disassembler.Line;
 
 public class SaveDisassemblyAction extends Action {
 
-    private final Cpu cpu;
+    private final Intel8049 cpu;
 
-    public SaveDisassemblyAction(Cpu cpu) {
+    public SaveDisassemblyAction(Intel8049 cpu) {
         super("Save disassembly...");
         this.cpu = cpu;
     }

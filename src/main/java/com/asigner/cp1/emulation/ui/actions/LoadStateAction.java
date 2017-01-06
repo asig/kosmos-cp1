@@ -5,13 +5,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 
-import com.asigner.cp1.emulation.Cpu;
+import com.asigner.cp1.emulation.Intel8049;
 
 public class LoadStateAction extends Action {
 
-    private final Cpu cpu;
+    private final Intel8049 cpu;
 
-    public LoadStateAction(Cpu cpu) {
+    public LoadStateAction(Intel8049 cpu) {
         super("Load state...");
         this.cpu = cpu;
     }
