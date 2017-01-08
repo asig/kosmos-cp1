@@ -1,3 +1,5 @@
+Oscillator: 6 MHz, divided by 3 to get CLK, 5 steps per cycle -> 400kHz cycles -> 2.5 microsecs per cycle
+
 icons: fugue icons (http://p.yusukekamiyamane.com/)
 
 
