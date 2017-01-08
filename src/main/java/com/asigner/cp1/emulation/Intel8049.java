@@ -5,17 +5,26 @@ import com.asigner.cp1.emulation.util.Disassembler;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Intel8049 {
+
+    public interface StateListener {
+        void instructionExecuted();
+        void resetExecuted();
+    }
+
     private static final Logger logger = Logger.getLogger(Intel8049.class.getName());
 
-    private List<CpuListener> listeners = new LinkedList<CpuListener>();
+    private List<StateListener> listeners = new LinkedList<>();
 
     // TODO(asigner):
     // - ALE should happen once per cycle. This is currently not the case, but done in MOVX directly
+    // - Signal /RD and /WR in other BUS operations as well.
 
     // Pins
+    public OutputPin pinPROG = new OutputPin("PROG");
     public OutputPin pinALE = new OutputPin("ALE");
     public OutputPin pinRDLowActive = new OutputPin("/RD");
     public OutputPin pinWRLowActive = new OutputPin("/WR");
@@ -64,7 +73,7 @@ public class Intel8049 {
         this.rom = rom;
         this.disassembler = new Disassembler(rom);
         this.state = new State();
-        this.ports = new DataPort[] { bus, p1, p2, null, null, null, null, null };
+        this.ports = new DataPort[] { bus, p1, p2 };
         reset();
     }
 
@@ -112,11 +121,11 @@ public class Intel8049 {
         return state.F1;
     }
 
-    public void addListener(CpuListener listener) {
+    public void addListener(StateListener listener) {
         listeners.add(listener);
     }
 
-    public void removeListener(CpuListener listener) {
+    public void removeListener(StateListener listener) {
         listeners.remove(listener);
     }
 
@@ -180,18 +189,6 @@ public class Intel8049 {
         ram.write(base + reg, val);
     }
 
-    private int readPort(int port) {
-        return ports[port].read();
-    }
-
-    private void writePort(int port, int data) {
-        DataPort p = ports[port];
-        if (p != null) {
-            p.write(data);
-        } else {
-            logger.severe(String.format("Port 0x%02x not configured", port));
-        }
-    }
 
     //
     // Bit-fiddling
@@ -215,6 +212,10 @@ public class Intel8049 {
 
     private void setAuxCarry(boolean carry) {
         state.PSW = setBit(state.PSW, AC_BIT, carry ? 1 : 0);
+    }
+
+    public int peek() {
+        return rom.read(state.PC);
     }
 
     private int fetch() {
@@ -288,8 +289,10 @@ public class Intel8049 {
 
     public int executeSingleInstr() {
 
-        Disassembler.Line line = disassembler.disassemble(state.PC);
-        logger.finest(String.format("Executing instr: %04x %s", line.getAddress(), line.getDisassembly()));
+        if (logger.isLoggable(Level.FINEST)) {
+            Disassembler.Line line = disassembler.disassemble(state.PC);
+            logger.finest(String.format("Executing instr: %04x %s", line.getAddress(), line.getDisassembly()));
+        }
 
         int cycles = 1;
         int op = fetch();
@@ -343,7 +346,7 @@ public class Intel8049 {
                 cycles++;
                 tick();
                 int p = op & 0x1;
-                state.A = readPort(p);
+                state.A = ports[p].read();
             }
             break;
 
@@ -352,7 +355,14 @@ public class Intel8049 {
                 cycles++;
                 tick();
                 int p = op & 0x3;
-                state.A = readPort(p) & 0xf;
+                int nibble = 0b0000 | p; // READ port p
+
+                pinPROG.write(1);
+                ports[2].write(nibble); // TODO(asigner): Only write lower 4 bits
+                pinPROG.write(0); // Address is valid
+
+                state.A = ports[2].read() & 0xf;
+                pinPROG.write(1);
             }
             break;
 
@@ -507,7 +517,7 @@ public class Intel8049 {
                 cycles++;
                 tick();
                 int p = op & 0x1;
-                writePort(p, state.A);
+                ports[p].write(state.A);
             }
             break;
 
@@ -515,8 +525,16 @@ public class Intel8049 {
                 // MOVD Pp, A
                 cycles++;
                 tick();
+
                 int p = op & 0x3;
-                writePort(4 + p, state.A & 0xf);
+                int nibble = 0b0100 | p; // WRITE port p
+
+                pinPROG.write(1);
+                ports[2].write(nibble); // TODO(asigner): Only write lower 4 bits
+                pinPROG.write(0); // Address is valid
+
+                ports[2].write(state.A & 0xf); // TODO(asigner): Only write lower 4 bits
+                pinPROG.write(1); // Data is valid
             }
             break;
 
@@ -739,7 +757,7 @@ public class Intel8049 {
                 cycles++;
                 tick();
                 int data = fetch();
-                writePort(p, (readPort(p) | data) & 0xff);
+                ports[p].write((ports[p].read() | data) & 0xff);
             }
             break;
 
@@ -747,7 +765,15 @@ public class Intel8049 {
                 int p = op & 0x3;
                 cycles++;
                 tick();
-                writePort(p, (readPort(4 + p) | state.A & 0xf) & 0xff);
+
+                int nibble = 0b1000 | p; // OR port p
+
+                pinPROG.write(1);
+                ports[2].write(nibble); // TODO(asigner): Only write lower 4 bits
+                pinPROG.write(0); // Address is valid
+
+                ports[2].write(state.A & 0xf); // TODO(asigner): Only write lower 4 bits
+                pinPROG.write(1); // Data is valid
             }
             break;
 
@@ -806,7 +832,7 @@ public class Intel8049 {
                 cycles++;
                 tick();
                 int data = fetch();
-                writePort(p, (readPort(p) & data) & 0xff);
+                ports[p].write((ports[p].read() & data) & 0xff);
             }
             break;
 
@@ -814,7 +840,15 @@ public class Intel8049 {
                 int p = op & 0x3;
                 cycles++;
                 tick();
-                writePort(p, (readPort(4 + p) & state.A & 0xf) & 0xff);
+
+                int nibble = 0b1100 | p; // OR port p
+
+                pinPROG.write(1);
+                ports[2].write(nibble); // TODO(asigner): Only write lower 4 bits
+                pinPROG.write(0); // Address is valid
+
+                ports[2].write(state.A & 0xf); // TODO(asigner): Only write lower 4 bits
+                pinPROG.write(1); // Data is valid
             }
             break;
 
@@ -1073,15 +1107,12 @@ public class Intel8049 {
             cycles -= executeSingleInstr();
         }
     }
+
     private void fireInstructionExecuted() {
-        for (CpuListener listener : listeners) {
-            listener.instructionExecuted();
-        }
+        listeners.forEach(StateListener::instructionExecuted);
     }
 
     private void fireCpuReset() {
-        for (CpuListener listener : listeners) {
-            listener.cpuReset();
-        }
+        listeners.forEach(StateListener::resetExecuted);
     }
 }
