@@ -9,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 import com.asigner.cp1.emulation.Intel8049;
+import com.asigner.cp1.emulation.Intel8155;
 
 public class ExecutorThread extends Thread {
 
@@ -26,10 +27,13 @@ public class ExecutorThread extends Thread {
     private final Set<Integer> breakpoints = new HashSet<Integer>();
     private final List<ExecutionListener> listeners = new LinkedList<ExecutionListener>();
     private final Intel8049 cpu;
+    private final Intel8155 pid;
     private boolean isRunning = false;
+    private boolean breakOnMovx = false;
 
-    public ExecutorThread(Intel8049 cpu) {
+    public ExecutorThread(Intel8049 cpu, Intel8155 pid) {
         this.cpu = cpu;
+        this.pid = pid;
     }
 
     public void addListener(ExecutionListener listener) {
@@ -38,6 +42,10 @@ public class ExecutorThread extends Thread {
 
     public void removeListener(ExecutionListener listener) {
         listeners.remove(listener);
+    }
+
+    public void setBreakOnMovx(boolean enabled) {
+        this.breakOnMovx = enabled;
     }
 
     public void enableBreakpoint(int addr, boolean enabled) {
@@ -77,6 +85,7 @@ public class ExecutorThread extends Thread {
                     case RESET:
                         stopExecution();
                         cpu.reset();
+                        pid.reset();
                         fireResetExecuted();
                         break;
                     case QUIT:
@@ -117,6 +126,14 @@ public class ExecutorThread extends Thread {
     private void executeInstr() {
         cpu.executeSingleInstr();
         fireSingleStepped();
+        if (breakOnMovx) {
+            int op = cpu.peek();
+            if (op == 0x80 || op == 0x81 || op == 0x90 || op == 0x91) {
+                isRunning = false;
+                fireBreakpointHit(cpu.getPC());
+                fireExecutionStopped();
+            }
+        }
         if (breakpoints.contains(cpu.getPC())) {
             isRunning = false;
             fireBreakpointHit(cpu.getPC());
