@@ -26,7 +26,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             Rom rom = new Rom(Main.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
-            Ram ram8049 = new Ram(256);
+            Ram ram8049 = new Ram(128);
             Ram ram8155 = new Ram(256);
             DataPort bus = new DataPort("BUS");
             DataPort p1 = new DataPort("P1");
@@ -38,6 +38,9 @@ public class Main {
             cpu.pinALE.connectTo(pid.pinALE);
             cpu.pinRDLowActive.connectTo(pid.pinRDLowActive);
             cpu.pinWRLowActive.connectTo(pid.pinWRLowActive);
+            p2.connectBitTo(6, pid.pinReset);
+            p2.connectBitTo(5, pid.pinIO);
+            p2.connectBitTo(4, pid.pinCELowActive);
 
             CpuUI window = new CpuUI(cpu, pid);
             window.open();
