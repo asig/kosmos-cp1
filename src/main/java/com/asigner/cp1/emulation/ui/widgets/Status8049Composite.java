@@ -7,7 +7,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-public class StatusComposite extends Composite {
+public class Status8049Composite extends Composite {
     private CLabel lblCy;
     private CLabel lblAc;
     private CLabel lblF0;
@@ -34,7 +34,7 @@ public class StatusComposite extends Composite {
      * @param parent
      * @param style
      */
-    public StatusComposite(Composite parent, int style) {
+    public Status8049Composite(Composite parent, int style) {
         super(parent, style);
         setLayout(new GridLayout(6, true));
 
