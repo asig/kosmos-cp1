@@ -82,7 +82,7 @@ public class BitsetWidget extends Label {
         gc.drawArc(x, y, BOX_W, BOX_H, 0, 360);
         if (set) {
             gc.setBackground(fgCol);
-            gc.fillArc(x+INSET, y+INSET, BOX_W-2*INSET, BOX_H-2*INSET, 0, 360);
+            gc.fillArc(x+INSET, y+INSET, BOX_W-2*INSET+1, BOX_H-2*INSET+1, 0, 360);
         }
     }
 
