@@ -1,8 +1,8 @@
-package com.asigner.cp1.emulation.ui.actions;
+package com.asigner.cp1.ui.actions;
 
 import com.asigner.cp1.ui.SWTResources;
 
-import com.asigner.cp1.emulation.ui.ExecutorThread;
+import com.asigner.cp1.ui.ExecutorThread;
 
 public class ResetAction extends BaseAction {
 
@@ -11,7 +11,7 @@ public class ResetAction extends BaseAction {
     private StopAction stopAction;
 
     public ResetAction(ExecutorThread executorThread) {
-        super(executorThread, "Reset", SWTResources.getImage("/com/asigner/cp1/emulation/ui/actions/arrow-circle-135-left.png"));
+        super(executorThread, "Reset", SWTResources.getImage("/com/asigner/cp1/ui/actions/arrow-circle-135-left.png"));
     }
 
     public void setDependentActions(SingleStepAction singleStepAction, RunAction runAction, StopAction stopAction) {

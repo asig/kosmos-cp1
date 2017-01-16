@@ -2,6 +2,8 @@
 
 package com.asigner.cp1.emulation;
 
+import com.asigner.cp1.ui.Main;
+
 public class SpeedTest {
 
     /**

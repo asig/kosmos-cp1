@@ -1,8 +1,10 @@
-package com.asigner.cp1.emulation;
+package com.asigner.cp1.ui;
 
-import com.asigner.cp1.emulation.ui.CpuWindow;
-import com.asigner.cp1.ui.KosmosPanelWindow;
-import com.asigner.cp1.ui.widgets.KosmosControlPanel;
+import com.asigner.cp1.emulation.DataPort;
+import com.asigner.cp1.emulation.Intel8049;
+import com.asigner.cp1.emulation.Intel8155;
+import com.asigner.cp1.emulation.Ram;
+import com.asigner.cp1.emulation.Rom;
 import org.eclipse.swt.widgets.Display;
 
 import java.io.IOException;

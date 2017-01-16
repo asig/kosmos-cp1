@@ -1,6 +1,6 @@
 // Copyright 2017 Andreas Signer. All rights reserved.
 
-package com.asigner.cp1.emulation.ui.widgets;
+package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.emulation.Intel8155;
 import org.eclipse.swt.SWT;

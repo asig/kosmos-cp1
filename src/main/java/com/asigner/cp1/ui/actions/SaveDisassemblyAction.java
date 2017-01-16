@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui.actions;
+package com.asigner.cp1.ui.actions;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -1,9 +1,9 @@
-package com.asigner.cp1.emulation.ui.actions;
+package com.asigner.cp1.ui.actions;
 
 import com.asigner.cp1.ui.SWTResources;
 
-import com.asigner.cp1.emulation.ui.CpuWindow;
-import com.asigner.cp1.emulation.ui.ExecutorThread;
+import com.asigner.cp1.ui.CpuWindow;
+import com.asigner.cp1.ui.ExecutorThread;
 
 public class StopAction extends BaseAction {
 
@@ -11,7 +11,7 @@ public class StopAction extends BaseAction {
     private RunAction runAction;
 
     public StopAction(ExecutorThread executorThread, CpuWindow cpuWindow) {
-        super(executorThread, "Stop", SWTResources.getImage("/com/asigner/cp1/emulation/ui/actions/control-stop-square.png"));
+        super(executorThread, "Stop", SWTResources.getImage("/com/asigner/cp1/ui/actions/control-stop-square.png"));
     }
 
     public void setDependentActions(SingleStepAction singleStepAction, RunAction runAction) {

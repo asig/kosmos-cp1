@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui;
+package com.asigner.cp1.ui;
 
 import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.DataPortListener;
@@ -6,23 +6,23 @@ import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
-import com.asigner.cp1.emulation.ui.actions.AboutAction;
-import com.asigner.cp1.emulation.ui.actions.BreakOnMovxAction;
-import com.asigner.cp1.emulation.ui.actions.LoadStateAction;
-import com.asigner.cp1.emulation.ui.actions.ResetAction;
-import com.asigner.cp1.emulation.ui.actions.RunAction;
-import com.asigner.cp1.emulation.ui.actions.SaveDisassemblyAction;
-import com.asigner.cp1.emulation.ui.actions.SaveStateAction;
-import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
-import com.asigner.cp1.emulation.ui.actions.StopAction;
-import com.asigner.cp1.emulation.ui.widgets.ActionMenuItem;
-import com.asigner.cp1.emulation.ui.widgets.ActionToolItem;
-import com.asigner.cp1.emulation.ui.widgets.BitsetWidget;
-import com.asigner.cp1.emulation.ui.widgets.CheckboxToolItem;
-import com.asigner.cp1.emulation.ui.widgets.DisassemblyComposite;
-import com.asigner.cp1.emulation.ui.widgets.MemoryComposite;
-import com.asigner.cp1.emulation.ui.widgets.Status8049Composite;
-import com.asigner.cp1.emulation.ui.widgets.Status8155Composite;
+import com.asigner.cp1.ui.actions.AboutAction;
+import com.asigner.cp1.ui.actions.BreakOnMovxAction;
+import com.asigner.cp1.ui.actions.LoadStateAction;
+import com.asigner.cp1.ui.actions.ResetAction;
+import com.asigner.cp1.ui.actions.RunAction;
+import com.asigner.cp1.ui.actions.SaveDisassemblyAction;
+import com.asigner.cp1.ui.actions.SaveStateAction;
+import com.asigner.cp1.ui.actions.SingleStepAction;
+import com.asigner.cp1.ui.actions.StopAction;
+import com.asigner.cp1.ui.widgets.ActionMenuItem;
+import com.asigner.cp1.ui.widgets.ActionToolItem;
+import com.asigner.cp1.ui.widgets.BitsetWidget;
+import com.asigner.cp1.ui.widgets.CheckboxToolItem;
+import com.asigner.cp1.ui.widgets.DisassemblyComposite;
+import com.asigner.cp1.ui.widgets.MemoryComposite;
+import com.asigner.cp1.ui.widgets.Status8049Composite;
+import com.asigner.cp1.ui.widgets.Status8155Composite;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -41,8 +41,6 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-
-import static com.asigner.cp1.emulation.ui.ExecutorThread.Command.QUIT;
 
 public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
 
@@ -146,7 +144,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
         shell.setLayout(new GridLayout(1, false));
         shell.addListener(SWT.Close, new Listener() {
             public void handleEvent(Event event) {
-                executorThread.postCommand(QUIT);
+                executorThread.postCommand(ExecutorThread.Command.QUIT);
                 System.exit(0);
             }
         });

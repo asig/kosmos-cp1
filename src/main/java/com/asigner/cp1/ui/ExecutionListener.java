@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui;
+package com.asigner.cp1.ui;
 
 public interface ExecutionListener {
     void executionStarted();

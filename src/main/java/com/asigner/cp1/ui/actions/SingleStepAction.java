@@ -1,13 +1,13 @@
-package com.asigner.cp1.emulation.ui.actions;
+package com.asigner.cp1.ui.actions;
 
 import com.asigner.cp1.ui.SWTResources;
 
-import com.asigner.cp1.emulation.ui.ExecutorThread;
+import com.asigner.cp1.ui.ExecutorThread;
 
 public class SingleStepAction extends BaseAction {
 
     public SingleStepAction(ExecutorThread executorThread) {
-        super(executorThread, "Step", SWTResources.getImage("/com/asigner/cp1/emulation/ui/actions/arrow-step-over.png"));
+        super(executorThread, "Step", SWTResources.getImage("/com/asigner/cp1/ui/actions/arrow-step-over.png"));
     }
 
     @Override

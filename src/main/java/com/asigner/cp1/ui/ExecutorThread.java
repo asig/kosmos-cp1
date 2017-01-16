@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui;
+package com.asigner.cp1.ui;
 
 import java.util.HashSet;
 import java.util.LinkedList;

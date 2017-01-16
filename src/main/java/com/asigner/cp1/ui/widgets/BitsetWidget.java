@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui.widgets;
+package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.swt.events.PaintEvent;

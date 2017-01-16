@@ -1,10 +1,10 @@
-package com.asigner.cp1.emulation.ui.actions;
+package com.asigner.cp1.ui.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 
-import com.asigner.cp1.emulation.ui.ExecutorThread;
+import com.asigner.cp1.ui.ExecutorThread;
 
 public class BaseAction extends Action {
 

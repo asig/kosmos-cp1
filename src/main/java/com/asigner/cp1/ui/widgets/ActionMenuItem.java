@@ -1,4 +1,4 @@
-package com.asigner.cp1.emulation.ui.widgets;
+package com.asigner.cp1.ui.widgets;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -6,12 +6,12 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 
-public class ActionToolItem extends ToolItem {
+public class ActionMenuItem extends MenuItem {
 
-    public ActionToolItem(ToolBar parent, int style, final Action action) {
+    public ActionMenuItem(Menu parent, int style, final Action action) {
         super(parent, style);
         ImageDescriptor imageDescriptor = action.getImageDescriptor();
         if (imageDescriptor != null) {

@@ -1,14 +1,19 @@
-package com.asigner.cp1.emulation.ui.actions;
+package com.asigner.cp1.ui.actions;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 
-public class AboutAction extends Action {
+import com.asigner.cp1.emulation.Intel8049;
 
-    public AboutAction() {
-        super("About");
+public class LoadStateAction extends Action {
+
+    private final Intel8049 cpu;
+
+    public LoadStateAction(Intel8049 cpu) {
+        super("Load state...");
+        this.cpu = cpu;
     }
 
     @Override
@@ -17,5 +22,4 @@ public class AboutAction extends Action {
         mbox.setMessage("Not implemented yet");
         mbox.open();
     }
-
 }
