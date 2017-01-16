@@ -44,7 +44,7 @@ import java.io.IOException;
 
 import static com.asigner.cp1.emulation.ui.ExecutorThread.Command.QUIT;
 
-public class CpuUI implements ExecutionListener {
+public class CpuUI implements ExecutionListener, Intel8049.StateListener {
 
     private RunAction runAction;
     private StopAction stopAction;
@@ -74,6 +74,8 @@ public class CpuUI implements ExecutionListener {
     public CpuUI(Intel8049 cpu, Intel8155 pid) throws IOException {
         this.cpu = cpu;
         this.pid = pid;
+
+        cpu.addListener(this);
 
         executorThread = new ExecutorThread(cpu, pid);
         executorThread.addListener(this);
@@ -301,6 +303,11 @@ public class CpuUI implements ExecutionListener {
     }
 
     @Override
+    public void instructionExecuted() {
+        // Ignore this, this is already handle in the ExecutionListener
+    }
+
+    @Override
     public void resetExecuted() {
         shell.getDisplay().syncExec(new Runnable() {
             @Override
@@ -310,6 +317,13 @@ public class CpuUI implements ExecutionListener {
                 runAction.setEnabled(true);
             }});
         updateView();
+    }
+
+    @Override
+    public void stateChanged(Intel8049.State newState) {
+        if (disassemblyComposite.getSelectedAddress() != cpu.getPC()) {
+            updateView();
+        }
     }
 
     @Override
@@ -323,15 +337,8 @@ public class CpuUI implements ExecutionListener {
         updateView();
     }
 
-    private final Runnable updateViewRunnable = new Runnable() {
-        @Override
-        public void run() {
-            disassemblyComposite.selectAddress(cpu.getPC());
-        }
-    };
-
     public void updateView() {
-        shell.getDisplay().syncExec(updateViewRunnable);
+        shell.getDisplay().syncExec(() -> disassemblyComposite.selectAddress(cpu.getPC()));
     }
 
     /**

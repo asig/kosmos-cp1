@@ -17,7 +17,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import java.util.IllegalFormatException;
 import java.util.function.Consumer;
 
 public class Status8049Composite extends Composite implements Intel8049.StateListener {
@@ -80,22 +79,22 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
         lblCy = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblCy.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblCy.setText("0");
-        addInlineEdit(lblCy, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x80) | val*0x80); });
+        addInlineEdit(lblCy, 0, 1, val -> cpu.setPSW((cpu.getPSW() & ~0x80) | val*0x80) );
 
         lblAc = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblAc.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblAc.setText("0");
-        addInlineEdit(lblAc, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x40) | val*0x40); });
+        addInlineEdit(lblAc, 0, 1, val -> cpu.setPSW((cpu.getPSW() & ~0x40) | val*0x40) );
 
         lblF0 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblF0.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblF0.setText("0");
-        addInlineEdit(lblF0, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x20) | val*0x20); });
+        addInlineEdit(lblF0, 0, 1, val -> cpu.setPSW((cpu.getPSW() & ~0x20) | val*0x20) );
 
         lblBs = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblBs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblBs.setText("0");
-        addInlineEdit(lblBs, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x10) | val*0x10); });
+        addInlineEdit(lblBs, 0, 1, val -> cpu.setPSW((cpu.getPSW() & ~0x10) | val*0x10));
 
         lblConst1 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblConst1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -106,7 +105,7 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
         gd_lblSp.widthHint = 12;
         lblSp.setLayoutData(gd_lblSp);
         lblSp.setText("0");
-        addInlineEdit(lblSp, val -> { if (val >= 0 && val < 8) cpu.setPSW((cpu.getPSW() & ~0x7) | val); });
+        addInlineEdit(lblSp, 0, 7, val -> cpu.setPSW((cpu.getPSW() & ~0x7) | val) );
 
         ///////////
 
@@ -133,28 +132,28 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
         lblDbf = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblDbf.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblDbf.setText("0");
-        addInlineEdit(lblDbf, val -> { if (val >= 0 && val <= 1) cpu.setDBF(val);});
+        addInlineEdit(lblDbf, 0,1,val -> cpu.setDBF(val));
 
         lblF1 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblF1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblF1.setText("0");
-        addInlineEdit(lblF1, val -> {});
+        addInlineEdit(lblF1, 0, 1, val -> cpu.setF1(val) );
 
 
         lblA = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblA.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblA.setText("00");
-        addInlineEdit(lblA, val -> {});
+        addInlineEdit(lblA, 0,255, val -> cpu.setA(val));
 
         lblT = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblT.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblT.setText("00");
-        addInlineEdit(lblT, val -> {});
+        addInlineEdit(lblT, 0,255, val -> cpu.setT(val));
 
         lblPC = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblPC.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         lblPC.setText("000");
-        addInlineEdit(lblPC, val -> {});
+        addInlineEdit(lblPC, 0,2047, val -> cpu.setPC(val));;
     }
 
     public void setCpu(Intel8049 cpu) {
@@ -166,7 +165,7 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
         updateState();
     }
 
-    private void addInlineEdit(CLabel parent, Consumer<Integer> consumer) {
+    private void addInlineEdit(CLabel parent, int rangeLow, int rangeHi, Consumer<Integer> consumer) {
         parent.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent mouseEvent) {
@@ -176,8 +175,11 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
                     public void widgetDisposed(DisposeEvent disposeEvent) {
                         String s = text.getText();
                         try {
-                            consumer.accept(Integer.valueOf(s, 16));
-                        } catch (IllegalFormatException e) {
+                            int i = Integer.valueOf(s, 16);
+                            if (i >= rangeLow && i <= rangeHi) {
+                                consumer.accept(i);
+                            }
+                        } catch (NumberFormatException e) {
                             // Ignore
                         }
                     }

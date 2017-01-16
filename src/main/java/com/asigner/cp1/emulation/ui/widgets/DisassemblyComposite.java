@@ -1,11 +1,8 @@
 package com.asigner.cp1.emulation.ui.widgets;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-
+import com.asigner.cp1.emulation.Rom;
+import com.asigner.cp1.emulation.ui.BreakpointChangedListener;
+import com.asigner.cp1.emulation.util.Disassembler;
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -30,9 +27,11 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ScrollBar;
 
-import com.asigner.cp1.emulation.Rom;
-import com.asigner.cp1.emulation.ui.BreakpointChangedListener;
-import com.asigner.cp1.emulation.util.Disassembler;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 
 public class DisassemblyComposite extends Composite {
 
@@ -62,6 +61,7 @@ public class DisassemblyComposite extends Composite {
 
     private String emptyLine;
     private int selectedLine;
+    private int selectedAddress;
     private int lineOfs;
     private int colOfs;
 
@@ -128,7 +128,12 @@ public class DisassemblyComposite extends Composite {
         listeners.remove(listener);
     }
 
+    public int getSelectedAddress() {
+        return selectedAddress;
+    }
+
     public void selectAddress(int address) {
+        this.selectedAddress = address;
         this.selectedLine = pcToLine[address];
         // make sure the selected line is visible
         if (selectedLine < lineOfs) {
@@ -155,6 +160,7 @@ public class DisassemblyComposite extends Composite {
         lineOfs = 0;
         colOfs = 0;
         selectedLine = 0;
+        selectedAddress = 0;
         onResize();
     }
 
