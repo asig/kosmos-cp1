@@ -530,6 +530,8 @@ NON-TARGET ?????????
 ```
 
 ### Timer/Counter interrupt
+- R5: Mask used for keyboard reading and display addressing
+- R3: Internal scratch register: Loop vars, computations
 ```
 025c: [ d5    ] SEL  RB1        ; Switch to memory bank 1
 025d: [ 2f    ] XCH  A, R7      ; Exchange A and R7
@@ -541,7 +543,7 @@ NON-TARGET ?????????
 0267: [ ba 06 ] MOV  R2, #06
 0269: [ bc 35 ] MOV  R4, #35
 026b: [ 8a a0 ] ORL  P2, #a0    ; P2 |= 1010 0000 --> /CE == 1, IO == 1
-026d: [ 9a ef ] ANL  P2, #ef    ; P2 &= 1110 1111 --> 8155 /CE == 1
+026d: [ 9a ef ] ANL  P2, #ef    ; P2 &= 1110 1111 --> 8155 /CE == 0
 026f: [ 27    ] CLR  A          ; Clear Accumulator
 0270: [ b8 01 ] MOV  R0, #01    ; Address Port A
 0272: [ 90    ] MOVX @R0, A     ; Write 0 -> Port A
@@ -554,7 +556,7 @@ NON-TARGET ?????????
 027b: [ 8a 0f ] ORL  P2, #0f    ; P2 |= 0000 1111: Prepare to read from bit 0 - 4
 027d: [ 0c    ] MOVD A, P4      ; ?????write to lower nibble of port 2, then read from it? why not just read from it?
 027e: [ 97    ] CLR  C
-027f: [ bb 04 ] MOV  R3, #04    ; Test bits read: 4 bits in total
+027f: [ bb 04 ] MOV  R3, #04    ; Test (keypad) bits read: 4 bits in total
 0281: [ 67    ] RRC  A          ; shift lowest bit to carry
 0282: [ f6 88 ] JC   0288       ; bit set -> 288
 0284: [ eb 81 ] DJNZ R3, 0281   ; not set, carry on with loop.
@@ -564,12 +566,12 @@ NON-TARGET ?????????
 028a: [ e7    ] RL   A
 028b: [ e7    ] RL   A
 028c: [ 17    ] INC  A          ; A = 4 * (R2 - 1) + 1; [R2 starts with 6]
-028d: [ 2b    ] XCH  A, R3      ; R3 = 4 * (R2 - 1) + 1; A = 0
-028e: [ 37    ] CPL  A          ; A = !A (--> 0xff)
-028f: [ 17    ] INC  A          ; A++ --> 0?
-0290: [ 6b    ] ADD  A, R3
-0291: [ ae    ] MOV  R6, A
-0292: [ f2 bc ] JB2  02bc
+028d: [ 2b    ] XCH  A, R3      ; R3 = 4 * (R2 - 1) + 1; A = bit_num
+028e: [ 37    ] CPL  A          ; Compute two's complement...
+028f: [ 17    ] INC  A          ; of A --> A == -bit_num
+0290: [ 6b    ] ADD  A, R3      ; A = 4 * (R2 - 1) + 1 - bit_num
+0291: [ ae    ] MOV  R6, A      ; Store A in R6
+0292: [ f2 bc ] JB2  02bc       ; Bit 2 Set? -> 2bc
 0294: [ fc    ] MOV  A, R4
 0295: [ a8    ] MOV  R0, A
 0296: [ fe    ] MOV  A, R6
