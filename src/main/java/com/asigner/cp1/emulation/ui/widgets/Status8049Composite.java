@@ -2,10 +2,22 @@ package com.asigner.cp1.emulation.ui.widgets;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
+
+import java.util.IllegalFormatException;
+import java.util.function.Consumer;
 
 public class Status8049Composite extends Composite {
     private CLabel lblCy;
@@ -65,18 +77,22 @@ public class Status8049Composite extends Composite {
         lblCy = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblCy.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblCy.setText("0");
+        addInlineEdit(lblCy, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x80) | val*0x80); });
 
         lblAc = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblAc.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblAc.setText("0");
+        addInlineEdit(lblAc, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x40) | val*0x40); });
 
         lblF0 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblF0.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblF0.setText("0");
+        addInlineEdit(lblF0, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x20) | val*0x20); });
 
         lblBs = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblBs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblBs.setText("0");
+        addInlineEdit(lblBs, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x10) | val*0x10); });
 
         lblConst1 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblConst1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -87,6 +103,7 @@ public class Status8049Composite extends Composite {
         gd_lblSp.widthHint = 12;
         lblSp.setLayoutData(gd_lblSp);
         lblSp.setText("0");
+        addInlineEdit(lblSp, val -> { if (val >= 0 && val < 8) setPsw((psw & ~0x7) | val); });
 
         ///////////
 
@@ -113,23 +130,75 @@ public class Status8049Composite extends Composite {
         lblDbf = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblDbf.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblDbf.setText("0");
+        addInlineEdit(lblDbf, val -> { if (val >= 0 && val <= 1) setDbf(val);});
 
         lblF1 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblF1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblF1.setText("0");
+        addInlineEdit(lblF1, val -> {});
+
 
         lblA = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblA.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblA.setText("00");
+        addInlineEdit(lblA, val -> {});
 
         lblT = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblT.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblT.setText("00");
+        addInlineEdit(lblT, val -> {});
 
         lblPC = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblPC.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         lblPC.setText("000");
-}
+        addInlineEdit(lblPC, val -> {});
+    }
+
+    private void addInlineEdit(CLabel parent, Consumer<Integer> consumer) {
+        parent.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent mouseEvent) {
+                Text text = createInlineEdit(parent);
+                text.addDisposeListener(new DisposeListener() {
+                    @Override
+                    public void widgetDisposed(DisposeEvent disposeEvent) {
+                        String s = text.getText();
+                        try {
+                            consumer.accept(Integer.valueOf(s, 16));
+                        } catch (IllegalFormatException e) {
+                            // Ignore
+                        }
+                    }
+                });
+            }
+        });
+
+    }
+    private Text createInlineEdit(CLabel parent) {
+        Text text = new Text(parent, SWT.NONE);
+        text.setBounds((parent.getClientArea()));
+        text.setText(parent.getText());
+        text.setSelection(0, text.getText().length());
+        text.setFocus();
+        text.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.character == '\r') {
+                    e.doit = true;
+                    text.dispose();
+                } else {
+                    super.keyPressed(e);
+                }
+            }
+        });
+        text.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                text.dispose();
+            }
+        });
+        return text;
+    }
 
     public void setPsw(int psw) {
         if (this.psw != psw) {;
