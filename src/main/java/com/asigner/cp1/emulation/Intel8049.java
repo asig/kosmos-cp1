@@ -13,6 +13,7 @@ public class Intel8049 {
     public interface StateListener {
         void instructionExecuted();
         void resetExecuted();
+        void stateChanged(State newState);
     }
 
     private static final Logger logger = Logger.getLogger(Intel8049.class.getName());
@@ -89,14 +90,6 @@ public class Intel8049 {
         return rom;
     }
 
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
     public int getT() {
         return state.T;
     }
@@ -120,6 +113,50 @@ public class Intel8049 {
     public int getF1() {
         return state.F1;
     }
+
+    public void setT(int t) {
+        if (t != state.T) {
+            state.T = t;
+            listeners.forEach(l -> l.stateChanged(state));
+        }
+    }
+
+    public void setA(int a) {
+        if (a != state.A) {
+            state.A = a;
+            listeners.forEach(l -> l.stateChanged(state));
+        }
+
+    }
+
+    public void setPC(int pc) {
+        if (pc != state.PC) {
+            state.PC = pc;
+            listeners.forEach(l -> l.stateChanged(state));
+        }
+    }
+
+    public void setPSW(int psw) {
+        if (psw != state.PSW) {
+            state.PSW = psw;
+            listeners.forEach(l -> l.stateChanged(state));
+        }
+    }
+
+    public void setDBF(int dbf) {
+        if (dbf != state.DBF) {
+            state.DBF = dbf;
+            listeners.forEach(l -> l.stateChanged(state));
+        }
+    }
+
+    public void setF1(int f1) {
+        if (f1 != state.F1) {
+            state.F1 = f1;
+            listeners.forEach(l -> l.stateChanged(state));
+        }
+    }
+
 
     public void addListener(StateListener listener) {
         listeners.add(listener);

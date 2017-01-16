@@ -1,5 +1,6 @@
 package com.asigner.cp1.emulation.ui.widgets;
 
+import com.asigner.cp1.emulation.Intel8049;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.DisposeEvent;
@@ -19,7 +20,7 @@ import org.eclipse.swt.widgets.Text;
 import java.util.IllegalFormatException;
 import java.util.function.Consumer;
 
-public class Status8049Composite extends Composite {
+public class Status8049Composite extends Composite implements Intel8049.StateListener {
     private CLabel lblCy;
     private CLabel lblAc;
     private CLabel lblF0;
@@ -32,6 +33,8 @@ public class Status8049Composite extends Composite {
     private CLabel lblA;
     private CLabel lblT;
     private CLabel lblPC;
+
+    private Intel8049 cpu;
 
     private int psw = 0;
     private int dbf = 0;
@@ -77,22 +80,22 @@ public class Status8049Composite extends Composite {
         lblCy = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblCy.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblCy.setText("0");
-        addInlineEdit(lblCy, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x80) | val*0x80); });
+        addInlineEdit(lblCy, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x80) | val*0x80); });
 
         lblAc = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblAc.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblAc.setText("0");
-        addInlineEdit(lblAc, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x40) | val*0x40); });
+        addInlineEdit(lblAc, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x40) | val*0x40); });
 
         lblF0 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblF0.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblF0.setText("0");
-        addInlineEdit(lblF0, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x20) | val*0x20); });
+        addInlineEdit(lblF0, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x20) | val*0x20); });
 
         lblBs = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblBs.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblBs.setText("0");
-        addInlineEdit(lblBs, val -> { if (val >= 0 && val <= 1) setPsw((psw & ~0x10) | val*0x10); });
+        addInlineEdit(lblBs, val -> { if (val >= 0 && val <= 1) cpu.setPSW((cpu.getPSW() & ~0x10) | val*0x10); });
 
         lblConst1 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblConst1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -103,7 +106,7 @@ public class Status8049Composite extends Composite {
         gd_lblSp.widthHint = 12;
         lblSp.setLayoutData(gd_lblSp);
         lblSp.setText("0");
-        addInlineEdit(lblSp, val -> { if (val >= 0 && val < 8) setPsw((psw & ~0x7) | val); });
+        addInlineEdit(lblSp, val -> { if (val >= 0 && val < 8) cpu.setPSW((cpu.getPSW() & ~0x7) | val); });
 
         ///////////
 
@@ -130,7 +133,7 @@ public class Status8049Composite extends Composite {
         lblDbf = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblDbf.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblDbf.setText("0");
-        addInlineEdit(lblDbf, val -> { if (val >= 0 && val <= 1) setDbf(val);});
+        addInlineEdit(lblDbf, val -> { if (val >= 0 && val <= 1) cpu.setDBF(val);});
 
         lblF1 = new CLabel(this, SWT.BORDER | SWT.CENTER);
         lblF1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -152,6 +155,15 @@ public class Status8049Composite extends Composite {
         lblPC.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         lblPC.setText("000");
         addInlineEdit(lblPC, val -> {});
+    }
+
+    public void setCpu(Intel8049 cpu) {
+        if (this.cpu != null) {
+            this.cpu.removeListener(this);
+        }
+        this.cpu = cpu;
+        this.cpu.addListener(this);
+        updateState();
     }
 
     private void addInlineEdit(CLabel parent, Consumer<Integer> consumer) {
@@ -200,7 +212,13 @@ public class Status8049Composite extends Composite {
         return text;
     }
 
-    public void setPsw(int psw) {
+
+    private void updateState() {
+        if (cpu == null) {
+            return;
+        }
+
+        int psw = cpu.getPSW();
         if (this.psw != psw) {;
             this.psw = psw;
             lblCy.setText((psw & 0x80) > 0 ? "1" : "0");
@@ -210,41 +228,52 @@ public class Status8049Composite extends Composite {
             lblConst1.setText((psw & 0x8) > 0 ? "1" : "0");
             lblSp.setText(Integer.toString(psw & 0x7));
         }
-    }
 
-    public void setDbf(int dbf) {
+        int dbf = cpu.getDBF();
         if (this.dbf != dbf) {
             this.dbf = dbf;
             lblDbf.setText(Integer.toString(dbf));
         }
-    }
 
-    public void setA(int a) {
+        int a = cpu.getA();
         if (this.a != a) {
             this.a = a;
             lblA.setText(Integer.toHexString(a));
         }
-    }
 
-    public void setT(int t) {
+        int t = cpu.getT();
         if (this.t != t) {
             this.t = t;
             lblT.setText(Integer.toHexString(t));
         }
-    }
 
-    public void setPc(int pc) {
+        int pc = cpu.getPC();
         if (this.pc != pc) {
             this.pc = pc;
             lblPC.setText(Integer.toHexString(pc));
         }
-    }
 
-    public void setF1(int f1) {
+
+        int f1 = cpu.getF1();
         if (this.f1 != f1) {
             this.f1 = f1;
             lblF1.setText(Integer.toString(f1));
         }
+    }
+
+    @Override
+    public void instructionExecuted() {
+        this.getDisplay().asyncExec(this::updateState);
+    }
+
+    @Override
+    public void resetExecuted() {
+        this.getDisplay().asyncExec(this::updateState);
+    }
+
+    @Override
+    public void stateChanged(Intel8049.State state) {
+        this.getDisplay().asyncExec(this::updateState);
     }
 
     @Override

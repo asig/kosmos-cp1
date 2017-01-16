@@ -1,18 +1,33 @@
 package com.asigner.cp1.emulation.ui;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-
+import com.asigner.cp1.emulation.DataPort;
+import com.asigner.cp1.emulation.DataPortListener;
+import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
+import com.asigner.cp1.emulation.Ram;
+import com.asigner.cp1.emulation.Rom;
+import com.asigner.cp1.emulation.ui.actions.AboutAction;
 import com.asigner.cp1.emulation.ui.actions.BreakOnMovxAction;
+import com.asigner.cp1.emulation.ui.actions.LoadStateAction;
+import com.asigner.cp1.emulation.ui.actions.ResetAction;
+import com.asigner.cp1.emulation.ui.actions.RunAction;
+import com.asigner.cp1.emulation.ui.actions.SaveDisassemblyAction;
+import com.asigner.cp1.emulation.ui.actions.SaveStateAction;
+import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
+import com.asigner.cp1.emulation.ui.actions.StopAction;
+import com.asigner.cp1.emulation.ui.widgets.ActionMenuItem;
+import com.asigner.cp1.emulation.ui.widgets.ActionToolItem;
+import com.asigner.cp1.emulation.ui.widgets.BitsetWidget;
 import com.asigner.cp1.emulation.ui.widgets.CheckboxToolItem;
+import com.asigner.cp1.emulation.ui.widgets.DisassemblyComposite;
+import com.asigner.cp1.emulation.ui.widgets.MemoryComposite;
+import com.asigner.cp1.emulation.ui.widgets.Status8049Composite;
+import com.asigner.cp1.emulation.ui.widgets.Status8155Composite;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
@@ -24,26 +39,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
-import com.asigner.cp1.emulation.Intel8049;
-import com.asigner.cp1.emulation.DataPort;
-import com.asigner.cp1.emulation.DataPortListener;
-import com.asigner.cp1.emulation.Ram;
-import com.asigner.cp1.emulation.Rom;
-import com.asigner.cp1.emulation.ui.actions.AboutAction;
-import com.asigner.cp1.emulation.ui.actions.LoadStateAction;
-import com.asigner.cp1.emulation.ui.actions.ResetAction;
-import com.asigner.cp1.emulation.ui.actions.RunAction;
-import com.asigner.cp1.emulation.ui.actions.SaveDisassemblyAction;
-import com.asigner.cp1.emulation.ui.actions.SaveStateAction;
-import com.asigner.cp1.emulation.ui.actions.SingleStepAction;
-import com.asigner.cp1.emulation.ui.actions.StopAction;
-import com.asigner.cp1.emulation.ui.widgets.ActionMenuItem;
-import com.asigner.cp1.emulation.ui.widgets.ActionToolItem;
-import com.asigner.cp1.emulation.ui.widgets.BitsetWidget;
-import com.asigner.cp1.emulation.ui.widgets.DisassemblyComposite;
-import com.asigner.cp1.emulation.ui.widgets.MemoryComposite;
-import com.asigner.cp1.emulation.ui.widgets.Status8049Composite;
-import com.asigner.cp1.emulation.ui.widgets.Status8155Composite;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import static com.asigner.cp1.emulation.ui.ExecutorThread.Command.QUIT;
 
@@ -198,6 +195,7 @@ public class CpuUI implements ExecutionListener {
 
         status8049Composite = new Status8049Composite(group_1, SWT.NONE);
         status8049Composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
+        status8049Composite.setCpu(cpu);
 
         DataPort bus = cpu.getPort(0);
         new Label(group_1, SWT.NONE).setText("BUS");
@@ -328,12 +326,6 @@ public class CpuUI implements ExecutionListener {
     private final Runnable updateViewRunnable = new Runnable() {
         @Override
         public void run() {
-            status8049Composite.setA(cpu.getA());
-            status8049Composite.setT(cpu.getT());
-            status8049Composite.setF1(cpu.getF1());
-            status8049Composite.setPsw(cpu.getPSW());
-            status8049Composite.setPc(cpu.getPC());
-
             disassemblyComposite.selectAddress(cpu.getPC());
         }
     };
