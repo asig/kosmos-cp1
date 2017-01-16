@@ -20,11 +20,11 @@ import org.eclipse.swt.widgets.Composite;
 import java.util.LinkedList;
 import java.util.List;
 
-
 public class CP1Button extends Composite {
 
-    public interface ClickListener {
-        void clicked(CP1Button btn);
+    public interface KeyListener {
+        void keyPressed(CP1Button btn);
+        void keyReleased(CP1Button btn);
     }
 
     private static final String LARGE_FONT_NAME = "Helvetica Black";
@@ -32,7 +32,7 @@ public class CP1Button extends Composite {
 
     private boolean mousePressed = false;
     private boolean mouseOverControl = false;
-    private List<ClickListener> clickListeners = new LinkedList<>();
+    private List<KeyListener> keyListeners = new LinkedList<>();
 
     private Font largeFont;
     private Font smallFont;
@@ -76,13 +76,14 @@ public class CP1Button extends Composite {
             @Override
             public void mouseDown(MouseEvent mouseEvent) {
                 mousePressed = true;
+                keyListeners.forEach(l -> l.keyPressed(CP1Button.this));
                 redraw();
             }
 
             @Override
             public void mouseUp(MouseEvent mouseEvent) {
                 if (mouseOverControl) {
-                    clickListeners.forEach(l -> l.clicked(CP1Button.this));
+                    keyListeners.forEach(l -> l.keyReleased(CP1Button.this));
                 }
                 mousePressed = false;
                 redraw();
@@ -90,12 +91,12 @@ public class CP1Button extends Composite {
         });
     }
 
-    public void addClickListener(ClickListener l) {
-        clickListeners.add(l);
+    public void addKeyListener(KeyListener l) {
+        keyListeners.add(l);
     }
 
-    public void removeClickListener(ClickListener l) {
-        clickListeners.remove(l);
+    public void removeKeyListener(KeyListener l) {
+        keyListeners.remove(l);
     }
 
     @Override
