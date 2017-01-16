@@ -77,8 +77,7 @@ public class KosmosPanelWindow {
         composite_1.setLayout(gl_composite_1);
         
         CP1Display p1Display = new CP1Display(composite_1, SWT.NONE);
-        GridData gd_p1Display = GridDataFactory.swtDefaults().hint(-1, 80).create();
-        gd_p1Display.heightHint = 100;
+        GridData gd_p1Display = GridDataFactory.swtDefaults().hint(-1, 100).create();
         p1Display.setLayoutData(gd_p1Display);
         
         KosmosLogoComposite kosmosLogo = new KosmosLogoComposite(composite_1, SWT.NONE);

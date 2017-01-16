@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
@@ -22,6 +23,7 @@ import java.util.Set;
 public class CP1Display extends Composite {
 
     private static final int MARGIN_WIDTH = 10;
+    private static final double SPACER_PERCENTAGE = 0.15; // Spacer width in percent of digit width
 
     private final CP1SevenSegmentComposite[] digits = new CP1SevenSegmentComposite[6];
 
@@ -53,11 +55,11 @@ public class CP1Display extends Composite {
     public CP1Display(Composite parent, int style) {
         super(parent, style);
 
-        GridLayout gridLayout = new GridLayout(6, true);
-        gridLayout.marginTop = 10;
-        gridLayout.marginRight = 10;
-        gridLayout.marginLeft = 10;
-        gridLayout.marginBottom = 10;
+        GridLayout gridLayout = new GridLayout(8, false);
+        gridLayout.marginTop = MARGIN_WIDTH;
+        gridLayout.marginRight = MARGIN_WIDTH;
+        gridLayout.marginLeft = MARGIN_WIDTH;
+        gridLayout.marginBottom = MARGIN_WIDTH;
         gridLayout.horizontalSpacing = 0;
         gridLayout.verticalSpacing = 0;
         gridLayout.marginWidth = 0;
@@ -69,6 +71,9 @@ public class CP1Display extends Composite {
         digits[0] = new CP1SevenSegmentComposite(this, SWT.NONE);
         digits[0].setLayoutData(GridDataFactory.swtDefaults().hint(-1,  80).create());
 
+        Label spacer1 = new Label(this, SWT.NONE);
+        spacer1.setLayoutData(GridDataFactory.swtDefaults().grab(true,  true).create());
+        
         digits[1] = new CP1SevenSegmentComposite(this, SWT.NONE);
         digits[1].setLayoutData(GridDataFactory.swtDefaults().hint(-1,  80).create());
 
@@ -76,6 +81,9 @@ public class CP1Display extends Composite {
         digits[2].setLayoutData(GridDataFactory.swtDefaults().hint(-1,  80).create());
         digits[2].setShowDot(true);
         digits[2].setDot(true);
+
+        Label spacer2 = new Label(this, SWT.NONE);
+        spacer2.setLayoutData(GridDataFactory.swtDefaults().grab(true,  true).create());
 
         digits[3] = new CP1SevenSegmentComposite(this, SWT.NONE);
         digits[3].setLayoutData(GridDataFactory.swtDefaults().hint(-1,  80).create());
@@ -90,16 +98,21 @@ public class CP1Display extends Composite {
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point pt;
-        if (wHint > 0) {
-            pt = digits[0].computeSize(wHint/6, -1, changed);
+        if (wHint > 0) {        	
+            pt = digits[0].computeSize((int)((wHint-2*MARGIN_WIDTH)/(6+2*SPACER_PERCENTAGE)), -1, changed);
         } else if (hHint > 0) {
             pt = digits[0].computeSize(-1, hHint - 2 * MARGIN_WIDTH, changed);
         } else {
             pt = digits[0].computeSize(wHint, hHint, changed);
         }
-        pt.x = pt.x * 6 + 2 * MARGIN_WIDTH;
+        pt.x = (int)(pt.x * (6+2*SPACER_PERCENTAGE) + 2 * MARGIN_WIDTH);
         pt.y+= 2 * MARGIN_WIDTH;
         return pt;
+    }
+
+    @Override
+    public void setSize(Point size) {
+        super.setSize(size);
     }
 
     public void display(String s) {
