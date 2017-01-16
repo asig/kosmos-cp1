@@ -223,13 +223,13 @@ public class Intel8155 {
                                 pcMode = PortCMode.ALT1;
                                 break;
                             case 1:
-                                pcMode = PortCMode.ALT2;
-                                break;
-                            case 2:
                                 pcMode = PortCMode.ALT3;
                                 break;
-                            case 3:
+                            case 2:
                                 pcMode = PortCMode.ALT4;
+                                break;
+                            case 3:
+                                pcMode = PortCMode.ALT2;
                                 break;
                         }
                         paInterruptEnabled = (data & (1 << 4)) > 0;
