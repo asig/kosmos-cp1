@@ -166,7 +166,13 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
     }
 
     private void addInlineEdit(CLabel parent, int rangeLow, int rangeHi, Consumer<Integer> consumer) {
-        new InlineEdit(parent, SWT.NONE).init(parent, rangeLow, rangeHi, consumer);
+        parent.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDoubleClick(MouseEvent e) {
+                InlineEdit edit = new InlineEdit(parent, SWT.NONE);
+                edit.init(parent, rangeLow, rangeHi, consumer);
+            }
+        });
     }
 
     private void updateState() {
