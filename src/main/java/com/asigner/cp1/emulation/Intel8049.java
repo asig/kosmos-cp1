@@ -395,7 +395,7 @@ public class Intel8049 {
                 int nibble = 0b0000 | p; // READ port p
 
                 pinPROG.write(1);
-                ports[2].write(nibble); // TODO(asigner): Only write lower 4 bits
+                ports[2].write(nibble, 0x0f);
                 pinPROG.write(0); // Address is valid
 
                 state.A = ports[2].read() & 0xf;
@@ -567,10 +567,10 @@ public class Intel8049 {
                 int nibble = 0b0100 | p; // WRITE port p
 
                 pinPROG.write(1);
-                ports[2].write(nibble); // TODO(asigner): Only write lower 4 bits
+                ports[2].write(nibble, 0x0f);
                 pinPROG.write(0); // Address is valid
 
-                ports[2].write(state.A & 0xf); // TODO(asigner): Only write lower 4 bits
+                ports[2].write(state.A & 0xf, 0x0f);
                 pinPROG.write(1); // Data is valid
             }
             break;

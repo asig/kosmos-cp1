@@ -29,19 +29,25 @@ public class DataPort {
     }
 
     public void write(int value) {
-        value = value & 0xff;
-        if (value != this.value) {
+        write(value, 0xff);
+    }
+
+    public void write(int value, int mask) {
+        value = value & mask;
+        if (value != (this.value & mask)) {
             int oldValue = this.value;
-            this.value = value;
+            this.value = (this.value & ~mask) | value;
             fireValueChanged(oldValue, value);
 
             // Send single bits to pins, if necessary
             for (int bit = 0; bit < 8; bit++) {
-                List<Pin> sinks = this.sinks[bit];
-                int oldBit = (oldValue & (1 << bit)) > 0 ? 1 : 0;
-                int newBit = (value & (1 << bit)) > 0 ? 1 : 0;
-                if (oldBit != newBit) {
-                    sinks.forEach(s -> s.write(newBit));
+                if (((1 << bit) & mask) > 0) {
+                    List<Pin> sinks = this.sinks[bit];
+                    int oldBit = (oldValue & (1 << bit)) > 0 ? 1 : 0;
+                    int newBit = (value & (1 << bit)) > 0 ? 1 : 0;
+                    if (oldBit != newBit) {
+                        sinks.forEach(s -> s.write(newBit));
+                    }
                 }
             }
         }
