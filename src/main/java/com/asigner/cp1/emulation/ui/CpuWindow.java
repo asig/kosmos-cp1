@@ -44,7 +44,7 @@ import java.io.IOException;
 
 import static com.asigner.cp1.emulation.ui.ExecutorThread.Command.QUIT;
 
-public class CpuUI implements ExecutionListener, Intel8049.StateListener {
+public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
 
     private RunAction runAction;
     private StopAction stopAction;
@@ -56,7 +56,7 @@ public class CpuUI implements ExecutionListener, Intel8049.StateListener {
     private SaveStateAction saveStateAction;
     private AboutAction aboutAction;
 
-    protected Shell shell;
+    private Shell shell;
     private Intel8049 cpu;
     private Intel8155 pid;
     private ExecutorThread executorThread;
@@ -71,7 +71,7 @@ public class CpuUI implements ExecutionListener, Intel8049.StateListener {
     private BitsetWidget p1Widget;
     private BitsetWidget p2Widget;
 
-    public CpuUI(Intel8049 cpu, Intel8155 pid) throws IOException {
+    public CpuWindow(Intel8049 cpu, Intel8155 pid) throws IOException {
         this.cpu = cpu;
         this.pid = pid;
 
@@ -109,11 +109,10 @@ public class CpuUI implements ExecutionListener, Intel8049.StateListener {
         shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
+    }
+
+    public boolean isDisposed() {
+        return shell.isDisposed();
     }
 
     protected Menu createMenuBar() {
@@ -349,11 +348,11 @@ public class CpuUI implements ExecutionListener, Intel8049.StateListener {
             Ram ram = new Ram(256);
             Rom rom = new Rom(new FileInputStream("CP1.bin"));
             DataPort bus = new DataPort("BUS");
-            CpuUI cpuUI = new CpuUI(
+            CpuWindow cpuWindow = new CpuWindow(
                     new Intel8049(ram, rom, bus, new DataPort("P1"), new DataPort("P2")),
                     new Intel8155(bus, new Ram(256))
             );
-            cpuUI.open();
+            cpuWindow.open();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
