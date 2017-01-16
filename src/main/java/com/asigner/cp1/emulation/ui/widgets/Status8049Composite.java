@@ -166,54 +166,8 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
     }
 
     private void addInlineEdit(CLabel parent, int rangeLow, int rangeHi, Consumer<Integer> consumer) {
-        parent.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDoubleClick(MouseEvent mouseEvent) {
-                Text text = createInlineEdit(parent);
-                text.addDisposeListener(new DisposeListener() {
-                    @Override
-                    public void widgetDisposed(DisposeEvent disposeEvent) {
-                        String s = text.getText();
-                        try {
-                            int i = Integer.valueOf(s, 16);
-                            if (i >= rangeLow && i <= rangeHi) {
-                                consumer.accept(i);
-                            }
-                        } catch (NumberFormatException e) {
-                            // Ignore
-                        }
-                    }
-                });
-            }
-        });
-
+        new InlineEdit(parent, SWT.NONE).init(parent, rangeLow, rangeHi, consumer);
     }
-    private Text createInlineEdit(CLabel parent) {
-        Text text = new Text(parent, SWT.NONE);
-        text.setBounds((parent.getClientArea()));
-        text.setText(parent.getText());
-        text.setSelection(0, text.getText().length());
-        text.setFocus();
-        text.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.character == '\r') {
-                    e.doit = true;
-                    text.dispose();
-                } else {
-                    super.keyPressed(e);
-                }
-            }
-        });
-        text.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                text.dispose();
-            }
-        });
-        return text;
-    }
-
 
     private void updateState() {
         if (cpu == null) {

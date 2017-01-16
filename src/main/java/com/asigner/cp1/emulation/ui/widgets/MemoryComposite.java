@@ -3,6 +3,8 @@ package com.asigner.cp1.emulation.ui.widgets;
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -10,6 +12,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
@@ -29,6 +32,7 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     private int lastWritten = -1;
 
     private final FontMetrics fontMetrics;
+    private final Font font;
     private final int totalLineHeight;
 
     /**
@@ -39,18 +43,24 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     public MemoryComposite(Composite parent, int style) {
         super(parent, style);
 
-        Font terminalFont = JFaceResources.getFont(JFaceResources.TEXT_FONT);
+        font = JFaceResources.getFont(JFaceResources.TEXT_FONT);
         GC gc = new GC(Display.getDefault());
-        gc.setFont(terminalFont);
+        gc.setFont(font);
         fontMetrics = gc.getFontMetrics();
         totalLineHeight = 6*fontMetrics.getHeight()/6;
         gc.dispose();
-        setFont(terminalFont);
+        setFont(font);
 
-        addPaintListener(new PaintListener() {
+        addPaintListener(this::paint);
+        addMouseListener(new MouseAdapter() {
             @Override
-            public void paintControl(PaintEvent evt) {
-                paint(evt.gc);
+            public void mouseDoubleClick(MouseEvent e) {
+                int bytePos = getBytePos(new Point(e.x, e.y));
+                if (bytePos != -1) {
+                    InlineEdit edit = new InlineEdit(MemoryComposite.this, SWT.NONE);
+                    edit.init(getByteRect(bytePos), String.format("%02x", ram.read(bytePos)), 0, 255, i -> ram.write(bytePos,i));
+                    edit.setFont(font);
+                }
             }
         });
 
@@ -75,7 +85,31 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
         return new Point(w,lines * totalLineHeight);
     }
 
-    private void paint(GC gc) {
+    private int getBytePos(Point p) {
+        int line = p.y / totalLineHeight;
+        int cw = fontMetrics.getAverageCharWidth();
+        int x = p.x / cw;
+        if (x < 5) {
+            // in address range
+            return -1;
+        }
+        x -= 5;
+        if (x % 3 == 0) {
+            // in white space
+            return -1;
+        }
+        return line * BYTES_PER_LINE + (x/3);
+    }
+
+    private Rectangle getByteRect(int b) {
+        int cw = fontMetrics.getAverageCharWidth();
+        int y = (b/BYTES_PER_LINE) * totalLineHeight;
+        int x = cw * (5 + (b%BYTES_PER_LINE)*3 + 1);
+        return new Rectangle(x - 2, y - 2, 2*cw + 4, totalLineHeight + 4);
+    }
+
+    private void paint(PaintEvent event) {
+        GC gc = event.gc;
         gc.setBackground(BG);
         gc.setForeground(FG);
         int lines = getLineCount();
