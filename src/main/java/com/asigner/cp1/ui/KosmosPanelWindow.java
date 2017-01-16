@@ -37,16 +37,14 @@ public class KosmosPanelWindow {
      * Open the window.
      */
     public void open() {
-        Display display = Display.getDefault();
         createContents();
         shell.open();
         shell.layout();
         shell.pack();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
+    }
+
+    public boolean isDisposed() {
+        return shell.isDisposed();
     }
 
     /**

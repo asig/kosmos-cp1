@@ -1,6 +1,9 @@
 package com.asigner.cp1.emulation;
 
-import com.asigner.cp1.emulation.ui.CpuUI;
+import com.asigner.cp1.emulation.ui.CpuWindow;
+import com.asigner.cp1.ui.KosmosPanelWindow;
+import com.asigner.cp1.ui.widgets.KosmosControlPanel;
+import org.eclipse.swt.widgets.Display;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,8 +45,18 @@ public class Main {
             p2.connectBitTo(5, pid.pinIO);
             p2.connectBitTo(4, pid.pinCELowActive);
 
-            CpuUI window = new CpuUI(cpu, pid);
-            window.open();
+            CpuWindow cpuWindow = new CpuWindow(cpu, pid);
+            KosmosPanelWindow panelWindow = new KosmosPanelWindow();
+
+            cpuWindow.open();
+            panelWindow.open();
+
+            Display display = Display.getDefault();
+            while (!cpuWindow.isDisposed() || !panelWindow.isDisposed()) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
