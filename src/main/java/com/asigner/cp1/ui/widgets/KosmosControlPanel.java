@@ -4,6 +4,8 @@ package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Path;
@@ -64,6 +66,8 @@ public class KosmosControlPanel extends Composite {
             logger.info(String.format("Key released: row %d, col %d", row, col));
         }
     }
+
+    private CP1Button digitButtons[] = new CP1Button[10];
 
     /**
      * Create the composite.
@@ -162,18 +166,21 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("7");
             btn.addKeyListener(new KeyListener(3, 3));
+            digitButtons[7] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("8");
             btn.addKeyListener(new KeyListener(2, 0));
+            digitButtons[8] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("9");
             btn.addKeyListener(new KeyListener(2, 1));
+            digitButtons[9] = btn;
         }
 
         Composite composite_1 = new Composite(this, SWT.NONE);
@@ -221,18 +228,21 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("4");
             btn.addKeyListener(new KeyListener(3, 0));
+            digitButtons[4] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_1, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("5");
             btn.addKeyListener(new KeyListener(3, 1));
+            digitButtons[5] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_1, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("6");
             btn.addKeyListener(new KeyListener(3, 2));
+            digitButtons[6] = btn;
         }
 
 
@@ -274,18 +284,21 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("1");
             btn.addKeyListener(new KeyListener(4, 1));
+            digitButtons[1] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_2, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("2");
             btn.addKeyListener(new KeyListener(4, 2));
+            digitButtons[2] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_2, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("3");
             btn.addKeyListener(new KeyListener(4, 3));
+            digitButtons[3] = btn;
         }
 
 
@@ -327,9 +340,33 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(3.0 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("0");
             btn.addKeyListener(new KeyListener(4, 0));
+            digitButtons[0] = btn;
         }
         new Label(rh_composite_3, SWT.NONE);
         new Label(rh_composite_3, SWT.NONE);
+
+        this.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                handleKey(e, true);
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                handleKey(e, false);
+            }
+
+            private void handleKey(KeyEvent e, boolean pressState) {
+                int digit = e.character - '0';
+                if (digit >= 0 && digit <= 9) {
+                    e.doit = false;
+                    CP1Button btn = digitButtons[digit];
+                    btn.setPressed(pressState);
+                } else {
+                    super.keyPressed(e);
+                }
+            }
+        });
     }
 
     private void paint(PaintEvent paintEvent) {

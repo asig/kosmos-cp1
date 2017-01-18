@@ -30,6 +30,7 @@ public class CP1Button extends Composite {
     private static final String LARGE_FONT_NAME = "Helvetica Black";
     private static final String SMALL_FONT_NAME = "Helvetica";
 
+    private boolean pressed = false;
     private boolean mousePressed = false;
     private boolean mouseOverControl = false;
     private List<KeyListener> keyListeners = new LinkedList<>();
@@ -76,6 +77,7 @@ public class CP1Button extends Composite {
             @Override
             public void mouseDown(MouseEvent mouseEvent) {
                 mousePressed = true;
+                pressed = true;
                 keyListeners.forEach(l -> l.keyPressed(CP1Button.this));
                 redraw();
             }
@@ -85,6 +87,7 @@ public class CP1Button extends Composite {
                 if (mouseOverControl) {
                     keyListeners.forEach(l -> l.keyReleased(CP1Button.this));
                 }
+                pressed = false;
                 mousePressed = false;
                 redraw();
             }
@@ -97,6 +100,22 @@ public class CP1Button extends Composite {
 
     public void removeKeyListener(KeyListener l) {
         keyListeners.remove(l);
+    }
+
+    public boolean isPressed() {
+        return pressed;
+    }
+
+    public void setPressed(boolean pressed) {
+        if (this.pressed != pressed) {
+            this.pressed = pressed;
+            redraw();
+            if (this.pressed) {
+                keyListeners.forEach(l -> l.keyPressed(CP1Button.this));
+            } else {
+                keyListeners.forEach(l -> l.keyReleased(CP1Button.this));
+            }
+        }
     }
 
     @Override
@@ -133,7 +152,7 @@ public class CP1Button extends Composite {
         GC gc = paintEvent.gc;
         Rectangle bounds = this.getClientArea();
 
-        Color fg = (mousePressed && mouseOverControl) ? SWTResources.GRAY50 : SWTResources.BLACK;
+        Color fg = (pressed) ? SWTResources.GRAY50 : SWTResources.BLACK;
         gc.setForeground(fg);
         gc.setBackground(SWTResources.WHITE);
 
