@@ -2,6 +2,10 @@
 
 package com.asigner.cp1.ui;
 
+import com.asigner.cp1.emulation.DataPort;
+import com.asigner.cp1.emulation.InputPin;
+import com.asigner.cp1.emulation.Intel8049;
+import com.asigner.cp1.emulation.Intel8155;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -17,22 +21,34 @@ import com.asigner.cp1.ui.widgets.KosmosLogoComposite;
 
 public class KosmosPanelWindow {
 
+    private final Intel8049 cpu;
+    private final Intel8155 pid;
 
-    protected Shell shell;
+    private Shell shell;
 
-    /**
-     * Launch the application.
-     * @param args
-     */
-    public static void main(String[] args) {
-        try {
-            KosmosPanelWindow window = new KosmosPanelWindow();
-            window.open();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public KosmosPanelWindow(Intel8049 cpu, Intel8155 pid) {
+        this.cpu = cpu;
+        this.pid = pid;
+
+        // Hook up the 8049;s PROG to the Panel. CP1's ROM uses MOVD A, P4 to
+        // read the keyboard state from the lower nibble of P2. MOVD will
+        // pull PROG to 0 when the address is valid on the lower 4 pins of port 2,
+        // so we connect that pin to the panel to allow it to pick this up and then
+        // send its data to the port.
+        cpu.pinPROG.connectTo(new InputPin("PROG", this::pinProgWritten));
     }
 
+    private void pinProgWritten(int oldValue, int newValue) {
+        if (oldValue == 1 && newValue == 0) {
+            // Falling flag indicates that the address is valid on P2. Next, the CPU will read or write data.
+            // We know that the writes to the port don't happen in the CPU, so we just write the keyboard state
+            // to the port.
+
+            // TODO(asigner): Write keyboard state
+            System.err.println("pinPROG going low: write keyboard state to port 2");
+        }
+
+    }
     /**
      * Open the window.
      */
@@ -75,6 +91,7 @@ public class KosmosPanelWindow {
         composite_1.setLayout(gl_composite_1);
         
         CP1Display p1Display = new CP1Display(composite_1, SWT.NONE);
+        p1Display.setPid(pid);
         GridData gd_p1Display = GridDataFactory.swtDefaults().hint(-1, 100).create();
         p1Display.setLayoutData(gd_p1Display);
         

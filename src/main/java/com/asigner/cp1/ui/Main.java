@@ -5,7 +5,10 @@ import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +41,7 @@ public class Main {
             DataPort p2 = new DataPort("P2");
             Intel8049 cpu = new Intel8049(ram8049, rom, bus, p1, p2);
             Intel8155 pid = new Intel8155(bus, ram8155);
+            ExecutorThread executorThread = new ExecutorThread(cpu, pid);
 
             // Connect the relevant pins
             cpu.pinALE.connectTo(pid.pinALE);
@@ -47,11 +51,12 @@ public class Main {
             p2.connectBitTo(5, pid.pinIO);
             p2.connectBitTo(4, pid.pinCELowActive);
 
-            CpuWindow cpuWindow = new CpuWindow(cpu, pid);
-            KosmosPanelWindow panelWindow = new KosmosPanelWindow();
+            CpuWindow cpuWindow = new CpuWindow(cpu, pid, executorThread);
+            KosmosPanelWindow panelWindow = new KosmosPanelWindow(cpu, pid);
 
             cpuWindow.open();
             panelWindow.open();
+            executorThread.start();
 
             Display display = Display.getDefault();
             while (!cpuWindow.isDisposed() || !panelWindow.isDisposed()) {
@@ -59,6 +64,8 @@ public class Main {
                     display.sleep();
                 }
             }
+            executorThread.postCommand(ExecutorThread.Command.QUIT);
+            System.exit(0);
         } catch (Exception e) {
             e.printStackTrace();
         }

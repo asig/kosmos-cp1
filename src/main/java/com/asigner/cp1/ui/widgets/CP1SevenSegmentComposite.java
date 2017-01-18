@@ -20,15 +20,17 @@ import java.util.Set;
 
 public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite {
 
-    //    --0--
+    //    --a--
     //   |     |
-    //   1     2
+    //   f     b
     //   |     |
-    //    --3--
+    //    --g--
     //   |     |
-    //   4     5
+    //   e     c
     //   |     |
-    //    --6--  .7
+    //    --d--  .dp
+    //
+    // a == 0, b == 1, ... dp == 7
 
     private Set<Integer> segs = Sets.newHashSet();
     private Shape segments[] = new Shape[8];
@@ -58,6 +60,16 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
             segs.remove(7);
         }
         redraw();
+    }
+
+    public void setSegments(int mask) {
+        Set<Integer> segs = Sets.newHashSet();
+        for (int i = 0; i < 8; i++) {
+            if ( (mask & (1 << i)) > 0) {
+                segs.add(i);
+            }
+        }
+        setSegments(segs);
     }
 
     public void setSegments(Set<Integer> segs) {
@@ -113,7 +125,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
         ((GeneralPath) shape).lineTo(606.89764, 618.91095);
         ((GeneralPath) shape).lineTo(600.02264, 660.5181);
         ((GeneralPath) shape).closePath();
-        segments[1] = shape;
+        segments[5] = shape;
 
         shape = new GeneralPath();
         ((GeneralPath) shape).moveTo(677.5257, 611.1592);
@@ -123,7 +135,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
         ((GeneralPath) shape).lineTo(659.22217, 661.51636);
         ((GeneralPath) shape).lineTo(666.09717, 619.9092);
         ((GeneralPath) shape).closePath();
-        segments[2] = shape;
+        segments[1] = shape;
 
         shape = new GeneralPath();
         ((GeneralPath) shape).moveTo(592.4349, 673.07074);
@@ -133,7 +145,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
         ((GeneralPath) shape).lineTo(655.917, 678.6062);
         ((GeneralPath) shape).lineTo(597.0777, 678.6062);
         ((GeneralPath) shape).closePath();
-        segments[3] = shape;
+        segments[6] = shape;
 
         shape = new GeneralPath();
         ((GeneralPath) shape).moveTo(577.8723, 735.5555);
@@ -153,7 +165,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
         ((GeneralPath) shape).lineTo(647.84717, 727.2305);
         ((GeneralPath) shape).lineTo(654.7221, 685.62335);
         ((GeneralPath) shape).closePath();
-        segments[5] = shape;
+        segments[2] = shape;
 
         shape = new GeneralPath();
         ((GeneralPath) shape).moveTo(583.0599, 741.553);
@@ -163,7 +175,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
         ((GeneralPath) shape).lineTo(651.18494, 738.0708);
         ((GeneralPath) shape).lineTo(648.05994, 741.8208);
         ((GeneralPath) shape).closePath();
-        segments[6] = shape;
+        segments[3] = shape;
 
         shape = new Ellipse2D.Double(666.5238647460938, 729.7498779296875, 15.447550773620605, 15.447550773620605);
         segments[7] = shape;

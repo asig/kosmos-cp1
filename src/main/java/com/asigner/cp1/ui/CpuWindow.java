@@ -69,15 +69,14 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
     private BitsetWidget p1Widget;
     private BitsetWidget p2Widget;
 
-    public CpuWindow(Intel8049 cpu, Intel8155 pid) throws IOException {
+    public CpuWindow(Intel8049 cpu, Intel8155 pid, ExecutorThread executorThread) throws IOException {
         this.cpu = cpu;
         this.pid = pid;
+        this.executorThread = executorThread;
 
         cpu.addListener(this);
 
-        executorThread = new ExecutorThread(cpu, pid);
         executorThread.addListener(this);
-        executorThread.start();
     }
 
 
@@ -142,12 +141,6 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
         shell = new Shell();
         shell.setText("Intel MCS-48 Emulator");
         shell.setLayout(new GridLayout(1, false));
-        shell.addListener(SWT.Close, new Listener() {
-            public void handleEvent(Event event) {
-                executorThread.postCommand(ExecutorThread.Command.QUIT);
-                System.exit(0);
-            }
-        });
 
         ToolBar toolbar = new ToolBar(shell, SWT.FLAT);
         ToolItem toolItem1 = new ActionToolItem(toolbar, SWT.PUSH, singleStepAction);
@@ -346,11 +339,25 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
             Ram ram = new Ram(256);
             Rom rom = new Rom(new FileInputStream("CP1.bin"));
             DataPort bus = new DataPort("BUS");
+            DataPort p1 = new DataPort("P1");
+            DataPort p2 = new DataPort("P2");
+            Intel8049 cpu = new Intel8049(ram, rom, bus, p1, p2);
+            Intel8155 pid = new Intel8155(bus, new Ram(256));
+
+            ExecutorThread executorThread = new ExecutorThread(cpu, pid);
             CpuWindow cpuWindow = new CpuWindow(
-                    new Intel8049(ram, rom, bus, new DataPort("P1"), new DataPort("P2")),
-                    new Intel8155(bus, new Ram(256))
+                    new Intel8049(ram, rom, bus, p1, p2),
+                    new Intel8155(bus, new Ram(256)),
+                    executorThread
             );
+            executorThread.start();
             cpuWindow.open();
+            Display display = Display.getDefault();
+            while (!cpuWindow.isDisposed()) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            }
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

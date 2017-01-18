@@ -2,6 +2,7 @@
 
 package com.asigner.cp1.ui.widgets;
 
+import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.ui.CP1Colors;
 import com.asigner.cp1.ui.SWTResources;
 import com.google.common.collect.ImmutableMap;
@@ -20,7 +21,10 @@ import org.eclipse.swt.events.PaintEvent;
 import java.util.Map;
 import java.util.Set;
 
-public class CP1Display extends Composite {
+import static com.asigner.cp1.emulation.Intel8155.StateListener.Port.A;
+import static com.asigner.cp1.emulation.Intel8155.StateListener.Port.C;
+
+public class CP1Display extends Composite implements Intel8155.StateListener {
 
     private static final int MARGIN_WIDTH = 10;
     private static final double SPACER_PERCENTAGE = 0.15; // Spacer width in percent of digit width
@@ -28,24 +32,28 @@ public class CP1Display extends Composite {
     private final CP1SevenSegmentComposite[] digits = new CP1SevenSegmentComposite[6];
 
     private final static Map<Character, Set<Integer> > charMap = ImmutableMap.<Character, Set<Integer>>builder()
-            .put('0', Sets.newHashSet(0,1,2,4,5,6))
-            .put('1', Sets.newHashSet(2,5))
-            .put('2', Sets.newHashSet(0,2,3,4,6))
-            .put('3', Sets.newHashSet(0,2,3,5,6))
-            .put('4', Sets.newHashSet(1,2,3,5))
-            .put('5', Sets.newHashSet(0,1,3,5,6))
-            .put('6', Sets.newHashSet(0,1,3,4,5,6))
+            .put('0', Sets.newHashSet(0,1,2,3,4,5))
+            .put('1', Sets.newHashSet(1,2))
+            .put('2', Sets.newHashSet(0,1,3,4,6))
+            .put('3', Sets.newHashSet(0,1,2,3,6))
+            .put('4', Sets.newHashSet(1,2,5,6))
+            .put('5', Sets.newHashSet(0,2,3,5,6))
+            .put('6', Sets.newHashSet(0,2,3,4,5,6))
             .put('7', Sets.newHashSet(0,1,2,5))
             .put('8', Sets.newHashSet(0,1,2,3,4,5,6))
             .put('9', Sets.newHashSet(0,1,2,3,5,6))
-            .put('A', Sets.newHashSet(0,1,2,3,4,5))
-            .put('E', Sets.newHashSet(0,1,3,4,6))
-            .put('P', Sets.newHashSet(0,1,2,3,4))
-            .put('C', Sets.newHashSet(0,1,4,6))
-            .put('u', Sets.newHashSet(4,5,6))
-            .put('ⁿ', Sets.newHashSet(0,1,2))
+            .put('A', Sets.newHashSet(0,1,2,4,5,6))
+            .put('E', Sets.newHashSet(0,3,4,5,6))
+            .put('P', Sets.newHashSet(0,1,4,5,6))
+            .put('C', Sets.newHashSet(0,3,4,5))
+            .put('u', Sets.newHashSet(2,3,4))
+            .put('ⁿ', Sets.newHashSet(0,1,5))
             .put(' ', Sets.newHashSet())
             .build();
+
+    private Intel8155 pid = null;
+    private int activeDigit; // set by writes to Intel 8155's port C
+    private Port lastPortWritten = null;
 
     /**
      * Create the composite.
@@ -93,6 +101,53 @@ public class CP1Display extends Composite {
 
         digits[5] = new CP1SevenSegmentComposite(this, SWT.NONE);
         digits[5].setLayoutData(GridDataFactory.swtDefaults().hint(-1,  80).create());
+    }
+
+    public void setPid(Intel8155 pid) {
+        if (this.pid != null) {
+            this.pid.removeListener(this);
+        }
+        this.pid = pid;
+        this.pid.addListener(this);
+    }
+
+    @Override
+    public void commandRegisterWritten() {
+
+    }
+
+    @Override
+    public void portWritten(Intel8155.StateListener.Port port, int value) {
+        if (port == C) {
+            for (int i = 0; i < 8; i++) {
+                if ((value & (1 << i)) == 0) {
+                    activeDigit = i;
+                    break;
+                }
+            }
+        } else if (port == A && lastPortWritten == C) {
+            // Ignore writes to A unless they happen directly after a write to C.
+            // For some reason that I don't fully understand yet, starting at 0x026f
+            // in the ROM port A is cleared, then the line is selected by writing to
+            // Port C, and only then the new value is written, so a digit is empty at
+            // 5/6th of the time...
+            getDisplay().asyncExec(() -> {
+                digits[5-activeDigit].setSegments(value);
+            });
+        }
+        lastPortWritten = port;
+    }
+
+    @Override
+    public void memoryWritten() {
+    }
+
+    @Override
+    public void pinsChanged() {
+    }
+
+    @Override
+    public void resetExecuted() {
     }
 
     @Override

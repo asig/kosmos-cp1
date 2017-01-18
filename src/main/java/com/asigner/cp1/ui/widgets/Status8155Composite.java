@@ -159,7 +159,7 @@ public class Status8155Composite extends Composite implements Intel8155.StateLis
     }
 
     @Override
-    public void portWritten() {
+    public void portWritten(Port port, int value) {
         getDisplay().asyncExec(this::refresh);
     }
 

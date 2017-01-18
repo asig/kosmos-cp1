@@ -13,8 +13,12 @@ import static com.asigner.cp1.emulation.Intel8155.PortCMode.ALT1;
 public class Intel8155 {
 
     public interface StateListener {
+        enum Port {
+            A, B, C
+        }
+
         void commandRegisterWritten();
-        void portWritten();
+        void portWritten(Port port, int value);
         void memoryWritten();
         void pinsChanged();
         void resetExecuted();
@@ -245,17 +249,17 @@ public class Intel8155 {
                         break;
                     case 1:
                         paValue = data;
-                        listeners.forEach(StateListener::portWritten);
+                        listeners.forEach(l -> l.portWritten(StateListener.Port.A, data));
                         log(Level.FINEST, () -> String.format("bus -> pa: 0x%02x", data));
                         break;
                     case 2:
                         pbValue = data;
-                        listeners.forEach(StateListener::portWritten);
+                        listeners.forEach(l -> l.portWritten(StateListener.Port.B, data));
                         log(Level.FINEST, () -> String.format("bus -> pb: 0x%02x", data));
                         break;
                     case 3:
                         pcValue = data;
-                        listeners.forEach(StateListener::portWritten);
+                        listeners.forEach(l -> l.portWritten(StateListener.Port.C, data));
                         log(Level.FINEST, () -> String.format("bus -> pc: 0x%02x", data));
                         break;
                     default:
