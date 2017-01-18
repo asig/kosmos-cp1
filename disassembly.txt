@@ -7,6 +7,14 @@ Intel 8049 used in the Kosmos CP1 experimental computer.
 Code (C) 1983, Franckh'sche Verlagshandlung, W. Keller & Co., Stuttgart, Germany
 Comments (C) 2017, Andreas Signer <asigner@gmail.com>
 
+RAM Map
+-------
+0x00 - 0x07: Register Bank 0 (R0 - R7)
+0x08 - 0x17: Stack (8 levels)
+0x18 - 0x1f: Register Bank 1 (R0 - R7)
+
+0x20 - 0x25: 6 Digit "Video RAM"
+
 Listing
 -------
 
@@ -159,16 +167,16 @@ JMPs
 ### Initialization code
 ```
 0029: [ b8 1e ] MOV  R0, #1e
-002b: [ b0 00 ] MOV  @R0, #00
-002d: [ b8 20 ] MOV  R0, #20
-002f: [ bb 28 ] MOV  R3, #28
-0031: [ b0 00 ] MOV  @R0, #00
-0033: [ 18    ] INC  R0
-0034: [ eb 31 ] DJNZ R3, 0031
+002b: [ b0 00 ] MOV  @R0, #00  ; Set R6' to 0
+002d: [ b8 20 ] MOV  R0, #20   ; Clear 0x28 ...
+002f: [ bb 28 ] MOV  R3, #28   ;
+0031: [ b0 00 ] MOV  @R0, #00  ;
+0033: [ 18    ] INC  R0        ;
+0034: [ eb 31 ] DJNZ R3, 0031  ; ... bytes of RAM
 0036: [ be 00 ] MOV  R6, #00
 0038: [ bf 00 ] MOV  R7, #00
 003a: [ b8 1a ] MOV  R0, #1a
-003c: [ b0 01 ] MOV  @R0, #01
+003c: [ b0 01 ] MOV  @R0, #01  ; Set R1' to 1
 003e: [ d4 b4 ] CALL 06b4
 0040: [ 9a cf ] ANL  P2, #cf
 0042: [ 9a bf ] ANL  P2, #bf
@@ -211,11 +219,11 @@ JMPs
 0082: [ 74 28 ] CALL 0328
 0084: [ 25    ] EN   TCNTI
 0085: [ 55    ] STRT T
-0086: [ b8 1e ] MOV  R0, #1e
-0088: [ f0    ] MOV  A, @R0
-0089: [ c6 86 ] JZ   0086
-008b: [ b9 44 ] MOV  R1, #44
-008d: [ a1    ] MOV  @R1, A
+0086: [ b8 1e ] MOV  R0, #1e   ; Wait for key press: 0x1e is R6', used in interrupt
+0088: [ f0    ] MOV  A, @R0    ; check for key
+0089: [ c6 86 ] JZ   0086      ; no key pressed, continue waiting
+008b: [ b9 44 ] MOV  R1, #44   ;
+008d: [ a1    ] MOV  @R1, A    ; Store pressed key in 0x44
 008e: [ 23 0a ] MOV  A, #0a
 0090: [ 60    ] ADD  A, @R0
 0091: [ b0 00 ] MOV  @R0, #00
@@ -231,8 +239,8 @@ JMPs
 00a3: [ b8 3a ] MOV  R0, #3a
 00a5: [ f0    ] MOV  A, @R0
 00a6: [ 52 b9 ] JB2  00b9
-00a8: [ b8 20 ] MOV  R0, #20
-00aa: [ b0 73 ] MOV  @R0, #73
+00a8: [ b8 20 ] MOV  R0, #20  ; Set left-most digit...
+00aa: [ b0 73 ] MOV  @R0, #73 ; ... to 'P'
 00ac: [ b8 27 ] MOV  R0, #27
 00ae: [ ba 02 ] MOV  R2, #02
 00b0: [ 34 4e ] CALL 014e
@@ -245,12 +253,12 @@ JMPs
 00bd: [ 04 86 ] JMP  0086
 00bf: [ d4 ea ] CALL 06ea
 00c1: [ 04 86 ] JMP  0086
-00c3: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+00c3: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 00c5: [ be 00 ] MOV  R6, #00
 00c7: [ 04 86 ] JMP  0086
 00c9: [ bc 01 ] MOV  R4, #01
 00cb: [ c4 fd ] JMP  06fd
-00cd: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+00cd: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 00cf: [ 04 d9 ] JMP  00d9
 00d1: [ fe    ] MOV  A, R6
 00d2: [ c6 cd ] JZ   00cd
@@ -284,8 +292,8 @@ JMPs
 0101: [ 34 4e ] CALL 014e
 0103: [ af    ] MOV  R7, A
 0104: [ be 00 ] MOV  R6, #00
-0106: [ b8 20 ] MOV  R0, #20
-0108: [ b0 79 ] MOV  @R0, #79
+0106: [ b8 20 ] MOV  R0, #20  ; Set left-most digit...
+0108: [ b0 79 ] MOV  @R0, #79 ; ... to 'E'
 010a: [ 04 86 ] JMP  0086
 010c: [ fe    ] MOV  A, R6
 010d: [ d3 05 ] XRL  A, #05
@@ -373,10 +381,10 @@ Output:
 0178: [ 83    ] RET            ; Return
 
 
-Clear 6 bytes at the beginning of User RAM
-==========================================
+Clear "Video RAM"
+=================
 0179: [ ba 06 ] MOV  R2, #06
-017b: [ b8 20 ] MOV  R0, #20   ; 0x20 == 32: Begin of User RAM
+017b: [ b8 20 ] MOV  R0, #20   ; 0x20 == 32: Begin of "Video RAM"
 017d: [ b0 00 ] MOV  @R0, #00
 017f: [ 18    ] INC  R0
 0180: [ ea 7d ] DJNZ R2, 017d
@@ -385,6 +393,10 @@ Clear 6 bytes at the beginning of User RAM
 
 ?????????
 =========
+- Input:
+  - R0: ???
+  - R2: ???
+```
 0183: [ f0    ] MOV  A, @R0
 0184: [ 54 d9 ] CALL 02d9
 0186: [ b6 93 ] JF0  0193
@@ -397,6 +409,7 @@ Clear 6 bytes at the beginning of User RAM
 0192: [ 83    ] RET
 0193: [ 85    ] CLR  F0
 0194: [ 24 8a ] JMP  018a
+```
 
 ?????????
 =========
@@ -439,7 +452,7 @@ NON-TARGET ?????????
 01bf: [ 85    ] CLR  F0
 01c0: [ 74 f3 ] CALL 03f3
 01c2: [ 24 f1 ] JMP  01f1
-01c4: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+01c4: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 01c6: [ 74 f3 ] CALL 03f3
 01c8: [ b8 20 ] MOV  R0, #20
 01ca: [ b0 23 ] MOV  @R0, #23
@@ -469,7 +482,7 @@ NON-TARGET ?????????
 01ed: [ 74 bd ] CALL 03bd
 01ef: [ b6 fd ] JF0  01fd
 01f1: [ 99 7f ] ANL  P1, #7f
-01f3: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+01f3: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 01f5: [ b8 20 ] MOV  R0, #20
 01f7: [ b0 63 ] MOV  @R0, #63
 01f9: [ be 00 ] MOV  R6, #00
@@ -490,7 +503,7 @@ NON-TARGET ?????????
 0215: [ ba 02 ] MOV  R2, #02
 0217: [ 34 4e ] CALL 014e
 0219: [ af    ] MOV  R7, A
-021a: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+021a: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 021c: [ ff    ] MOV  A, R7
 021d: [ 74 0a ] CALL 030a
 021f: [ 34 96 ] CALL 0196
@@ -520,7 +533,7 @@ NON-TARGET ?????????
 0249: [ f0    ] MOV  A, @R0
 024a: [ d3 09 ] XRL  A, #09
 024c: [ 96 45 ] JNZ  0245
-024e: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+024e: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 0250: [ b8 20 ] MOV  R0, #20
 0252: [ b0 39 ] MOV  @R0, #39
 0254: [ b8 07 ] MOV  R0, #07
@@ -549,10 +562,10 @@ NON-TARGET ?????????
 0272: [ 90    ] MOVX @R0, A     ; Write 0 -> Port A
 0273: [ fd    ] MOV  A, R5
 0274: [ b8 03 ] MOV  R0, #03    ; Address Port C
-0276: [ 90    ] MOVX @R0, A     ; Write 0xfe -> Port C
+0276: [ 90    ] MOVX @R0, A     ; Write row selection -> Port C
 0277: [ f1    ] MOV  A, @R1
 0278: [ b8 01 ] MOV  R0, #01
-027a: [ 90    ] MOVX @R0, A     ; (0x25) -> Port A
+027a: [ 90    ] MOVX @R0, A     ; (0x25) -> Port A; Write one character to display
 027b: [ 8a 0f ] ORL  P2, #0f    ; P2 |= 0000 1111: Prepare to read from bit 0 - 4
 027d: [ 0c    ] MOVD A, P4      ; ?????write to lower nibble of port 2, then read from it? why not just read from it?
 027e: [ 97    ] CLR  C
@@ -1162,7 +1175,7 @@ Inputs:
 060f: [ f0    ] MOV  A, @R0
 0610: [ d3 08 ] XRL  A, #08
 0612: [ c6 7a ] JZ   067a
-0614: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+0614: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 0616: [ be 00 ] MOV  R6, #00
 0618: [ b8 3a ] MOV  R0, #3a
 061a: [ f0    ] MOV  A, @R0
@@ -1222,7 +1235,7 @@ Inputs:
 0676: [ 04 98 ] JMP  0098
 0678: [ c4 c1 ] JMP  06c1
 067a: [ c4 7c ] JMP  067c
-067c: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+067c: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 067e: [ 74 f3 ] CALL 03f3
 0680: [ b8 43 ] MOV  R0, #43
 0682: [ 10    ] INC  @R0
@@ -1255,14 +1268,21 @@ Inputs:
 06b0: [ a0    ] MOV  @R0, A
 06b1: [ 97    ] CLR  C
 06b2: [ 04 86 ] JMP  0086
-06b4: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
-06b6: [ b8 20 ] MOV  R0, #20
-06b8: [ b0 73 ] MOV  @R0, #73
+```
+
+???????????????????????
+-----------------------
+```
+06b4: [ 34 79 ] CALL 0179     ; Clear "Video RAM"
+06b6: [ b8 20 ] MOV  R0, #20  ; Set right-most digit...
+06b8: [ b0 73 ] MOV  @R0, #73 ; ... to 'P'
 06ba: [ b8 38 ] MOV  R0, #38
 06bc: [ be 02 ] MOV  R6, #02
 06be: [ 34 83 ] CALL 0183
-06c0: [ 83    ] RET  
-06c1: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+06c0: [ 83    ] RET
+```
+
+06c1: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 06c3: [ bb ff ] MOV  R3, #ff ; Delay for ...
 06c5: [ 74 b6 ] CALL 03b6    ; ... 255 millis
 06c7: [ bb ff ] MOV  R3, #ff ; Delay for ...
@@ -1293,23 +1313,23 @@ Inputs:
 06f2: [ b8 37 ] MOV  R0, #37
 06f4: [ be 02 ] MOV  R6, #02
 06f6: [ 34 83 ] CALL 0183
-06f8: [ b8 20 ] MOV  R0, #20
-06fa: [ b0 77 ] MOV  @R0, #77
+06f8: [ b8 20 ] MOV  R0, #20  ; Set left-most digit...
+06fa: [ b0 77 ] MOV  @R0, #77 ; ... to 'A'
 06fc: [ 83    ] RET  
-06fd: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+06fd: [ 34 79 ] CALL 0179     ; Clear "Video RAM"
 06ff: [ 97    ] CLR  C
 0700: [ 85    ] CLR  F0
 0701: [ a5    ] CLR  F1
-0702: [ b8 20 ] MOV  R0, #20
-0704: [ b0 71 ] MOV  @R0, #71
+0702: [ b8 20 ] MOV  R0, #20  ; Set left-most digit...
+0704: [ b0 71 ] MOV  @R0, #71 ; ... to 'F'
 0706: [ b8 04 ] MOV  R0, #04
 0708: [ be 02 ] MOV  R6, #02
 070a: [ 34 83 ] CALL 0183
 070c: [ 04 86 ] JMP  0086
-070e: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
+070e: [ 34 79 ] CALL 0179    ; Clear "Video RAM"
 0710: [ 74 f3 ] CALL 03f3
-0712: [ b8 20 ] MOV  R0, #20
-0714: [ b0 1c ] MOV  @R0, #1c
+0712: [ b8 20 ] MOV  R0, #20  ; Set left-most digit...
+0714: [ b0 1c ] MOV  @R0, #1c ; .. to 'CAL' symbol
 0716: [ 27    ] CLR  A
 0717: [ 74 0a ] CALL 030a
 0719: [ 99 bf ] ANL  P1, #bf
@@ -1357,9 +1377,9 @@ Inputs:
 075f: [ b8 08 ] MOV  R0, #08
 0761: [ f9    ] MOV  A, R1
 0762: [ 96 4f ] JNZ  074f
-0764: [ 34 79 ] CALL 0179    ; Clear beginning of User RAM
-0766: [ b8 20 ] MOV  R0, #20
-0768: [ b0 5c ] MOV  @R0, #5c
+0764: [ 34 79 ] CALL 0179     ; Clear "Video RAM"
+0766: [ b8 20 ] MOV  R0, #20  ; Set left-most digit...
+0768: [ b0 5c ] MOV  @R0, #5c ; ... to 'o'              TODO: where is 'o' used?
 076a: [ 97    ] CLR  C
 076b: [ 85    ] CLR  F0
 076c: [ a5    ] CLR  F1
