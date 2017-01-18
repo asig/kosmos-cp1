@@ -1,5 +1,8 @@
 package com.asigner.cp1.ui;
 
+import com.asigner.cp1.emulation.Intel8049;
+import com.asigner.cp1.emulation.Intel8155;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,9 +10,6 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
-
-import com.asigner.cp1.emulation.Intel8049;
-import com.asigner.cp1.emulation.Intel8155;
 
 public class ExecutorThread extends Thread {
 
@@ -70,23 +70,26 @@ public class ExecutorThread extends Thread {
             } else {
                 switch(command) {
                     case SINGLE_STEP:
-                        stopExecution();
+                        if (isRunning) {
+                            stopExecution();
+                            listeners.forEach(ExecutionListener::executionStarted);
+                        }
                         executeInstr();
                         break;
                     case START:
                         startExecution();
                         executeInstr();
-                        fireExecutionStarted();
+                        listeners.forEach(ExecutionListener::executionStarted);
                         break;
                     case STOP:
                         stopExecution();
-                        fireExecutionStopped();
+                        listeners.forEach(ExecutionListener::executionStopped);
                         break;
                     case RESET:
                         stopExecution();
                         cpu.reset();
                         pid.reset();
-                        fireResetExecuted();
+                        listeners.forEach(ExecutionListener::resetExecuted);
                         break;
                     case QUIT:
                         return;
@@ -125,50 +128,18 @@ public class ExecutorThread extends Thread {
 
     private void executeInstr() {
         cpu.executeSingleInstr();
-        fireSingleStepped();
         if (breakOnMovx) {
             int op = cpu.peek();
             if (op == 0x80 || op == 0x81 || op == 0x90 || op == 0x91) {
                 isRunning = false;
-                fireBreakpointHit(cpu.getPC());
-                fireExecutionStopped();
+                listeners.forEach(l -> l.breakpointHit(cpu.getPC()));
+                listeners.forEach(ExecutionListener::executionStopped);
             }
         }
         if (breakpoints.contains(cpu.getPC())) {
             isRunning = false;
-            fireBreakpointHit(cpu.getPC());
-            fireExecutionStopped();
-        }
-    }
-
-    private void fireExecutionStarted() {
-        for (ExecutionListener listener : listeners) {
-            listener.executionStarted();
-        }
-    }
-
-    private void fireExecutionStopped() {
-        for (ExecutionListener listener : listeners) {
-            listener.executionStopped();
-        }
-    }
-
-    private void fireSingleStepped() {
-        for (ExecutionListener listener : listeners) {
-            listener.singleStepped();
-        }
-    }
-
-    private void fireResetExecuted() {
-        for (ExecutionListener listener : listeners) {
-            listener.resetExecuted();
-        }
-    }
-
-
-    private void fireBreakpointHit(int addr) {
-        for (ExecutionListener listener : listeners) {
-            listener.breakpointHit(addr);
+            listeners.forEach(l -> l.breakpointHit(cpu.getPC()));
+            listeners.forEach(ExecutionListener::executionStopped);
         }
     }
 }

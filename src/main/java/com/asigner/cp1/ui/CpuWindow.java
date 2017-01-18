@@ -15,6 +15,7 @@ import com.asigner.cp1.ui.actions.SaveDisassemblyAction;
 import com.asigner.cp1.ui.actions.SaveStateAction;
 import com.asigner.cp1.ui.actions.SingleStepAction;
 import com.asigner.cp1.ui.actions.StopAction;
+import com.asigner.cp1.ui.actions.TraceExecutionAction;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.ui.widgets.ActionToolItem;
 import com.asigner.cp1.ui.widgets.BitsetWidget;
@@ -29,10 +30,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -49,6 +48,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
     private SingleStepAction singleStepAction;
     private ResetAction resetAction;
     private BreakOnMovxAction breakOnMovxAction;
+    private TraceExecutionAction traceExecutionAction;
     private SaveDisassemblyAction saveDisassemblyAction;
     private LoadStateAction loadStateAction;
     private SaveStateAction saveStateAction;
@@ -58,6 +58,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
     private Intel8049 cpu;
     private Intel8155 pid;
     private ExecutorThread executorThread;
+    private boolean traceExecution = true;
 
     private Status8049Composite status8049Composite;
     private Status8155Composite status8155Composite;
@@ -83,6 +84,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
     private void createActions() {
         resetAction = new ResetAction(executorThread);
         breakOnMovxAction = new BreakOnMovxAction(executorThread);
+        traceExecutionAction = new TraceExecutionAction(executorThread, this);
         runAction = new RunAction(executorThread);
         stopAction = new StopAction(executorThread, this);
         singleStepAction = new SingleStepAction(executorThread);
@@ -149,6 +151,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
         ToolItem toolItem4 = new ActionToolItem(toolbar, SWT.PUSH, resetAction);
 
         ToolItem toolItem5 = new CheckboxToolItem(toolbar, breakOnMovxAction);
+        ToolItem toolItem6 = new CheckboxToolItem(toolbar, traceExecutionAction);
 //        Button ctrl = new Button(toolbar, SWT.CHECK);
 //        ctrl.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, false, false));
 //        ctrl.setText("Break on MOVX");
@@ -258,6 +261,14 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
         shell.pack();
     }
 
+    public boolean isTraceExecution() {
+        return traceExecution;
+    }
+
+    public void setTraceExecution(boolean traceExecution) {
+        this.traceExecution = traceExecution;
+    }
+
     @Override
     public void executionStarted() {
         shell.getDisplay().syncExec(new Runnable() {
@@ -287,14 +298,12 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
             }});
     }
 
-    @Override
-    public void singleStepped() {
-        updateView();
-    }
 
     @Override
     public void instructionExecuted() {
-        // Ignore this, this is already handle in the ExecutionListener
+        if (isTraceExecution()) {
+            updateView();
+        }
     }
 
     @Override
