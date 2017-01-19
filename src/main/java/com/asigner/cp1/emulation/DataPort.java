@@ -7,14 +7,17 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class DataPort {
-
     private static final Logger logger = Logger.getLogger(DataPort.class.getName());
+
+    public interface Listener {
+        void valueChanged(int oldValue, int newValue);
+    }
 
     private final String name;
     private int value;
     private List<Pin>[] sinks = new List[8];
 
-    private final List<DataPortListener> listeners = new LinkedList<DataPortListener>();
+    private final List<Listener> listeners = new LinkedList<Listener>();
 
     public DataPort(String name) {
         this.name = name;
@@ -37,7 +40,7 @@ public class DataPort {
         if (value != (this.value & mask)) {
             int oldValue = this.value;
             this.value = (this.value & ~mask) | value;
-            fireValueChanged(oldValue, value);
+            listeners.forEach(l -> l.valueChanged(oldValue, this.value));
 
             // Send single bits to pins, if necessary
             for (int bit = 0; bit < 8; bit++) {
@@ -57,17 +60,11 @@ public class DataPort {
         this.sinks[bit].add(other);
     }
 
-    public void addListener(DataPortListener listener) {
+    public void addListener(Listener listener) {
         this.listeners.add(listener);
     }
 
-    public void removeListener(DataPortListener listener) {
+    public void removeListener(Listener listener) {
         this.listeners.remove(listener);
-    }
-
-    private void fireValueChanged(int oldValue, int newValue) {
-        for (DataPortListener listener : listeners) {
-            listener.valueChanged(oldValue, newValue);
-        }
     }
 }
