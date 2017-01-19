@@ -19,12 +19,18 @@ import com.asigner.cp1.ui.widgets.CP1Display;
 import org.eclipse.swt.widgets.Label;
 import com.asigner.cp1.ui.widgets.KosmosLogoComposite;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class KosmosPanelWindow {
+
+    private static final Logger logger = Logger.getLogger(KosmosPanelWindow.class.getName());
 
     private final Intel8049 cpu;
     private final Intel8155 pid;
 
     private Shell shell;
+    private KosmosControlPanel kosmosControlPanel;
 
     public KosmosPanelWindow(Intel8049 cpu, Intel8155 pid) {
         this.cpu = cpu;
@@ -44,8 +50,19 @@ public class KosmosPanelWindow {
             // We know that the writes to the port don't happen in the CPU, so we just write the keyboard state
             // to the port.
 
-            // TODO(asigner): Write keyboard state
-            System.err.println("pinPROG going low: write keyboard state to port 2");
+            int row = -1;
+            int mask = pid.getPcValue();
+            for (int i = 0; i < 8; i++) {
+                if ((mask & (1 << i)) == 0) {
+                    row = i;
+                    break;
+                }
+            }
+            int keyMask = kosmosControlPanel.getKeyMask(row);
+            cpu.getPort(2).write(keyMask);
+            if (logger.isLoggable(Level.FINEST)) {
+                logger.finest(String.format("Writing to Port 2: KeyMask for row %d == %02x", row, keyMask));
+            }
         }
 
     }
@@ -107,6 +124,6 @@ public class KosmosPanelWindow {
         lblNewLabel.setLayoutData(gd_lblNewLabel);
         lblNewLabel.setText("");
 
-        KosmosControlPanel kosmosControlPanel = new KosmosControlPanel(composite, SWT.NONE);
+        kosmosControlPanel = new KosmosControlPanel(composite, SWT.NONE);
     }
 }

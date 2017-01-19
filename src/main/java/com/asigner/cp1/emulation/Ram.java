@@ -34,24 +34,12 @@ public class Ram implements Readable, Writeable {
     @Override
     public void write(int addr, int value) {
         memory[addr] = (byte)(value & 0xff);
-        fireMemoryWritten(addr, value);
+        listeners.forEach(l -> l.memoryWritten(addr, value));
     }
 
     @Override
     public void clear() {
         Arrays.fill(memory, (byte)0);
-        fireMemoryCleared();
-    }
-
-    private void fireMemoryWritten(int addr, int value) {
-        for (MemoryModifiedListener listener : listeners) {
-            listener.memoryWritten(addr,  value);
-        }
-    }
-
-    private void fireMemoryCleared() {
-        for (MemoryModifiedListener listener : listeners) {
-            listener.memoryCleared();
-        }
+        listeners.forEach(MemoryModifiedListener::memoryCleared);
     }
 }

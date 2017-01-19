@@ -131,7 +131,7 @@ public class CP1Display extends Composite implements Intel8155.StateListener {
             // in the ROM port A is cleared, then the line is selected by writing to
             // Port C, and only then the new value is written, so a digit is empty at
             // 5/6th of the time...
-            getDisplay().asyncExec(() -> {
+            getDisplay().syncExec(() -> {
                 digits[5-activeDigit].setSegments(value);
             });
         }

@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Group;
 
-public class Status8155Composite extends Composite implements Intel8155.StateListener {
+public class Status8155Composite extends Composite  {
     private CLabel lblPaMode;
     private CLabel lblPaVal;
     private Button btnPaInterruptEnabled;
@@ -145,39 +145,11 @@ public class Status8155Composite extends Composite implements Intel8155.StateLis
     }
 
     public void setPID(Intel8155 pid) {
-        if (this.pid != null) {
-            this.pid.removeListener(this);
-        }
         this.pid = pid;
-        this.pid.addListener(this);
         refresh();
     }
 
-    @Override
-    public void commandRegisterWritten() {
-        getDisplay().asyncExec(this::refresh);
-    }
-
-    @Override
-    public void portWritten(Port port, int value) {
-        getDisplay().asyncExec(this::refresh);
-    }
-
-    @Override
-    public void pinsChanged() {
-        getDisplay().asyncExec(this::refresh);
-    }
-
-    @Override
-    public void memoryWritten() {
-    }
-
-    @Override
-    public void resetExecuted() {
-        getDisplay().asyncExec(this::refresh);
-    }
-
-    private void refresh() {
+    public void refresh() {
         lblPaMode.setText(pid.getPaMode().toString());
         lblPaVal.setText(String.format("%02x", pid.getPaValue()));
         bitsetPaVal.setValue(pid.getPaValue());

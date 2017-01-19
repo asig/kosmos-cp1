@@ -62,11 +62,21 @@ public class ExecutorThread extends Thread {
 
     @Override
     public void run() {
+        long start = 0;
+        long cycles = 0;
         for(;;) {
             Command command = fetchCommand();
             if (command == null) {
                 // can only happen if we're in state "running";
-                executeInstr();
+                cycles += executeInstr();
+                if (cycles >= 2_000_000) {
+                    long dt = System.nanoTime() - start;
+                    double expectedCycles = dt / 2500.0; // 400 kHz -> 2.5 μs per cycle = 2500 ns per cycle
+                    double ratio = cycles / expectedCycles;
+                    logger.info("Performance: effective cycles = " + cycles + " took " + dt + " nanos, expected cycles = " + expectedCycles + ", performance = " + (ratio * 100) + "%");
+                    start = System.nanoTime();
+                    cycles =0;
+                }
             } else {
                 switch(command) {
                     case SINGLE_STEP:
@@ -78,7 +88,8 @@ public class ExecutorThread extends Thread {
                         break;
                     case START:
                         startExecution();
-                        executeInstr();
+                        start = System.nanoTime();
+                        cycles = 0;
                         listeners.forEach(ExecutionListener::executionStarted);
                         break;
                     case STOP:
@@ -126,8 +137,8 @@ public class ExecutorThread extends Thread {
         return command;
     }
 
-    private void executeInstr() {
-        cpu.executeSingleInstr();
+    private int executeInstr() {
+        int cycles = cpu.executeSingleInstr();
         if (breakOnMovx) {
             int op = cpu.peek();
             if (op == 0x80 || op == 0x81 || op == 0x90 || op == 0x91) {
@@ -141,5 +152,6 @@ public class ExecutorThread extends Thread {
             listeners.forEach(l -> l.breakpointHit(cpu.getPC()));
             listeners.forEach(ExecutionListener::executionStopped);
         }
+        return cycles;
     }
 }

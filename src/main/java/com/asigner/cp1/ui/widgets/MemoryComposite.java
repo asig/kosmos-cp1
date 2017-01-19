@@ -34,6 +34,8 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     private final Font font;
     private final int totalLineHeight;
 
+    private boolean traceExecution;
+
     /**
      * Create the composite.
      * @param parent
@@ -63,6 +65,14 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
             }
         });
 
+    }
+
+    public boolean isTraceExecution() {
+        return traceExecution;
+    }
+
+    public void setTraceExecution(boolean traceExecution) {
+        this.traceExecution = traceExecution;
     }
 
     public void setRam(Ram ram) {
@@ -151,26 +161,24 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
 
     @Override
     public void memoryWritten(final int addr, int value) {
-        getDisplay().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (addr != lastWritten) {
-                    lastWritten = addr;
-                }
-                redraw();
-            }});
+        if (!isTraceExecution()) {
+            return;
+        }
+        if (addr != lastWritten) {
+            lastWritten = addr;
+        }
+        getDisplay().syncExec(this::redraw);
     }
 
     @Override
     public void memoryCleared() {
-        getDisplay().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (lastWritten != -1) {
-                    lastWritten = -1;
-                }
-                redraw();
-            }});
+        if (!isTraceExecution()) {
+            return;
+        }
+        if (lastWritten != -1) {
+            lastWritten = -1;
+        }
+        getDisplay().syncExec(this::redraw);
     }
 
 }

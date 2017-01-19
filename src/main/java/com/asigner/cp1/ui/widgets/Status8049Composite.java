@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Label;
 
 import java.util.function.Consumer;
 
-public class Status8049Composite extends Composite implements Intel8049.StateListener {
+public class Status8049Composite extends Composite {
     private CLabel lblCy;
     private CLabel lblAc;
     private CLabel lblF0;
@@ -34,6 +34,8 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
     private int a = 0;
     private int t = 0;
     private int pc = 0;
+
+    private boolean traceExecution;
 
 
     /**
@@ -150,11 +152,7 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
     }
 
     public void setCpu(Intel8049 cpu) {
-        if (this.cpu != null) {
-            this.cpu.removeListener(this);
-        }
         this.cpu = cpu;
-        this.cpu.addListener(this);
         updateState();
     }
 
@@ -168,7 +166,7 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
         });
     }
 
-    private void updateState() {
+    public void updateState() {
         if (cpu == null) {
             return;
         }
@@ -214,21 +212,6 @@ public class Status8049Composite extends Composite implements Intel8049.StateLis
             this.f1 = f1;
             lblF1.setText(Integer.toString(f1));
         }
-    }
-
-    @Override
-    public void instructionExecuted() {
-        this.getDisplay().asyncExec(this::updateState);
-    }
-
-    @Override
-    public void resetExecuted() {
-        this.getDisplay().asyncExec(this::updateState);
-    }
-
-    @Override
-    public void stateChanged(Intel8049.State state) {
-        this.getDisplay().asyncExec(this::updateState);
     }
 
     @Override

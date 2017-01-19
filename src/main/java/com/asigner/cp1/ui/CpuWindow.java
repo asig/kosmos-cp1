@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
+public class CpuWindow implements ExecutionListener, Intel8049.StateListener, Intel8155.StateListener {
 
     private RunAction runAction;
     private StopAction stopAction;
@@ -195,40 +195,31 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
         DataPort bus = cpu.getPort(0);
         new Label(group_1, SWT.NONE).setText("BUS");
         busWidget = new BitsetWidget(group_1, 8, SWT.NONE);
-        bus.addListener(new DataPortListener() {
-            @Override
-            public void valueChanged(int oldValue, final int newValue) {
-                shell.getDisplay().syncExec(new Runnable() {
-                    @Override
-                    public void run() { busWidget.setValue(newValue); }
-                });
-            }});
+        bus.addListener((oldValue, newValue) -> {
+            if (isTraceExecution()) {
+                shell.getDisplay().syncExec(() -> busWidget.setValue(newValue));
+            }
+        });
 
         DataPort p1 = cpu.getPort(1);
         new Label(group_1, SWT.NONE).setText("P1");
         p1Widget = new BitsetWidget(group_1, 8, SWT.NONE);
-        p1.addListener(new DataPortListener() {
-            @Override
-            public void valueChanged(int oldValue, final int newValue) {
-                shell.getDisplay().syncExec(new Runnable() {
-                    @Override
-                    public void run() { p1Widget.setValue(newValue); }
-                });
-            }});
+        p1.addListener((oldValue, newValue) -> {
+            if (isTraceExecution()) {
+                shell.getDisplay().syncExec(() -> p1Widget.setValue(newValue));
+            }
+        });
 
         DataPort p2 = cpu.getPort(2);
         new Label(group_1, SWT.NONE).setText("P2");
         p2Widget = new BitsetWidget(group_1, 8, SWT.NONE);
         new Label(group_1, SWT.NONE);
         new Label(group_1, SWT.NONE);
-        p2.addListener(new DataPortListener() {
-            @Override
-            public void valueChanged(int oldValue, final int newValue) {
-                shell.getDisplay().syncExec(new Runnable() {
-                    @Override
-                    public void run() { p2Widget.setValue(newValue); }
-                });
-            }});
+        p2.addListener((oldValue, newValue) -> {
+            if (isTraceExecution()) {
+                shell.getDisplay().syncExec(() -> p2Widget.setValue(newValue));
+            }
+        });
 
 
         Group grpMemory = new Group(composite, SWT.NONE);
@@ -238,6 +229,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
 
         memory8049Composite = new MemoryComposite(grpMemory, SWT.NONE);
         memory8049Composite.setRam(cpu.getRam());
+        memory8049Composite.setTraceExecution(isTraceExecution());
 
         Group group_2 = new Group(composite, SWT.NONE);
         group_2.setText("Status (8155)");
@@ -255,6 +247,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
 
         memory8155Composite = new MemoryComposite(grpMemory8155, SWT.NONE);
         memory8155Composite.setRam(pid.getRam());
+        memory8155Composite.setTraceExecution(isTraceExecution());
 
         stopAction.setEnabled(false);
 
@@ -266,6 +259,8 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
     }
 
     public void setTraceExecution(boolean traceExecution) {
+        memory8049Composite.setTraceExecution(traceExecution);
+        memory8155Composite.setTraceExecution(traceExecution);
         this.traceExecution = traceExecution;
     }
 
@@ -301,9 +296,43 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
 
     @Override
     public void instructionExecuted() {
-        if (isTraceExecution()) {
-            updateView();
+        if (!isTraceExecution()) {
+            return;
         }
+        updateView();
+        shell.getDisplay().asyncExec(status8049Composite::updateState);
+    }
+
+    @Override
+    public void commandRegisterWritten() {
+        if (!isTraceExecution()) {
+            return;
+        }
+        shell.getDisplay().asyncExec(status8155Composite::refresh);
+    }
+
+    @Override
+    public void portWritten(Port port, int value) {
+        if (!isTraceExecution()) {
+            return;
+        }
+        shell.getDisplay().asyncExec(status8155Composite::refresh);
+    }
+
+    @Override
+    public void memoryWritten() {
+        if (!isTraceExecution()) {
+            return;
+        }
+        shell.getDisplay().asyncExec(status8155Composite::refresh);
+    }
+
+    @Override
+    public void pinsChanged() {
+        if (!isTraceExecution()) {
+            return;
+        }
+        shell.getDisplay().asyncExec(status8155Composite::refresh);
     }
 
     @Override
@@ -316,12 +345,16 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener {
                 runAction.setEnabled(true);
             }});
         updateView();
+        shell.getDisplay().asyncExec(status8049Composite::updateState);
     }
 
     @Override
     public void stateChanged(Intel8049.State newState) {
-        if (disassemblyComposite.getSelectedAddress() != cpu.getPC()) {
-            updateView();
+        if (isTraceExecution()) {
+            if (disassemblyComposite.getSelectedAddress() != cpu.getPC()) {
+                updateView();
+            }
+            shell.getDisplay().asyncExec(status8049Composite::updateState);
         }
     }
 

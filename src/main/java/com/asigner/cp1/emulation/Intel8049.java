@@ -192,7 +192,7 @@ public class Intel8049 {
         }
         ram.clear();
 
-        fireCpuReset();
+        listeners.forEach(StateListener::resetExecuted);
     }
 
     //
@@ -1135,7 +1135,7 @@ public class Intel8049 {
                 break;
         }
         handleInterrupts();
-        fireInstructionExecuted();
+        listeners.forEach(StateListener::instructionExecuted);
         return cycles;
     }
 
@@ -1143,13 +1143,5 @@ public class Intel8049 {
         while (cycles > 0) {
             cycles -= executeSingleInstr();
         }
-    }
-
-    private void fireInstructionExecuted() {
-        listeners.forEach(StateListener::instructionExecuted);
-    }
-
-    private void fireCpuReset() {
-        listeners.forEach(StateListener::resetExecuted);
     }
 }

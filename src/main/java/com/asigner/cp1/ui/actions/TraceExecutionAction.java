@@ -10,7 +10,7 @@ public class TraceExecutionAction extends BaseAction {
     public TraceExecutionAction(ExecutorThread executorThread, CpuWindow cpuWindow) {
         super(executorThread, "Trace execution");
         this.cpuWindow = cpuWindow;
-        this.setChecked(cpuWindow.isTraceExecution());
+        super.setChecked(cpuWindow.isTraceExecution());
     }
 
     @Override

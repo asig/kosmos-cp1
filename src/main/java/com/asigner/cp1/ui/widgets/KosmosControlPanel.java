@@ -47,6 +47,10 @@ public class KosmosControlPanel extends Composite {
     private static final int MARGIN_WIDTH = 10;
     private static final int ARC_WIDTH = 30;
 
+    private int keyMask[] = new int[6];
+
+    private CP1Button digitButtons[] = new CP1Button[10];
+
     private class KeyListener implements CP1Button.KeyListener {
         private final int row;
         private final int col;
@@ -58,16 +62,16 @@ public class KosmosControlPanel extends Composite {
 
         @Override
         public void keyPressed(CP1Button btn) {
-            logger.info(String.format("Key pressed: row %d, col %d", row, col));
+            keyMask[row] |= (1 << col);
+            logger.finest(String.format("Key pressed: row %d, col %d", row, col));
         }
 
         @Override
         public void keyReleased(CP1Button btn) {
-            logger.info(String.format("Key released: row %d, col %d", row, col));
+            keyMask[row] &= ~(1 << col);
+            logger.finest(String.format("Key released: row %d, col %d", row, col));
         }
     }
-
-    private CP1Button digitButtons[] = new CP1Button[10];
 
     /**
      * Create the composite.
@@ -367,6 +371,10 @@ public class KosmosControlPanel extends Composite {
                 }
             }
         });
+    }
+
+    public int getKeyMask(int row) {
+        return keyMask[row];
     }
 
     private void paint(PaintEvent paintEvent) {
