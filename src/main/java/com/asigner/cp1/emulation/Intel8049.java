@@ -932,7 +932,7 @@ public class Intel8049 {
             case 0xb3: { // JMPP @A
                 cycles++;
                 tick();
-                state.PC = (state.PC & 0xff00 ) | ram.read(state.A & 0xff);
+                state.PC = (state.PC & 0xff00 ) | rom.read((state.PC & 0xff00) | (state.A & 0xff));
             }
             break;
 
