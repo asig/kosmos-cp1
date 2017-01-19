@@ -1,8 +1,8 @@
 ;ROM Listing
 ;===========
 
-;This contains the fully commented ROM listing of the EPROM contents from the
-;Intel 8049 used in the Kosmos CP1 experimental computer.
+;This will eventually contain the fully commented ROM listing of the EPROM contents
+;of the Intel 8049 used in the Kosmos CP1 experimental computer.
 
 ;Code (C) 1983, Franckh'sche Verlagshandlung, W. Keller & Co., Stuttgart, Germany
 ;Comments (C) 2017, Andreas Signer <asigner@gmail.com>
@@ -19,92 +19,13 @@
 ;-------
 
 ```
-
-JMPs
-      1  JMP  0029
-      1  JMP  0076
-     14  JMP  0086
-      2  JMP  0098
-      2  JMP  00c9
-      1  JMP  00d9
-      2  JMP  0104
-      1  JMP  010c
-      3  JMP  0146
-      1  JMP  018a
-      1  JMP  01bf
-      1  JMP  01c4
-      2  JMP  01f1
-      1  JMP  01ff
-      1  JMP  021a
-      1  JMP  0221
-      1  JMP  023a
-      1  JMP  025c
-      4  JMP  02a6
-      1  JMP  02b0
-      1  JMP  02b4
-      1  JMP  02bc
-      1  JMP  02dc
-      1  JMP  02eb
-      1  JMP  0316
-      1  JMP  0340
-      1  JMP  0349
-      1  JMP  0352
-      1  JMP  0379
-      1  JMP  03af
-      1  JMP  03d7
-      1  JMP  03db
-      1  JMP  042f
-      1  JMP  044f
-      1  JMP  045f
-      2  JMP  048f
-      2  JMP  04bd
-      1  JMP  04f3
-      1  JMP  0505
-      1  JMP  050b
-      1  JMP  050f
-      1  JMP  052b
-      3  JMP  0537
-      1  JMP  053e
-      1  JMP  0552
-      1  JMP  056a
-      1  JMP  0574
-      1  JMP  058d
-      1  JMP  0597
-      1  JMP  05a4
-      2  JMP  05ac
-      1  JMP  05b3
-      1  JMP  05c9
-      1  JMP  05d3
-      1  JMP  05ef
-      1  JMP  05f9
-      1  JMP  0603
-      1  JMP  061d
-      3  JMP  0622
-     20  JMP  062f
-      1  JMP  0639
-      1  JMP  0659
-      2  JMP  065d
-      1  JMP  0673
-      1  JMP  067c
-      1  JMP  0690
-      1  JMP  06c1
-      7  JMP  06fd
-      1  JMP  070e
-      2  JMP  0764
-      1  JMP  0784
-      1  JMP  0787
-      1  JMP  079c
-      1  JMP  07d3
-      2  JMPP @A
-
-
 $0000: [ 04 29 ] JMP  $0029   ; Reset entry point: Execution starts at 0.
 $0002: [ 00    ] NOP
 $0003: [ 93    ] RETR         ; Interrupt entry point
 $0004: [ 00    ] NOP
 $0005: [ 00    ] NOP
 $0006: [ 00    ] NOP
-$0007: [ 44 5c ] JMP  $025c   ; Timer/Counter entry point
+$0007: [ 44 5c ] JMP  timer   ; Timer/Counter entry point
 $0009: [ 00    ] NOP
 $000a: [ 86 d1 ] JNI  $00d1
 $000c: [ d1    ] XRL  A, @R1
@@ -185,9 +106,11 @@ $0080: [ 9a 4f ] ANL  P2, #$4f
 $0082: [ 74 28 ] CALL $0328
 $0084: [ 25    ] EN   TCNTI
 $0085: [ 55    ] STRT T
+
+wait_key:
 $0086: [ b8 1e ] MOV  R0, #$1e    ; Wait for key press: 0x1e is R6', used in interrupt
 $0088: [ f0    ] MOV  A, @R0      ; check for key
-$0089: [ c6 86 ] JZ   $0086       ; no key pressed, continue waiting
+$0089: [ c6 86 ] JZ   wait_key    ; no key pressed, continue waiting
 $008b: [ b9 44 ] MOV  R1, #$44    ;
 $008d: [ a1    ] MOV  @R1, A      ; Store pressed key in 0x44
 $008e: [ 23 0a ] MOV  A, #$0a
@@ -213,15 +136,15 @@ $00b0: [ 34 4e ] CALL $014e
 $00b2: [ b8 38 ] MOV  R0, #$38
 $00b4: [ a0    ] MOV  @R0, A
 $00b5: [ be 00 ] MOV  R6, #$00
-$00b7: [ 04 86 ] JMP  $0086
+$00b7: [ 04 86 ] JMP  wait_key
 $00b9: [ 24 46 ] JMP  $0146
 $00bb: [ d4 b4 ] CALL $06b4
-$00bd: [ 04 86 ] JMP  $0086
+$00bd: [ 04 86 ] JMP  wait_key
 $00bf: [ d4 ea ] CALL $06ea
-$00c1: [ 04 86 ] JMP  $0086
+$00c1: [ 04 86 ] JMP  wait_key
 $00c3: [ 34 79 ] CALL clear_display
 $00c5: [ be 00 ] MOV  R6, #$00
-$00c7: [ 04 86 ] JMP  $0086
+$00c7: [ 04 86 ] JMP  wait_key
 $00c9: [ bc 01 ] MOV  R4, #$01
 $00cb: [ c4 fd ] JMP  $06fd
 $00cd: [ 34 79 ] CALL clear_display
@@ -240,7 +163,7 @@ $00e0: [ 07    ] DEC  A
 $00e1: [ a0    ] MOV  @R0, A
 $00e2: [ aa    ] MOV  R2, A
 $00e3: [ 34 aa ] CALL $01aa
-$00e5: [ 04 86 ] JMP  $0086
+$00e5: [ 04 86 ] JMP  wait_key
 $00e7: [ 24 46 ] JMP  $0146
 $00e9: [ 24 0c ] JMP  $010c
 $00eb: [ fe    ] MOV  A, R6
@@ -260,7 +183,7 @@ $0103: [ af    ] MOV  R7, A
 $0104: [ be 00 ] MOV  R6, #$00
 $0106: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0108: [ b0 79 ] MOV  @R0, #$79   ; ... to 'E'
-$010a: [ 04 86 ] JMP  $0086
+$010a: [ 04 86 ] JMP  wait_key
 $010c: [ fe    ] MOV  A, R6
 $010d: [ d3 05 ] XRL  A, #$05
 $010f: [ 96 44 ] JNZ  $0144
@@ -445,16 +368,15 @@ $01e9: [ 23 ff ] MOV  A, #$ff
 
 ?????????
 =========
-
 $01eb: [ 74 0a ] CALL $030a
 $01ed: [ 74 bd ] CALL $03bd
 $01ef: [ b6 fd ] JF0  $01fd
 $01f1: [ 99 7f ] ANL  P1, #$7f
 $01f3: [ 34 79 ] CALL clear_display
 $01f5: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
-$01f7: [ b0 63 ] MOV  @R0, #$63   ; ... to 'ᵒ'     TODO: where is 'ᵒ' used?
+$01f7: [ b0 63 ] MOV  @R0, #$63   ; ... to 'ᵒ'
 $01f9: [ be 00 ] MOV  R6, #$00
-$01fb: [ 04 86 ] JMP  $0086
+$01fb: [ 04 86 ] JMP  wait_key
 $01fd: [ 24 bf ] JMP  $01bf
 $01ff: [ 23 f7 ] MOV  A, #$f7
 $0201: [ 74 33 ] CALL $0333
@@ -477,7 +399,7 @@ $021d: [ 74 0a ] CALL $030a
 $021f: [ 34 96 ] CALL $0196
 $0221: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0223: [ b0 39 ] MOV  @R0, #$39   ; ... to 'C'
-$0225: [ 04 86 ] JMP  $0086
+$0225: [ 04 86 ] JMP  wait_key
 $0227: [ 97    ] CLR  C
 $0228: [ ff    ] MOV  A, R7
 $0229: [ 03 01 ] ADD  A, #$01
@@ -503,17 +425,18 @@ $024a: [ d3 09 ] XRL  A, #$09
 $024c: [ 96 45 ] JNZ  $0245
 $024e: [ 34 79 ] CALL clear_display
 $0250: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
-$0252: [ b0 39 ] MOV  @R0, #$39
+$0252: [ b0 39 ] MOV  @R0, #$39   ; ... to 'C'
 $0254: [ b8 07 ] MOV  R0, #$07
 $0256: [ be 02 ] MOV  R6, #$02
 $0258: [ 34 83 ] CALL $0183
-$025a: [ 04 86 ] JMP  $0086
+$025a: [ 04 86 ] JMP  wait_key
 ```
 
 ### Timer/Counter interrupt
 - R5: Mask used for keyboard reading and display addressing
 - R3: Internal scratch register: Loop vars, computations
 ```
+timer:
 $025c: [ d5    ] SEL  RB1        ; Switch to register bank 1
 $025d: [ 2f    ] XCH  A, R7      ; Exchange A and R7
 $025e: [ 23 e0 ] MOV  A, #$e0    ; Reset timer...
@@ -546,11 +469,11 @@ $0288: [ fa    ] MOV  A, R2      ;
 $0289: [ 07    ] DEC  A
 $028a: [ e7    ] RL   A
 $028b: [ e7    ] RL   A
-$028c: [ 17    ] INC  A          ; A = 4 * (R2 - 1) + 1; [R2 starts with 6]
-$028d: [ 2b    ] XCH  A, R3      ; R3 = 4 * (R2 - 1) + 1; A = bit_num
+$028c: [ 17    ] INC  A          ; A = 4 * (row - 1) + 1; [R2 starts with 6]
+$028d: [ 2b    ] XCH  A, R3      ; R3 = 4 * (row - 1) + 1; A = bit_num
 $028e: [ 37    ] CPL  A          ; Compute two's complement...
 $028f: [ 17    ] INC  A          ; of A --> A == -bit_num
-$0290: [ 6b    ] ADD  A, R3      ; A = 4 * (R2 - 1) + 1 - bit_num
+$0290: [ 6b    ] ADD  A, R3      ; A = 4 * (row - 1) + 1 - bit_num
 $0291: [ ae    ] MOV  R6, A      ; Store A in R6
 $0292: [ f2 bc ] JB7  $02bc      ; Bit 7 Set? -> 2bc
 $0294: [ fc    ] MOV  A, R4
@@ -848,6 +771,7 @@ $03f1: [ 64 db ] JMP  $03db
 $03f3: [ 23 fe ] MOV  A, #$fe
 $03f5: [ 74 33 ] CALL $0333
 $03f7: [ 83    ] RET
+
 $03f8: [ 00    ] NOP
 $03f9: [ ef 54 ] DJNZ R7, $0354
 $03fb: [ 28    ] XCH  A, R0
@@ -1241,7 +1165,7 @@ $0669: [ b9 00 ] MOV  R1, #$00
 $066b: [ 34 96 ] CALL $0196
 $066d: [ 44 21 ] JMP  $0221
 $066f: [ 04 98 ] JMP  $0098
-$0671: [ 04 86 ] JMP  $0086
+$0671: [ 04 86 ] JMP  wait_key
 $0673: [ 85    ] CLR  F0
 $0674: [ be 00 ] MOV  R6, #$00
 $0676: [ 04 98 ] JMP  $0098
@@ -1279,7 +1203,7 @@ $06ad: [ fd    ] MOV  A, R5
 $06ae: [ 53 07 ] ANL  A, #$07
 $06b0: [ a0    ] MOV  @R0, A
 $06b1: [ 97    ] CLR  C
-$06b2: [ 04 86 ] JMP  $0086
+$06b2: [ 04 86 ] JMP  wait_key
 ```
 
 ???????????????????????
@@ -1314,7 +1238,7 @@ $06e1: [ 74 b6 ] CALL delay_millis
 $06e3: [ c9    ] DEC  R1
 $06e4: [ ec cf ] DJNZ R4, $06cf
 $06e6: [ be 00 ] MOV  R6, #$00
-$06e8: [ 04 86 ] JMP  $0086
+$06e8: [ 04 86 ] JMP  wait_key
 
 
 $06ea: [ be 00 ] MOV  R6, #$00
@@ -1339,7 +1263,7 @@ $0704: [ b0 71 ] MOV  @R0, #$71   ; ... to 'F'
 $0706: [ b8 04 ] MOV  R0, #$04
 $0708: [ be 02 ] MOV  R6, #$02
 $070a: [ 34 83 ] CALL $0183
-$070c: [ 04 86 ] JMP  $0086
+$070c: [ 04 86 ] JMP  wait_key
 
 
 $070e: [ 34 79 ] CALL clear_display
@@ -1400,7 +1324,7 @@ $076a: [ 97    ] CLR  C
 $076b: [ 85    ] CLR  F0
 $076c: [ a5    ] CLR  F1
 $076d: [ be 00 ] MOV  R6, #$00
-$076f: [ 04 86 ] JMP  $0086
+$076f: [ 04 86 ] JMP  wait_key
 $0771: [ f9    ] MOV  A, R1
 $0772: [ c6 1d ] JZ   $071d
 $0774: [ bc 07 ] MOV  R4, #$07
