@@ -73,7 +73,7 @@ public class ExecutorThread extends Thread {
                     long dt = System.nanoTime() - start;
                     double expectedCycles = dt / 2500.0; // 400 kHz -> 2.5 μs per cycle = 2500 ns per cycle
                     double ratio = cycles / expectedCycles;
-                    logger.info("Performance: effective cycles = " + cycles + " took " + dt + " nanos, expected cycles = " + expectedCycles + ", performance = " + (ratio * 100) + "%");
+                    logger.finest("Performance: effective cycles = " + cycles + " took " + dt + " nanos, expected cycles = " + expectedCycles + ", performance = " + (ratio * 100) + "%");
                     start = System.nanoTime();
                     cycles =0;
                 }
