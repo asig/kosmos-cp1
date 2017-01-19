@@ -331,7 +331,7 @@ public class Disassembler {
                 case 0x86:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JNI", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JNI", formatAddr(addr)));
                     break;
 
                 case 0x88:
@@ -444,7 +444,7 @@ public class Disassembler {
                 case 0xc6:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JZ", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JZ", formatAddr(addr)));
                     break;
 
                 case 0xc7:
@@ -490,7 +490,7 @@ public class Disassembler {
                 case 0xe6:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JNC", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JNC", formatAddr(addr)));
                     break;
 
                 case 0xe7:
@@ -575,7 +575,7 @@ public class Disassembler {
             Rom rom = new Rom(Disassembler.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
             List<Line> lines = new Disassembler(rom).disassemble(0, 0x800);
             for(Line line : lines) {
-                System.out.printf("%04x: [ %s ] %s\n", line.getAddress(), line.getBytes(), line.getDisassembly());
+                System.out.printf("$%04x: [ %s ] %s\n", line.getAddress(), line.getBytes(), line.getDisassembly());
             }
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
