@@ -18,7 +18,6 @@ public class Status8155Composite extends Composite  {
     private Button btnPaInterruptEnabled;
     private BitsetWidget bitsetPaVal;
 
-
     private CLabel lblPbMode;
     private CLabel lblPbVal;
     private Button btnPbInterruptEnabled;
@@ -146,10 +145,10 @@ public class Status8155Composite extends Composite  {
 
     public void setPID(Intel8155 pid) {
         this.pid = pid;
-        refresh();
+        updateState();
     }
 
-    public void refresh() {
+    public void updateState() {
         lblPaMode.setText(pid.getPaMode().toString());
         lblPaVal.setText(String.format("%02x", pid.getPaValue()));
         bitsetPaVal.setValue(pid.getPaValue());
