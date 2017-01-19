@@ -1,15 +1,38 @@
-Oscillator: 6 MHz, divided by 3 to get CLK, 5 steps per cycle -> 400kHz cycles -> 2.5 microsecs per cycle
+# README
 
-icons: fugue icons (http://p.yusukekamiyamane.com/)
+## What's this?
+This is an emulator for the Kosmos CP1 "Computer Praxis" experimental kit that
+was sold in german-speaking Europe in the early 80s of the last century.
 
+The Kosmos CP1 was intended to introduce children to programming. To do so, it
+used a virtual machine with a very simple machine language. Programs were
+written in Assembler, and then had to be manually translated to op-codes.
+The computer was accompanied by a pretty good manual that not only explained
+the virtual machine, but also contained a well written introduction to
+the inner workings of a computer.
 
-Fonts:
-Pragmatica Black Regular: http://abc-font.com/font.php?font=Pragmatica%20black%20regular
-Pragmatica Light Regular: http://abc-font.com/font.php?font=Pragmaticalightctt%20regular
-eher aber "Newhouse DT Black"
+Unlike other programs, kosmos-cp1 does not only simulate the Kosmos CP1's
+virtual machine, but emulates the underlying hardware (an Intel 8049 and an
+Intel 8155).
 
+## What is currently emulated?
+The current version emulates the base unit, without any extensions. I'm
+planning to add support for the "CP5" memory extensions as well as the "CP2"
+cassette interface.
 
-Helvetica:
-https://www.download-free-fonts.com/details/92227/helvetica-black
-https://www.download-free-fonts.com/details/37282/helvetica-light
+## Further reading
+You can find scans of all the manuals at http://www.retrozone.ch/cp1/
+
+## Building and running
+```
+./gradlew run
+```
+
+## Resources
+- The UI ises Fugue Icons by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
+- The keyboard font seems to be "Newhouse DT Black" or "Pragmatica Black Regular".
+  However, "Helvetica" is close enough. The bundled fonts are
+   - https://www.download-free-fonts.com/details/92227/helvetica-black, and
+   - https://www.download-free-fonts.com/details/37282/helvetica-light
+
 
