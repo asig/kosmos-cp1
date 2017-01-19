@@ -50,8 +50,16 @@ public class Disassembler {
         return disassemble(at, at+1).get(0);
     }
 
+    private String formatAddr(int addr) {
+        return String.format("$%04x", addr);
+    }
+
+    private String formatConst(int c) {
+        return "#" + String.format("$%02x", c);
+    }
+
     public List<Line> disassemble(int from, int to) {
-        List<Line> lines = new LinkedList<Line>();
+        List<Line> lines = new LinkedList<>();
         int pos = from;
         while (pos < to) {
             int curPos = pos;
@@ -70,12 +78,12 @@ public class Disassembler {
 
                 case 0x03:
                     data = rom.read(pos++);
-                    lines.add(emit(curPos, 2, "ADD", "A", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ADD", "A", formatConst(data)));
                     break;
 
                 case 0x04: case 0x24: case 0x44: case 0x64: case 0x84: case 0xa4: case 0xc4: case 0xe4:
                     addr = (op & 0xe0) << 3 | (rom.read(pos++) & 0xff);
-                    lines.add(emit(curPos, 2, "JMP", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JMP", formatAddr(addr)));
                     break;
 
                 case 0x05:
@@ -108,18 +116,18 @@ public class Disassembler {
                 case 0x12: case 0x32: case 0x52: case 0x72: case 0x92: case 0xb2: case 0xd2: case 0xf2:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    b = op & 0x7;
-                    lines.add(emit(curPos, 2, "JB" + b, String.format("%04x", addr)));
+                    b = (op >> 5) & 0x7;
+                    lines.add(emit(curPos, 2, "JB" + b, formatAddr(addr)));
                     break;
 
                 case 0x13:
                     data = rom.read(pos++) & 0xff;
-                    lines.add(emit(curPos, 2, "ADDC", "A", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ADDC", "A", formatConst(data)));
                     break;
 
                 case 0x14: case 0x34: case 0x54: case 0x74: case 0x94: case 0xb4: case 0xd4: case 0xf4:
                     addr = (op & 0xe0) << 3 | (rom.read(pos++) & 0xff);
-                    lines.add(emit(curPos, 2, "CALL", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "CALL", formatAddr(addr)));
                     break;
 
                 case 0x15:
@@ -129,7 +137,7 @@ public class Disassembler {
                 case 0x16:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JTF", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JTF", formatAddr(addr)));
                     break;
 
                 case 0x17:
@@ -148,7 +156,7 @@ public class Disassembler {
 
                 case 0x23:
                     data = rom.read(pos++) & 0xff;
-                    lines.add(emit(curPos, 2, "MOV", "A", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "MOV", "A", formatConst(data)));
                     break;
 
                 case 0x25:
@@ -158,7 +166,7 @@ public class Disassembler {
                 case 0x26:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JNT0", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JNT0", formatAddr(addr)));
                     break;
 
                 case 0x27:
@@ -182,7 +190,7 @@ public class Disassembler {
                 case 0x36:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JT0", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JT0", formatAddr(addr)));
                     break;
 
                 case 0x37:
@@ -210,7 +218,7 @@ public class Disassembler {
 
                 case 0x43:
                     data = rom.read(pos++) & 0xff;
-                    lines.add(emit(curPos, 2, "ORL", "A", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ORL", "A", formatConst(data)));
                     break;
 
                 case 0x45:
@@ -220,7 +228,7 @@ public class Disassembler {
                 case 0x46:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JNT1", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JNT1", formatAddr(addr)));
                     break;
 
                 case 0x47:
@@ -239,7 +247,7 @@ public class Disassembler {
 
                 case 0x53:
                     data = rom.read(pos++);
-                    lines.add(emit(curPos, 2, "ANL", "A", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ANL", "A", formatConst(data)));
                     break;
 
                 case 0x55:
@@ -249,7 +257,7 @@ public class Disassembler {
                 case 0x56:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JT1", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JT1", formatAddr(addr)));
                     break;
 
                 case 0x57:
@@ -295,7 +303,7 @@ public class Disassembler {
                 case 0x76:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JF1", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JF1", formatAddr(addr)));
                     break;
 
                 case 0x77:
@@ -328,13 +336,13 @@ public class Disassembler {
 
                 case 0x88:
                     data = rom.read(pos++);
-                    lines.add(emit(curPos, 2, "ORL", "BUS", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ORL", "BUS", formatConst(data)));
                     break;
 
                 case 0x89: case 0x8a:
                     data = rom.read(pos++);
                     p = op & 0x3;
-                    lines.add(emit(curPos, 2, "ORL", "P" + p, "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ORL", "P" + p, formatConst(data)));
                     break;
 
                 case 0x8c: case 0x8d: case 0x8e: case 0x8f:
@@ -358,7 +366,7 @@ public class Disassembler {
                 case 0x96:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JNZ", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JNZ", formatAddr(addr)));
                     break;
 
                 case 0x97:
@@ -367,13 +375,13 @@ public class Disassembler {
 
                 case 0x98:
                     data = rom.read(pos++);
-                    lines.add(emit(curPos, 2, "ANL", "BUS", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ANL", "BUS", formatConst(data)));
                     break;
 
                 case 0x99: case 0x9a:
                     data = rom.read(pos++);
                     p = op & 0x3;
-                    lines.add(emit(curPos, 2, "ANL", "P" + p, "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "ANL", "P" + p, formatConst(data)));
                     break;
 
                 case 0x9c: case 0x9d: case 0x9e: case 0x9f:
@@ -406,7 +414,7 @@ public class Disassembler {
                 case 0xb0: case 0xb1:
                     data = rom.read(pos++);
                     r = op & 0x1;
-                    lines.add(emit(curPos, 2, "MOV", "@R" + r, "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "MOV", "@R" + r, formatConst(data)));
                     break;
 
                 case 0xb3:
@@ -420,13 +428,13 @@ public class Disassembler {
                 case 0xb6:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JF0", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JF0", formatAddr(addr)));
                     break;
 
                 case 0xb8: case 0xb9: case 0xba: case 0xbb: case 0xbc: case 0xbd: case 0xbe: case 0xbf:
                     data = rom.read(pos++);
                     r = op & 0x7;
-                    lines.add(emit(curPos, 2, "MOV", "R" + r, "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "MOV", "R" + r, formatConst(data)));
                     break;
 
                 case 0xc5:
@@ -455,7 +463,7 @@ public class Disassembler {
 
                 case 0xd3:
                     data = rom.read(pos++);
-                    lines.add(emit(curPos, 2, "XRL", "A", "#" + String.format("%02x", data)));
+                    lines.add(emit(curPos, 2, "XRL", "A", formatConst(data)));
                     break;
 
                 case 0xd5:
@@ -493,7 +501,7 @@ public class Disassembler {
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
                     r = op & 0x7;
-                    lines.add(emit(curPos, 2, "DJNZ", "R" + r, String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "DJNZ", "R" + r, formatAddr(addr)));
                     break;
 
                 case 0xf0: case 0xf1:
@@ -508,7 +516,7 @@ public class Disassembler {
                 case 0xf6:
                     addr = rom.read(pos++);
                     addr = (pos & 0xf00) | (addr & 0xff);
-                    lines.add(emit(curPos, 2, "JC", String.format("%04x", addr)));
+                    lines.add(emit(curPos, 2, "JC", formatAddr(addr)));
                     break;
 
                 case 0xf7:
@@ -546,7 +554,7 @@ public class Disassembler {
                 case 0xe1:
                 case 0xe2:
                 case 0xf3:
-                    lines.add(emit(curPos, 1, ".DB", String.format("%02x", op)));
+                    lines.add(emit(curPos, 1, ".DB", String.format("$%02x", op)));
                     break;
             }
         }
