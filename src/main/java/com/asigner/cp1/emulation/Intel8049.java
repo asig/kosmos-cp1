@@ -416,7 +416,7 @@ public class Intel8049 {
                 addr = (state.PC & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
-                int b = op & 0x7;
+                int b = (op >> 5) & 0x7;
                 if ((state.A & 1<<b) > 0) {
                     state.PC = addr;
                 }
