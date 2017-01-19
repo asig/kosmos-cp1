@@ -1,23 +1,26 @@
 package com.asigner.cp1.emulation.util;
 
-import java.io.FileInputStream;
+import com.asigner.cp1.emulation.Rom;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.asigner.cp1.emulation.Rom;
 
 public class Disassembler {
 
     public class Line {
         private final int addr;
         private final String bytes;
-        private final String disassembly;
+        private final String opCode;
+        private final List<String> args;
 
-        public Line(int addr, String bytes, String disassembly) {
+        public Line(int addr, String bytes, String opCode, String ... args) {
             this.addr = addr;
             this.bytes = bytes;
-            this.disassembly = disassembly;
+            this.opCode = opCode;
+            this.args = Lists.newArrayList(args);
         }
 
         public int getAddress() {
@@ -29,7 +32,7 @@ public class Disassembler {
         }
 
         public String getDisassembly() {
-            return disassembly;
+            return String.format("%-4s %s", opCode, Joiner.on(", ").join(args));
         }
     }
 
@@ -556,20 +559,7 @@ public class Disassembler {
             if (hexDump.length() > 0) hexDump += " ";
             hexDump += i < bytes ? String.format("%02x", rom.read(curPos + i)) : "  ";
         }
-        return new Line(curPos, hexDump, String.format("%-4s %s", op, join(args)));
-    }
-
-    private String join(String ... args) {
-        StringBuffer buf = new StringBuffer();
-        boolean first = true;
-        for (String arg : args) {
-            if (!first) {
-                buf.append(", ");
-            }
-            buf.append(arg);
-            first = false;
-        }
-        return buf.toString();
+        return new Line(curPos, hexDump, op, args);
     }
 
     public static void main(String ... args) {
