@@ -1,7 +1,6 @@
 package com.asigner.cp1.ui;
 
 import com.asigner.cp1.emulation.DataPort;
-import com.asigner.cp1.emulation.DataPortListener;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Ram;
@@ -149,15 +148,8 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
         ToolItem toolItem2 = new ActionToolItem(toolbar, SWT.PUSH, runAction);
         ToolItem toolItem3 = new ActionToolItem(toolbar, SWT.PUSH, stopAction);
         ToolItem toolItem4 = new ActionToolItem(toolbar, SWT.PUSH, resetAction);
-
         ToolItem toolItem5 = new CheckboxToolItem(toolbar, breakOnMovxAction);
         ToolItem toolItem6 = new CheckboxToolItem(toolbar, traceExecutionAction);
-//        Button ctrl = new Button(toolbar, SWT.CHECK);
-//        ctrl.setLayoutData(new GridData(GridData.CENTER, GridData.CENTER, false, false));
-//        ctrl.setText("Break on MOVX");
-//        ctrl.pack();
-//        toolItem5.setControl(ctrl);
-//        toolItem5.setWidth(ctrl.computeSize(-1, -1).x);
 
         Composite composite_1 = new Composite(shell, SWT.NONE);
         composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -170,11 +162,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
 
         disassemblyComposite = new DisassemblyComposite(group, SWT.NONE);
         disassemblyComposite.setRom(cpu.getRom());
-        disassemblyComposite.addListener(new BreakpointChangedListener() {
-            @Override
-            public void breakpointChanged(int addr, boolean enabled) {
-                executorThread.enableBreakpoint(addr, enabled);
-            }});
+        disassemblyComposite.addListener((addr, enabled) -> executorThread.enableBreakpoint(addr, enabled));
 
         Composite composite = new Composite(composite_1, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -286,7 +274,8 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
                 runAction.setEnabled(true);
                 memory8049Composite.redraw();
                 memory8155Composite.redraw();
-                status8155Composite.redraw();
+                status8049Composite.updateState();
+                status8155Composite.updateState();;
                 busWidget.redraw();
                 p1Widget.redraw();
                 p2Widget.redraw();
@@ -308,7 +297,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
         if (!isTraceExecution()) {
             return;
         }
-        shell.getDisplay().asyncExec(status8155Composite::refresh);
+        shell.getDisplay().asyncExec(status8155Composite::updateState);
     }
 
     @Override
@@ -316,7 +305,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
         if (!isTraceExecution()) {
             return;
         }
-        shell.getDisplay().asyncExec(status8155Composite::refresh);
+        shell.getDisplay().asyncExec(status8155Composite::updateState);
     }
 
     @Override
@@ -324,7 +313,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
         if (!isTraceExecution()) {
             return;
         }
-        shell.getDisplay().asyncExec(status8155Composite::refresh);
+        shell.getDisplay().asyncExec(status8155Composite::updateState);
     }
 
     @Override
@@ -332,7 +321,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
         if (!isTraceExecution()) {
             return;
         }
-        shell.getDisplay().asyncExec(status8155Composite::refresh);
+        shell.getDisplay().asyncExec(status8155Composite::updateState);
     }
 
     @Override
