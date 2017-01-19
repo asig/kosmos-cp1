@@ -6,8 +6,6 @@ Timer
 =====
 Timer is using ALE clock (400 kHz) with a :32 divider -> 80 microsecs per count
 
-
-
 Display/Keypad
 ==============
 
