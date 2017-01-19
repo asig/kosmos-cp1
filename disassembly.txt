@@ -1,60 +1,26 @@
-ROM Listing
-===========
+;ROM Listing
+;===========
 
-This contains the fully commented ROM listing of the EPROM contents from the
-Intel 8049 used in the Kosmos CP1 experimental computer.
+;This contains the fully commented ROM listing of the EPROM contents from the
+;Intel 8049 used in the Kosmos CP1 experimental computer.
 
-Code (C) 1983, Franckh'sche Verlagshandlung, W. Keller & Co., Stuttgart, Germany
-Comments (C) 2017, Andreas Signer <asigner@gmail.com>
+;Code (C) 1983, Franckh'sche Verlagshandlung, W. Keller & Co., Stuttgart, Germany
+;Comments (C) 2017, Andreas Signer <asigner@gmail.com>
 
-RAM Map
--------
-0x00 - 0x07: Register Bank 0 (R0 - R7)
-0x08 - 0x17: Stack (8 levels)
-0x18 - 0x1f: Register Bank 1 (R0 - R7)
+;RAM Map
+;-------
+;0x00 - 0x07: Register Bank 0 (R0 - R7)
+;0x08 - 0x17: Stack (8 levels)
+;0x18 - 0x1f: Register Bank 1 (R0 - R7)
 
-0x20 - 0x25: 6 Digit "Video RAM"
+;0x20 - 0x25: 6 Digit "Video RAM"
 
-Listing
--------
+;Listing
+;-------
 
 ```
-CALLs
-      6  CALL 014e
-     13  CALL 0179
-      8  CALL 0183
-      2  CALL 0196
-      1  CALL 01aa
-      1  CALL 01eb
-      1  CALL 02d9
-      9  CALL 030a
-      1  CALL 0328
-      8  CALL 032e
-     14  CALL 0333
-      3  CALL 0338
-      2  CALL 034f
-      6  CALL 035b
-      4  CALL 0365
-      2  CALL 0379
-      1  CALL 0385
-      3  CALL 0392
-      3  CALL 039b
-      1  CALL 039f
-      2  CALL 03a2
-     11  CALL 03b6
-      2  CALL 03bd
-      7  CALL 03f3
-      2  CALL 06b4
-      2  CALL 06ea
-      2  CALL 077c
-      4  CALL 07c7
-      2  CALL 07d0
-      3  CALL 07e1
-      1  CALL 07e6
-      3  CALL 07eb
 
-
-JMPs      
+JMPs
       1  JMP  0029
       1  JMP  0076
      14  JMP  0086
@@ -133,13 +99,13 @@ JMPs
 
 
 0000: [ 04 29 ] JMP  0029   ; Reset entry point: Execution starts at 0.
-0002: [ 00    ] NOP  
+0002: [ 00    ] NOP
 0003: [ 93    ] RETR        ; Interrupt entry point
-0004: [ 00    ] NOP  
-0005: [ 00    ] NOP  
-0006: [ 00    ] NOP  
+0004: [ 00    ] NOP
+0005: [ 00    ] NOP
+0006: [ 00    ] NOP
 0007: [ 44 5c ] JMP  025c   ; Timer/Counter entry point
-0009: [ 00    ] NOP  
+0009: [ 00    ] NOP
 000a: [ 86 d1 ] JNI  00d1
 000c: [ d1    ] XRL  A, @R1
 000d: [ d1    ] XRL  A, @R1
@@ -388,7 +354,7 @@ Clear "Video RAM"
 017d: [ b0 00 ] MOV  @R0, #00
 017f: [ 18    ] INC  R0
 0180: [ ea 7d ] DJNZ R2, 017d
-0182: [ 83    ] RET  
+0182: [ 83    ] RET
 
 
 ?????????
@@ -426,7 +392,7 @@ Clear "Video RAM"
 01a4: [ a0    ] MOV  @R0, A
 01a5: [ be 02 ] MOV  R6, #02
 01a7: [ 34 83 ] CALL 0183
-01a9: [ 83    ] RET  
+01a9: [ 83    ] RET
 
 ?????????
 =========
@@ -444,7 +410,7 @@ Clear "Video RAM"
 01ba: [ b8 25 ] MOV  R0, #25
 01bc: [ a0    ] MOV  @R0, A
 01bd: [ 1e    ] INC  R6
-01be: [ 83    ] RET  
+01be: [ 83    ] RET
 
 
 NON-TARGET ?????????
@@ -611,7 +577,7 @@ NON-TARGET ?????????
 02b4: [ 2f    ] XCH  A, R7
 02b5: [ c5    ] SEL  RB0
 02b6: [ 25    ] EN   TCNTI
-02b7: [ 93    ] RETR 
+02b7: [ 93    ] RETR
 02b8: [ be 00 ] MOV  R6, #00
 02ba: [ 44 a6 ] JMP  02a6
 
@@ -631,7 +597,7 @@ NON-TARGET ?????????
 02d2: [ 44 b0 ] JMP  02b0
 02d4: [ 8a 80 ] ORL  P2, #80
 02d6: [ 44 b4 ] JMP  02b4
-02d8: [ 83    ] RET  
+02d8: [ 83    ] RET
 
 02d9: [ 97    ] CLR  C
 02da: [ bc 00 ] MOV  R4, #00
@@ -656,12 +622,12 @@ NON-TARGET ?????????
 02f7: [ 83    ] RET
 
 
-02f8: [ 00    ] NOP  
+02f8: [ 00    ] NOP
 02f9: [ 88 c4 ] ORL  BUS, #c4
-02fb: [ 00    ] NOP  
-02fc: [ 00    ] NOP  
-02fd: [ 00    ] NOP  
-02fe: [ 00    ] NOP  
+02fb: [ 00    ] NOP
+02fc: [ 00    ] NOP
+02fd: [ 00    ] NOP
+02fe: [ 00    ] NOP
 02ff: [ 1e    ] INC  R6
 0300: [ 3f    ] MOVD P7, A
 0301: [ 06    ] .DB  06
@@ -687,7 +653,7 @@ NON-TARGET ?????????
 0315: [ fb    ] MOV  A, R3
 0316: [ e7    ] RL   A
 0317: [ a9    ] MOV  R1, A
-0318: [ 83    ] RET  
+0318: [ 83    ] RET
 0319: [ 03 80 ] ADD  A, #80
 031b: [ 97    ] CLR  C
 031c: [ ab    ] MOV  R3, A
@@ -726,7 +692,7 @@ NON-TARGET ?????????
 033a: [ 34 4e ] CALL 014e
 033c: [ b6 48 ] JF0  0348
 033e: [ f2 41 ] JB2  0341
-0340: [ 83    ] RET  
+0340: [ 83    ] RET
 0341: [ b8 3b ] MOV  R0, #3b
 0343: [ f0    ] MOV  A, @R0
 0344: [ f2 40 ] JB2  0340
@@ -742,7 +708,7 @@ NON-TARGET ?????????
 =================
 034f: [ 85    ] CLR  F0
 0350: [ f2 53 ] JB2  0353
-0352: [ 83    ] RET  
+0352: [ 83    ] RET
 0353: [ b8 3b ] MOV  R0, #3b
 0355: [ f0    ] MOV  A, @R0
 0356: [ f2 52 ] JB2  0352
@@ -782,9 +748,9 @@ NON-TARGET ?????????
 0379: [ ec 82 ] DJNZ R4, 0382
 037b: [ 12 7f ] JB2  037f
 037d: [ 27    ] CLR  A
-037e: [ 83    ] RET  
+037e: [ 83    ] RET
 037f: [ 23 01 ] MOV  A, #01
-0381: [ 83    ] RET  
+0381: [ 83    ] RET
 0382: [ 77    ] RR   A
 0383: [ 64 79 ] JMP  0379
 
@@ -805,12 +771,18 @@ NON-TARGET ?????????
 0394: [ 74 2e ] CALL 032e
 0396: [ 9a df ] ANL  P2, #df
 0398: [ 8a 90 ] ORL  P2, #90
-039a: [ 83    ] RET  
+039a: [ 83    ] RET
+
+?????????????????
+-----------------
 039b: [ b8 36 ] MOV  R0, #36
 039d: [ b0 00 ] MOV  @R0, #00
 039f: [ 18    ] INC  R0
 03a0: [ a0    ] MOV  @R0, A
-03a1: [ 83    ] RET  
+03a1: [ 83    ] RET
+
+?????????????????
+-----------------
 03a2: [ aa    ] MOV  R2, A
 03a3: [ 97    ] CLR  C
 03a4: [ a7    ] CPL  C
@@ -823,7 +795,7 @@ NON-TARGET ?????????
 03ad: [ fa    ] MOV  A, R2
 03ae: [ 41    ] ORL  A, @R1
 03af: [ a1    ] MOV  @R1, A
-03b0: [ 83    ] RET  
+03b0: [ 83    ] RET
 03b1: [ fa    ] MOV  A, R2
 03b2: [ 37    ] CPL  A
 03b3: [ 51    ] ANL  A, @R1
@@ -840,6 +812,8 @@ Inputs:
 03bc: [ 83    ] RET            ; cycles: R3 * 201 * 2 + 1 -->
 
 
+?????????????????
+-----------------
 03bd: [ b9 00 ] MOV  R1, #00
 03bf: [ b8 3a ] MOV  R0, #3a
 03c1: [ f0    ] MOV  A, @R0
@@ -858,7 +832,7 @@ Inputs:
 03d7: [ e8 c8 ] DJNZ R0, 03c8
 03d9: [ e9 bf ] DJNZ R1, 03bf
 03db: [ 97    ] CLR  C
-03dc: [ 83    ] RET  
+03dc: [ 83    ] RET
 03dd: [ 99 7f ] ANL  P1, #7f
 03df: [ bb 3c ] MOV  R3, #3c  ; Delay for...
 03e1: [ 74 b6 ] CALL 03b6     ; ... 60 millis
@@ -871,14 +845,16 @@ Inputs:
 03ed: [ 23 fe ] MOV  A, #fe
 03ef: [ 74 33 ] CALL 0333
 03f1: [ 64 db ] JMP  03db
+
+
 03f3: [ 23 fe ] MOV  A, #fe
 03f5: [ 74 33 ] CALL 0333
-03f7: [ 83    ] RET  
-03f8: [ 00    ] NOP  
+03f7: [ 83    ] RET
+03f8: [ 00    ] NOP
 03f9: [ ef 54 ] DJNZ R7, 0354
 03fb: [ 28    ] XCH  A, R0
 03fc: [ d2 36 ] JB2  0336
-03fe: [ 00    ] NOP  
+03fe: [ 00    ] NOP
 03ff: [ 05    ] EN   I
 0400: [ 19    ] INC  R1
 0401: [ 34 eb ] CALL 01eb
@@ -1344,6 +1320,8 @@ Inputs:
 06e4: [ ec cf ] DJNZ R4, 06cf
 06e6: [ be 00 ] MOV  R6, #00
 06e8: [ 04 86 ] JMP  0086
+
+
 06ea: [ be 00 ] MOV  R6, #00
 06ec: [ 85    ] CLR  F0
 06ed: [ 95    ] CPL  F0
@@ -1354,7 +1332,7 @@ Inputs:
 06f6: [ 34 83 ] CALL 0183
 06f8: [ b8 20 ] MOV  R0, #20  ; Set left-most digit...
 06fa: [ b0 77 ] MOV  @R0, #77 ; ... to 'A'
-06fc: [ 83    ] RET  
+06fc: [ 83    ] RET
 06fd: [ 34 79 ] CALL 0179     ; Clear "Video RAM"
 06ff: [ 97    ] CLR  C
 0700: [ 85    ] CLR  F0
@@ -1430,6 +1408,10 @@ Inputs:
 0776: [ c4 fd ] JMP  06fd
 0778: [ 74 f3 ] CALL 03f3
 077a: [ e4 64 ] JMP  0764
+
+
+???????????????????????
+-----------------------
 077c: [ 27    ] CLR  A
 077d: [ aa    ] MOV  R2, A
 077e: [ ab    ] MOV  R3, A
@@ -1472,7 +1454,7 @@ Inputs:
 07b8: [ 6b    ] ADD  A, R3
 07b9: [ e6 bc ] JNC  07bc
 07bb: [ 95    ] CPL  F0
-07bc: [ 83    ] RET  
+07bc: [ 83    ] RET
 07bd: [ fb    ] MOV  A, R3
 07be: [ 03 01 ] ADD  A, #01
 07c0: [ f6 c5 ] JC   07c5
@@ -1481,20 +1463,24 @@ Inputs:
 07c5: [ b5    ] CPL  F1
 07c6: [ 83    ] RET
 ```
+
+
 ### Delay for a multiple of 20 micros
 Inputs:
 - R4: number of 20 micros delays
 ```
 07c7: [ 00    ] NOP
-07c8: [ 00    ] NOP  
-07c9: [ 00    ] NOP  
-07ca: [ 00    ] NOP  
-07cb: [ 00    ] NOP  
-07cc: [ 00    ] NOP  
+07c8: [ 00    ] NOP
+07c9: [ 00    ] NOP
+07ca: [ 00    ] NOP
+07cb: [ 00    ] NOP
+07cc: [ 00    ] NOP
 07cd: [ ec c7 ] DJNZ R4, 07c7
 07cf: [ 83    ] RET
 
 
+???????????????????????
+-----------------------
 07d0: [ 97    ] CLR  C
 07d1: [ b6 de ] JF0  07de
 07d3: [ fd    ] MOV  A, R5
@@ -1505,15 +1491,25 @@ Inputs:
 07d9: [ 91    ] MOVX @R1, A
 07da: [ c9    ] DEC  R1
 07db: [ b8 08 ] MOV  R0, #08
-07dd: [ 83    ] RET  
+07dd: [ 83    ] RET
 07de: [ a7    ] CPL  C
 07df: [ e4 d3 ] JMP  07d3
+
+
+???????????????????????
+-----------------------
 07e1: [ 23 df ] MOV  A, #df
 07e3: [ 74 33 ] CALL 0333
-07e5: [ 83    ] RET  
+07e5: [ 83    ] RET
+
+
+???????????????????????
+-----------------------
 07e6: [ 23 20 ] MOV  A, #20
 07e8: [ 74 2e ] CALL 032e
-07ea: [ 83    ] RET  
+07ea: [ 83    ] RET
+
+
 07eb: [ ab    ] MOV  R3, A
 07ec: [ 23 00 ] MOV  A, #00
 07ee: [ 6b    ] ADD  A, R3
@@ -1526,7 +1522,9 @@ Inputs:
 07f6: [ fb    ] MOV  A, R3
 07f7: [ a0    ] MOV  @R0, A
 07f8: [ 1e    ] INC  R6
-07f9: [ 83    ] RET  
+07f9: [ 83    ] RET
+
+
 07fa: [ 6d    ] ADD  A, R5
 07fb: [ d6    ] .DB  d6
 07fc: [ 78    ] ADDC A, R0
