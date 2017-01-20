@@ -18,8 +18,10 @@
 ;Listing
 ;-------
 
-```
-$0000: [ 04 29 ] JMP  $0029   ; Reset entry point: Execution starts at 0.
+
+    .org $0
+
+$0000: [ 04 29 ] JMP  init    ; Reset entry point: Execution starts at 0.
 $0002: [ 00    ] NOP
 $0003: [ 93    ] RETR         ; Interrupt entry point
 $0004: [ 00    ] NOP
@@ -27,32 +29,39 @@ $0005: [ 00    ] NOP
 $0006: [ 00    ] NOP
 $0007: [ 44 5c ] JMP  timer   ; Timer/Counter entry point
 $0009: [ 00    ] NOP
-$000a: [ 86 d1 ] JNI  $00d1
-$000c: [ d1    ] XRL  A, @R1
-$000d: [ d1    ] XRL  A, @R1
-$000e: [ d1    ] XRL  A, @R1
-$000f: [ d1    ] XRL  A, @R1
-$0010: [ d1    ] XRL  A, @R1
-$0011: [ d1    ] XRL  A, @R1
-$0012: [ d1    ] XRL  A, @R1
-$0013: [ d1    ] XRL  A, @R1
-$0014: [ d1    ] XRL  A, @R1
-$0015: [ 21    ] XCH  A, @R1
-$0016: [ eb 23 ] DJNZ R3, $0023
-$0018: [ 25    ] EN   TCNTI
-$0019: [ 86 1f ] JNI  $001f
-$001b: [ 27    ] CLR  A
-$001c: [ c3    ] .DB  $c3
-$001d: [ 98 bf ] ANL  BUS, #$bf
-$001f: [ c4 03 ] JMP  $0603
-$0021: [ 24 ff ] JMP  $01ff
-$0023: [ e4 0e ] JMP  $070e
-$0025: [ c4 22 ] JMP  $0622
-$0027: [ 24 c4 ] JMP  $01c4
-```
 
-### Initialization code
-```
+; JMPP Jump-Table for key presses
+$000a: [ 86    ] .DB $86 ; ??? this is pointing to the wait_key function
+$000b: [ d1    ] .DB $D1 ; key '0'
+$000c: [ d1    ] .DB $D1 ; key '1'
+$000d: [ d1    ] .DB $D1 ; key '2'
+$000e: [ d1    ] .DB $D1 ; key '3'
+$000f: [ d1    ] .DB $D1 ; key '4'
+$0010: [ d1    ] .DB $D1 ; key '5'
+$0011: [ d1    ] .DB $D1 ; key '6'
+$0012: [ d1    ] .DB $D1 ; key '7'
+$0013: [ d1    ] .DB $D1 ; key '8'
+$0014: [ d1    ] .DB $D1 ; key '9'
+$0015: [ 21    ] .DB $21 ; key 'OUT'
+$0016: [ eb    ] .DB $eb ; key 'INP'
+$0017: [ 23    ] .DB $23 ; key 'CAS'
+$0018: [ 25    ] .DB $25 ; key 'STEP'
+$0019: [ 86    ] .DB $86 ; key 'STP'
+$001a: [ 1f    ] .DB $1F ; key 'RUN'
+$001b: [ 27    ] .DB $27 ; key 'CAL'
+$001c: [ c3    ] .DB $c3 ; key 'CLR'
+$001d: [ 98    ] .DB $98 ; key 'PC'
+$001e: [ bf    ] .DB $BF ; key 'ACC'
+
+
+$001f: [ c4 03 ] JMP  run_handler
+$0021: [ 24 ff ] JMP  out_handler
+$0023: [ e4 0e ] JMP  cas_handler
+$0025: [ c4 22 ] JMP  step_handler
+$0027: [ 24 c4 ] JMP  cal_handler
+
+; ### Initialization code
+init:
 $0029: [ b8 1e ] MOV  R0, #$1e
 $002b: [ b0 00 ] MOV  @R0, #$00  ; Set R6' to 0
 $002d: [ b8 20 ] MOV  R0, #$20   ; Clear 0x28 ...
@@ -119,6 +128,8 @@ $0091: [ b0 00 ] MOV  @R0, #$00
 $0093: [ b3    ] JMPP @A
 $0094: [ b0 ff ] MOV  @R0, #$ff
 $0096: [ 04 76 ] JMP  $0076
+
+pc_handler:
 $0098: [ fe    ] MOV  A, R6
 $0099: [ c6 bb ] JZ   $00bb
 $009b: [ d3 03 ] XRL  A, #$03
@@ -140,8 +151,12 @@ $00b7: [ 04 86 ] JMP  wait_key
 $00b9: [ 24 46 ] JMP  $0146
 $00bb: [ d4 b4 ] CALL $06b4
 $00bd: [ 04 86 ] JMP  wait_key
+
+acc_handler:
 $00bf: [ d4 ea ] CALL $06ea
 $00c1: [ 04 86 ] JMP  wait_key
+
+clr_handler:
 $00c3: [ 34 79 ] CALL clear_display
 $00c5: [ be 00 ] MOV  R6, #$00
 $00c7: [ 04 86 ] JMP  wait_key
@@ -149,6 +164,8 @@ $00c9: [ bc 01 ] MOV  R4, #$01
 $00cb: [ c4 fd ] JMP  $06fd
 $00cd: [ 34 79 ] CALL clear_display
 $00cf: [ 04 d9 ] JMP  $00d9
+
+digit_handler:
 $00d1: [ fe    ] MOV  A, R6
 $00d2: [ c6 cd ] JZ   $00cd
 $00d4: [ 97    ] CLR  C
@@ -166,6 +183,8 @@ $00e3: [ 34 aa ] CALL $01aa
 $00e5: [ 04 86 ] JMP  wait_key
 $00e7: [ 24 46 ] JMP  $0146
 $00e9: [ 24 0c ] JMP  $010c
+
+inp_handler:
 $00eb: [ fe    ] MOV  A, R6
 $00ec: [ d3 03 ] XRL  A, #$03
 $00ee: [ 96 e9 ] JNZ  $00e9
@@ -342,6 +361,8 @@ NON-TARGET ?????????
 $01bf: [ 85    ] CLR  F0
 $01c0: [ 74 f3 ] CALL $03f3
 $01c2: [ 24 f1 ] JMP  $01f1
+
+cal_handler:
 $01c4: [ 34 79 ] CALL clear_display
 $01c6: [ 74 f3 ] CALL $03f3
 $01c8: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
@@ -378,6 +399,8 @@ $01f7: [ b0 63 ] MOV  @R0, #$63   ; ... to 'ᵒ'
 $01f9: [ be 00 ] MOV  R6, #$00
 $01fb: [ 04 86 ] JMP  wait_key
 $01fd: [ 24 bf ] JMP  $01bf
+
+out_handler:
 $01ff: [ 23 f7 ] MOV  A, #$f7
 $0201: [ 74 33 ] CALL $0333
 $0203: [ fe    ] MOV  A, R6
@@ -1102,6 +1125,8 @@ $05fb: [ 74 92 ] CALL $0392
 $05fd: [ b9 42 ] MOV  R1, #$42
 $05ff: [ bc 03 ] MOV  R4, #$03
 $0601: [ a4 ac ] JMP  $05ac
+
+run_handler:
 $0603: [ fe    ] MOV  A, R6
 $0604: [ d3 01 ] XRL  A, #$01
 $0606: [ 96 14 ] JNZ  $0614
@@ -1120,6 +1145,8 @@ $061b: [ 12 4f ] JB0  $064f
 $061d: [ b8 3a ] MOV  R0, #$3a
 $061f: [ f0    ] MOV  A, @R0
 $0620: [ 32 53 ] JB1  $0653
+
+step_handler:
 $0622: [ b8 38 ] MOV  R0, #$38
 $0624: [ f0    ] MOV  A, @R0
 $0625: [ 74 0a ] CALL $030a
@@ -1147,12 +1174,12 @@ $0646: [ 32 6f ] JB1  $066f
 $0648: [ b8 3a ] MOV  R0, #$3a
 $064a: [ f0    ] MOV  A, @R0
 $064b: [ 12 61 ] JB0  $0661
-$064d: [ c4 22 ] JMP  $0622
+$064d: [ c4 22 ] JMP  step_handler
 $064f: [ 74 f3 ] CALL $03f3
 $0651: [ c4 1d ] JMP  $061d
 $0653: [ 23 fd ] MOV  A, #$fd
 $0655: [ 74 33 ] CALL $0333
-$0657: [ c4 22 ] JMP  $0622
+$0657: [ c4 22 ] JMP  step_handler
 $0659: [ bc 02 ] MOV  R4, #$02
 $065b: [ c4 fd ] JMP  $06fd
 $065d: [ bc 03 ] MOV  R4, #$03
@@ -1265,7 +1292,7 @@ $0708: [ be 02 ] MOV  R6, #$02
 $070a: [ 34 83 ] CALL $0183
 $070c: [ 04 86 ] JMP  wait_key
 
-
+cas_handler:
 $070e: [ 34 79 ] CALL clear_display
 $0710: [ 74 f3 ] CALL $03f3
 $0712: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
