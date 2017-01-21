@@ -9,4 +9,5 @@ Emulation:
     [X] save disassembly
 
 Implementation:
-[ ] ExecutorThread should broadcast performance
+[X] ExecutorThread should broadcast performance
+[ ] Throttle execution at 100%
