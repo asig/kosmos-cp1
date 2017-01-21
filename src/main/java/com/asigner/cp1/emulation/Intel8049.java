@@ -771,8 +771,9 @@ public class Intel8049 {
                 tick();
 
                 pinRDLowActive.write(0);
-                state.A = ports[0].read();
+                // Now the 8155 will write data to the bus
                 pinRDLowActive.write(1);
+                state.A = ports[0].read();
             }
             break;
 
