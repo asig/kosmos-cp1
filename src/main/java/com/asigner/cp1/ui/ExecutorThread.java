@@ -34,6 +34,14 @@ public class ExecutorThread extends Thread {
 
     private static final Logger logger = Logger.getLogger(ExecutorThread.class.getName());
 
+    public interface ExecutionListener {
+        void executionStarted();
+        void executionStopped();
+        void resetExecuted();
+        void breakpointHit(int addr);
+        void performanceUpdate(double performance);
+    }
+
     public enum Command {
         SINGLE_STEP,
         START,
@@ -81,20 +89,17 @@ public class ExecutorThread extends Thread {
 
     @Override
     public void run() {
-        long start = 0;
-        long cycles = 0;
+        PerformanceMeasurer performanceMeasurer = new PerformanceMeasurer();
         for(;;) {
             Command command = fetchCommand();
             if (command == null) {
                 // can only happen if we're in state "running";
-                cycles += executeInstr();
-                if (cycles >= 2_000_000) {
-                    long dt = System.nanoTime() - start;
-                    double expectedCycles = dt / 2500.0; // 400 kHz -> 2.5 μs per cycle = 2500 ns per cycle
-                    double ratio = cycles / expectedCycles;
-                    logger.finest("Performance: effective cycles = " + cycles + " took " + dt + " nanos, expected cycles = " + expectedCycles + ", performance = " + (ratio * 100) + "%");
-                    start = System.nanoTime();
-                    cycles =0;
+                int executed = executeInstr();
+
+                performanceMeasurer.register(executed);
+                if (performanceMeasurer.isUpdateDue()) {
+                    double performance = performanceMeasurer.getPerformance();
+                    listeners.forEach(l -> l.performanceUpdate(performance));
                 }
             } else {
                 switch(command) {
@@ -107,8 +112,7 @@ public class ExecutorThread extends Thread {
                         break;
                     case START:
                         startExecution();
-                        start = System.nanoTime();
-                        cycles = 0;
+                        performanceMeasurer.reset();
                         listeners.forEach(ExecutionListener::executionStarted);
                         break;
                     case STOP:
