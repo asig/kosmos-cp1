@@ -19,18 +19,24 @@
 
 package com.asigner.cp1.ui.actions;
 
+import com.asigner.cp1.ui.CpuWindow;
 import com.asigner.cp1.ui.SWTResources;
 
 import com.asigner.cp1.ui.ExecutorThread;
 
 public class SingleStepAction extends BaseAction {
 
-    public SingleStepAction(ExecutorThread executorThread) {
+    private final CpuWindow cpuWindow;
+
+    public SingleStepAction(CpuWindow cpuWindow, ExecutorThread executorThread) {
         super(executorThread, "Step", SWTResources.getImage("/com/asigner/cp1/ui/actions/arrow-step-over.png"));
+        this.cpuWindow = cpuWindow;
     }
 
     @Override
     public void run() {
+        cpuWindow.setTraceExecution(true);
         executorThread.postCommand(ExecutorThread.Command.SINGLE_STEP);
+
     }
 }
