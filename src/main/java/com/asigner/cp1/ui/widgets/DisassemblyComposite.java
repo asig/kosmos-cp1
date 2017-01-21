@@ -68,7 +68,7 @@ public class DisassemblyComposite extends Composite {
 
     private final List<BreakpointChangedListener> listeners = new LinkedList<BreakpointChangedListener>();
 
-    private final Image breakpointImage = SWTResources.getImage("/com/asigner/cp1/emulation/ui/widgets/bullet_red.png");
+    private final Image breakpointImage = SWTResources.getImage("/com/asigner/cp1/ui/widgets/bullet_red.png");
     private final int breakpointImgWidth = breakpointImage.getBounds().width;
     private final int breakpointImgHeight = breakpointImage.getBounds().height;
     private final FontMetrics fontMetrics;
