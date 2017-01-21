@@ -67,11 +67,11 @@ public class Main {
             cpu.pinRDLowActive.connectTo(pid.pinRDLowActive);
             cpu.pinWRLowActive.connectTo(pid.pinWRLowActive);
             p2.connectBitTo(6, pid.pinReset);
-            p2.connectBitTo(5, pid.pinIO);
+            p2.connectBitTo(7, pid.pinIO);
             p2.connectBitTo(4, pid.pinCELowActive);
 
             CpuWindow cpuWindow = new CpuWindow(cpu, pid, executorThread);
-            KosmosPanelWindow panelWindow = new KosmosPanelWindow(cpu, pid);
+            KosmosPanelWindow panelWindow = new KosmosPanelWindow(cpu, pid, executorThread);
 
             cpuWindow.open();
             panelWindow.open();
