@@ -15,9 +15,23 @@
 
 ;0x20 - 0x25: 6 Digit "Video RAM"
 
+;0x36: Accu MSB
+;0x37: Accu LSB
+;0x39: Last byte read from external RAM
+;0x3a: Virtual Machine's Accumulator
+
+;Global Register usage:
+;----------------------
+;R0: Address pointer
+;R1: Address pointer
+;R2: ????
+;R3: ????
+;R4: ????
+;R5: ????
+;R6: Number of digits entered
+
 ;Listing
 ;-------
-
 
     .org $0
 
@@ -74,18 +88,18 @@ $0038: [ bf 00 ] MOV  R7, #$00
 $003a: [ b8 1a ] MOV  R0, #$1a
 $003c: [ b0 01 ] MOV  @R0, #$01  ; Set R1' to 1
 $003e: [ d4 b4 ] CALL $06b4
-$0040: [ 9a cf ] ANL  P2, #$cf
-$0042: [ 9a bf ] ANL  P2, #$bf
-$0044: [ 9a ef ] ANL  P2, #$ef
-$0046: [ 8a 20 ] ORL  P2, #$20
+$0040: [ 9a cf ] ANL  P2, #$cf   ; P2 &= 1100 1111 --> 8155 /CE == 0, /CE == 0
+$0042: [ 9a bf ] ANL  P2, #$bf   ; P2 &= 1011 1111 --> 8155 /Reset == 0
+$0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
+$0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1
 $0048: [ b8 00 ] MOV  R0, #$00
 $004a: [ 23 0f ] MOV  A, #$0f
 $004c: [ 90    ] MOVX @R0, A
 $004d: [ b8 02 ] MOV  R0, #$02
 $004f: [ 23 ff ] MOV  A, #$ff
 $0051: [ 90    ] MOVX @R0, A
-$0052: [ 9a df ] ANL  P2, #$df
-$0054: [ 8a 10 ] ORL  P2, #$10
+$0052: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
+$0054: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
 $0056: [ b8 00 ] MOV  R0, #$00
 $0058: [ 23 0d ] MOV  A, #$0d
 $005a: [ 90    ] MOVX @R0, A
@@ -94,8 +108,8 @@ $005d: [ 23 ff ] MOV  A, #$ff
 $005f: [ 90    ] MOVX @R0, A
 $0060: [ b8 03 ] MOV  R0, #$03
 $0062: [ 90    ] MOVX @R0, A
-$0063: [ 9a 5f ] ANL  P2, #$5f
-$0065: [ 8a 10 ] ORL  P2, #$10
+$0063: [ 9a 5f ] ANL  P2, #$5f     P2 &= 0101 1111 --> /CE == 0, IO == 0
+$0065: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
 $0067: [ b8 13 ] MOV  R0, #$13
 $0069: [ 23 5a ] MOV  A, #$5a
 $006b: [ 90    ] MOVX @R0, A
@@ -111,7 +125,7 @@ $007a: [ 23 ff ] MOV  A, #$ff
 $007c: [ a0    ] MOV  @R0, A
 $007d: [ 18    ] INC  R0
 $007e: [ eb 7c ] DJNZ R3, $007c
-$0080: [ 9a 4f ] ANL  P2, #$4f
+$0080: [ 9a 4f ] ANL  P2, #$4f     ; P2 &= 0100 1111 --> 8155 /CE == 0, /CE == 0, IO == 0
 $0082: [ 74 28 ] CALL $0328
 $0084: [ 25    ] EN   TCNTI
 $0085: [ 55    ] STRT T
@@ -179,7 +193,7 @@ $00df: [ f1    ] MOV  A, @R1
 $00e0: [ 07    ] DEC  A
 $00e1: [ a0    ] MOV  @R0, A
 $00e2: [ aa    ] MOV  R2, A
-$00e3: [ 34 aa ] CALL $01aa
+$00e3: [ 34 aa ] CALL append_digit
 $00e5: [ 04 86 ] JMP  wait_key
 $00e7: [ 24 46 ] JMP  $0146
 $00e9: [ 24 0c ] JMP  $010c
@@ -289,6 +303,9 @@ $0177: [ 97    ] CLR  C         ; Clear carry
 $0178: [ 83    ] RET            ; Return
 
 
+; Clear display
+; --------------
+;
 clear_display:
 $0179: [ ba 06 ] MOV  R2, #$06
 $017b: [ b8 20 ] MOV  R0, #$20  ; 0x20 == 32: Begin of "Video RAM"
@@ -297,62 +314,85 @@ $017f: [ 18    ] INC  R0
 $0180: [ ea 7d ] DJNZ R2, $017d
 $0182: [ 83    ] RET
 
-
-
-?????????
-=========
-- Input:
-  - R0: ???
-  - R2: ???
-```
-$0183: [ f0    ] MOV  A, @R0
-$0184: [ 54 d9 ] CALL $02d9
-$0186: [ b6 93 ] JF0  $0193
-$0188: [ f4 eb ] CALL $07eb
-$018a: [ fc    ] MOV  A, R4
-$018b: [ f4 eb ] CALL $07eb
-$018d: [ fa    ] MOV  A, R2
-$018e: [ f4 eb ] CALL $07eb
-$0190: [ be 00 ] MOV  R6, #$00
+; Print one byte
+; --------------
+; Print a value from internal RAM.
+;
+; Input:
+;   - R0: Address of value to be printed
+;   - R6: Offset into "Video RAM"
+;   - F0: If set, don't print hundreds
+;
+; Output:
+;   - R6: Set to Zero
+print_value:
+$0183: [ f0    ] MOV  A, @R0       ; Load value to print
+$0184: [ 54 d9 ] CALL itoa
+$0186: [ b6 93 ] JF0  no_hundreds
+$0188: [ f4 eb ] CALL print_digit
+print_tens_and_ones:
+$018a: [ fc    ] MOV  A, R4        ; Load 10s
+$018b: [ f4 eb ] CALL print_digit  ; Print them
+$018d: [ fa    ] MOV  A, R2        ; Load 1s
+$018e: [ f4 eb ] CALL print_digit  ; Print
+$0190: [ be 00 ] MOV  R6, #$00     ; Set digits entered to 0 again. ??????
 $0192: [ 83    ] RET
+no_hundreds:
 $0193: [ 85    ] CLR  F0
-$0194: [ 24 8a ] JMP  $018a
+$0194: [ 24 8a ] JMP  print_tens_and_ones
 ```
 
-?????????
-=========
-$0196: [ 81    ] MOVX A, @R1
-$0197: [ b8 39 ] MOV  R0, #$39
-$0199: [ a0    ] MOV  @R0, A
-$019a: [ be 00 ] MOV  R6, #$00
-$019c: [ 85    ] CLR  F0
-$019d: [ 95    ] CPL  F0
-$019e: [ 34 83 ] CALL $0183
-$01a0: [ 19    ] INC  R1
-$01a1: [ 81    ] MOVX A, @R1
-$01a2: [ b8 39 ] MOV  R0, #$39
-$01a4: [ a0    ] MOV  @R0, A
-$01a5: [ be 02 ] MOV  R6, #$02
-$01a7: [ 34 83 ] CALL $0183
+; Fetch and print external RAM
+; ----------------------------
+; Read 2 bytes from external RAM and print it.
+;
+; Input:
+;   - R1: External address
+;
+; Output:
+;   - $39: Content of last byte read
+fetch_and_print_ram:
+$0196: [ 81    ] MOVX A, @R1      ; Read from external RAM
+$0197: [ b8 39 ] MOV  R0, #$39    ; Address to store value in is 0x39
+$0199: [ a0    ] MOV  @R0, A      ; Store value
+$019a: [ be 00 ] MOV  R6, #$00    ; print "high byte": start at 0 in display RAM
+$019c: [ 85    ] CLR  F0          ; and set...
+$019d: [ 95    ] CPL  F0          ; ... F0
+$019e: [ 34 83 ] CALL print_value ; print it
+$01a0: [ 19    ] INC  R1          ; read next address
+$01a1: [ 81    ] MOVX A, @R1      ; from external RAM
+$01a2: [ b8 39 ] MOV  R0, #$39    ; store it...
+$01a4: [ a0    ] MOV  @R0, A      ; ... in 0x39
+$01a5: [ be 02 ] MOV  R6, #$02    ; print "low byte": start at 2
+$01a7: [ 34 83 ] CALL print_value ; print value
 $01a9: [ 83    ] RET
 ```
 
-?????????
-=========
-$01aa: [ b8 21 ] MOV  R0, #$21
-$01ac: [ b9 22 ] MOV  R1, #$22
-$01ae: [ bb 04 ] MOV  R3, #$04
-$01b0: [ f1    ] MOV  A, @R1
-$01b1: [ a0    ] MOV  @R0, A
-$01b2: [ 18    ] INC  R0
-$01b3: [ 19    ] INC  R1
-$01b4: [ eb b0 ] DJNZ R3, $01b0
-$01b6: [ 23 00 ] MOV  A, #$00
-$01b8: [ 6a    ] ADD  A, R2
-$01b9: [ e3    ] MOVP3 A, @A
-$01ba: [ b8 25 ] MOV  R0, #$25
-$01bc: [ a0    ] MOV  @R0, A
-$01bd: [ 1e    ] INC  R6
+; Append digit to Video RAM
+; -------------------------
+; Shift number in Video RAM to the left and append 1 digit.
+;
+; Input:
+;   - R2: Digit to append
+;   - R6: Number of digits shown (not used)
+;
+; Output:
+;   - R6: Number of digits shown
+append_digit:
+$01aa: [ b8 21 ] MOV  R0, #$21    ; Target address: 2nd digit of Video RAM
+$01ac: [ b9 22 ] MOV  R1, #$22    ; Source address: 3nd digit of Video RAM
+$01ae: [ bb 04 ] MOV  R3, #$04    ; 4 digits to copy
+$01b0: [ f1    ] MOV  A, @R1      ; move from source
+$01b1: [ a0    ] MOV  @R0, A      ; to target
+$01b2: [ 18    ] INC  R0          ; increment target pointer
+$01b3: [ 19    ] INC  R1          ; increment source pointer
+$01b4: [ eb b0 ] DJNZ R3, $01b0   ; continue while there are digits left
+$01b6: [ 23 00 ] MOV  A, #$00     ; Move R2...
+$01b8: [ 6a    ] ADD  A, R2       ; ... to A
+$01b9: [ e3    ] MOVP3 A, @A      ; Load segments for that digit ...
+$01ba: [ b8 25 ] MOV  R0, #$25    ; ... and store it...
+$01bc: [ a0    ] MOV  @R0, A      ; ... in the right-most digit
+$01bd: [ 1e    ] INC  R6          ; increment digits entered.
 $01be: [ 83    ] RET
 
 
@@ -401,12 +441,12 @@ $01fb: [ 04 86 ] JMP  wait_key
 $01fd: [ 24 bf ] JMP  $01bf
 
 out_handler:
-$01ff: [ 23 f7 ] MOV  A, #$f7
+$01ff: [ 23 f7 ] MOV  A, #$f7 ; 1111 0111 -> A
 $0201: [ 74 33 ] CALL $0333
-$0203: [ fe    ] MOV  A, R6
-$0204: [ c6 27 ] JZ   $0227
-$0206: [ d3 03 ] XRL  A, #$03
-$0208: [ 96 40 ] JNZ  $0240
+$0203: [ fe    ] MOV  A, R6        ; Load number of digits that were entered
+$0204: [ c6 27 ] JZ   no_digits    ; jump if zero
+$0206: [ d3 03 ] XRL  A, #$03      ; is it 3?
+$0208: [ 96 40 ] JNZ  not_3_digits ; got to not_3_digits if not
 $020a: [ b8 27 ] MOV  R0, #$27
 $020c: [ 74 38 ] CALL $0338
 $020e: [ b8 3a ] MOV  R0, #$3a
@@ -419,10 +459,11 @@ $0219: [ af    ] MOV  R7, A
 $021a: [ 34 79 ] CALL clear_display
 $021c: [ ff    ] MOV  A, R7
 $021d: [ 74 0a ] CALL $030a
-$021f: [ 34 96 ] CALL $0196
+$021f: [ 34 96 ] CALL fetch_and_print_ram
 $0221: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0223: [ b0 39 ] MOV  @R0, #$39   ; ... to 'C'
 $0225: [ 04 86 ] JMP  wait_key
+no_digits:
 $0227: [ 97    ] CLR  C
 $0228: [ ff    ] MOV  A, R7
 $0229: [ 03 01 ] ADD  A, #$01
@@ -438,10 +479,12 @@ $0238: [ bf ff ] MOV  R7, #$ff
 $023a: [ 24 46 ] JMP  $0146
 $023c: [ bf 7f ] MOV  R7, #$7f
 $023e: [ 44 3a ] JMP  $023a
-$0240: [ fe    ] MOV  A, R6
-$0241: [ d3 01 ] XRL  A, #$01
-$0243: [ c6 47 ] JZ   $0247
+not_3_digits:
+$0240: [ fe    ] MOV  A, R6     ; load number of digits entered
+$0241: [ d3 01 ] XRL  A, #$01   ; is it 1?
+$0243: [ c6 47 ] JZ   one_digit ; yes
 $0245: [ 04 c9 ] JMP  $00c9
+one_digit:
 $0247: [ b8 27 ] MOV  R0, #$27
 $0249: [ f0    ] MOV  A, @R0
 $024a: [ d3 09 ] XRL  A, #$09
@@ -451,7 +494,7 @@ $0250: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0252: [ b0 39 ] MOV  @R0, #$39   ; ... to 'C'
 $0254: [ b8 07 ] MOV  R0, #$07
 $0256: [ be 02 ] MOV  R6, #$02
-$0258: [ 34 83 ] CALL $0183
+$0258: [ 34 83 ] CALL print_value
 $025a: [ 04 86 ] JMP  wait_key
 ```
 
@@ -469,9 +512,9 @@ $0263: [ b9 25 ] MOV  R1, #$25
 $0265: [ bd fe ] MOV  R5, #$fe
 $0267: [ ba 06 ] MOV  R2, #$06
 $0269: [ bc 35 ] MOV  R4, #$35
-$026b: [ 8a a0 ] ORL  P2, #$a0   ; P2 |= 1010 0000 --> /CE == 1, IO == 1
+$026b: [ 8a a0 ] ORL  P2, #$a0   ; P2 |= 1010 0000 --> IO == 1, /CE == 1
 $026d: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
-$026f: [ 27    ] CLR  A          ; Clear Accumulator
+$026f: [ 27    ] CLR  A          ;
 $0270: [ b8 01 ] MOV  R0, #$01   ; Address Port A
 $0272: [ 90    ] MOVX @R0, A     ; Write 0 -> Port A
 $0273: [ fd    ] MOV  A, R5
@@ -521,7 +564,7 @@ $02ab: [ b8 3a ] MOV  R0, #$3a
 $02ad: [ f0    ] MOV  A, @R0
 $02ae: [ 92 ce ] JB4  $02ce
 $02b0: [ d2 d4 ] JB6  $02d4
-$02b2: [ 9a 7f ] ANL  P2, #$7f
+$02b2: [ 9a 7f ] ANL  P2, #$7f ; P2 &= 0111 1111 --> IO == 0
 $02b4: [ 2f    ] XCH  A, R7
 $02b5: [ c5    ] SEL  RB0
 $02b6: [ 25    ] EN   TCNTI
@@ -540,33 +583,49 @@ $02c6: [ 44 a6 ] JMP  $02a6
 $02c8: [ 23 02 ] MOV  A, #$02
 $02ca: [ 74 2e ] CALL $032e
 $02cc: [ 44 a6 ] JMP  $02a6
-$02ce: [ 9a df ] ANL  P2, #$df
-$02d0: [ 8a 10 ] ORL  P2, #$10
+$02ce: [ 9a df ] ANL  P2, #$df  ; P2 &= 1101 1111 --> /CE == 0
+$02d0: [ 8a 10 ] ORL  P2, #$10  ; P2 |= 0001 0000 --> 8155 /CE == 1
 $02d2: [ 44 b0 ] JMP  $02b0
-$02d4: [ 8a 80 ] ORL  P2, #$80
+$02d4: [ 8a 80 ] ORL  P2, #$80  ; P2 |= 1000 0000 --> IO == 1
 $02d6: [ 44 b4 ] JMP  $02b4
 $02d8: [ 83    ] RET
+
+
+; Convert Integer value to single digits ("itoa")
+; -----------------------------------------------
+; Converts the value in A to 3 decimal digits.
+;
+; Input:
+;   - A: Value to convert
+;
+; Output:
+;   - A: hundreds
+;   - R2: ones
+;   - R4: tens
+itao:
 $02d9: [ 97    ] CLR  C
 $02da: [ bc 00 ] MOV  R4, #$00
-$02dc: [ 03 f6 ] ADD  A, #$f6
-$02de: [ e6 e4 ] JNC  $02e4
-$02e0: [ 97    ] CLR  C
-$02e1: [ 1c    ] INC  R4
-$02e2: [ 44 dc ] JMP  $02dc
-$02e4: [ 03 0a ] ADD  A, #$0a
-$02e6: [ aa    ] MOV  R2, A
+$02dc: [ 03 f6 ] ADD  A, #$f6    ; Subtract 10 (== Add 246 mod 256)
+$02de: [ e6 e4 ] JNC  $02e4      ; Carry not set -> A was < 10
+$02e0: [ 97    ] CLR  C          ; reset carry
+$02e1: [ 1c    ] INC  R4         ; Count tens
+$02e2: [ 44 dc ] JMP  $02dc      ; check again.
+$02e4: [ 03 0a ] ADD  A, #$0a    ; undo last subtract
+$02e6: [ aa    ] MOV  R2, A      ; Store lowest digit (ones) in R2
 $02e7: [ 97    ] CLR  C
-$02e8: [ fc    ] MOV  A, R4
-$02e9: [ bc 00 ] MOV  R4, #$00
-$02eb: [ 03 f6 ] ADD  A, #$f6
-$02ed: [ e6 f3 ] JNC  $02f3
-$02ef: [ 97    ] CLR  C
-$02f0: [ 1c    ] INC  R4
-$02f1: [ 44 eb ] JMP  $02eb
-$02f3: [ 03 0a ] ADD  A, #$0a
-$02f5: [ 2c    ] XCH  A, R4
+$02e8: [ fc    ] MOV  A, R4      ; Bring tens to Accumulator
+$02e9: [ bc 00 ] MOV  R4, #$00   ; Set hundreds to 0
+$02eb: [ 03 f6 ] ADD  A, #$f6    ; same as above, but now effectively count hundreds
+$02ed: [ e6 f3 ] JNC  $02f3      ; Carry not set -> A was < 10
+$02ef: [ 97    ] CLR  C          ; reset carry
+$02f0: [ 1c    ] INC  R4         ; count hundreds
+$02f1: [ 44 eb ] JMP  $02eb      ; check again
+$02f3: [ 03 0a ] ADD  A, #$0a    ; undo last subtract
+$02f5: [ 2c    ] XCH  A, R4      ; Store hundreds in A, tens in R4
 $02f6: [ 97    ] CLR  C
 $02f7: [ 83    ] RET
+
+; DEAD CODE FROM HERE ON?
 $02f8: [ 00    ] NOP
 $02f9: [ 88 c4 ] ORL  BUS, #$c4
 $02fb: [ 00    ] NOP
@@ -574,38 +633,43 @@ $02fc: [ 00    ] NOP
 $02fd: [ 00    ] NOP
 $02fe: [ 00    ] NOP
 $02ff: [ 1e    ] INC  R6
-$0300: [ 3f    ] MOVD P7, A
-$0301: [ 06    ] .DB  $06
-$0302: [ 5b    ] ANL  A, R3
-$0303: [ 4f    ] ORL  A, R7
-$0304: [ 66    ] .DB  $66
-$0305: [ 6d    ] ADD  A, R5
-$0306: [ 7d    ] ADDC A, R5
-$0307: [ 27    ] CLR  A
-$0308: [ 7f    ] ADDC A, R7
-$0309: [ 6f    ] ADD  A, R7
 
-// FALLTHROUGH??
+
+    .org $300
+; Segment codes for digits 0 .. 9
+
+$0300: [ 3f    ] .DB  $3f  ; Digit '0'
+$0301: [ 06    ] .DB  $06  ; Digit '1'
+$0302: [ 5b    ] .DB  $5b  ; Digit '2'
+$0303: [ 4f    ] .DB  $4f  ; Digit '3'
+$0304: [ 66    ] .DB  $66  ; Digit '4'
+$0305: [ 6d    ] .DB  $6d  ; Digit '5'
+$0306: [ 7d    ] .DB  $7d  ; Digit '6'
+$0307: [ 27    ] .DB  $27  ; Digit '7'
+$0308: [ 7f    ] .DB  $7f  ; Digit '8'
+$0309: [ 6f    ] .DB  $6f  ; Digit '9'
+
 
 ??????????????????
 ------------------
-$030a: [ f2 19 ] JB7  $0319
+$030a: [ f2 19 ] JB7  upper_half ; Jump if addr >= 128
 $030c: [ ab    ] MOV  R3, A
 $030d: [ 23 ef ] MOV  A, #$ef
 $030f: [ 74 33 ] CALL $0333
-$0311: [ 8a 20 ] ORL  P2, #$20
-$0313: [ 9a ef ] ANL  P2, #$ef
+$0311: [ 8a 20 ] ORL  P2, #$20   ; Disable extension RAM: P2 |= 0010 0000 --> /CE == 1
+$0313: [ 9a ef ] ANL  P2, #$ef   ; Enable default RAM: P2 &= 1110 1111 --> 8155 /CE == 0
 $0315: [ fb    ] MOV  A, R3
 $0316: [ e7    ] RL   A
 $0317: [ a9    ] MOV  R1, A
 $0318: [ 83    ] RET
-$0319: [ 03 80 ] ADD  A, #$80
-$031b: [ 97    ] CLR  C
-$031c: [ ab    ] MOV  R3, A
+upper_half:
+$0319: [ 03 80 ] ADD  A, #$80    ; bring address to lower half
+$031b: [ 97    ] CLR  C          ; clear carry
+$031c: [ ab    ] MOV  R3, A      ; store address in R3
 $031d: [ 23 10 ] MOV  A, #$10
 $031f: [ 74 2e ] CALL $032e
-$0321: [ 8a 10 ] ORL  P2, #$10
-$0323: [ 9a df ] ANL  P2, #$df
+$0321: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
+$0323: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
 $0325: [ fb    ] MOV  A, R3
 $0326: [ 64 16 ] JMP  $0316
 
@@ -702,16 +766,16 @@ $0385: [ 23 40 ] MOV  A, #$40
 $0387: [ 74 2e ] CALL $032e
 $0389: [ 23 ef ] MOV  A, #$ef
 $038b: [ 74 33 ] CALL $0333
-$038d: [ 8a a0 ] ORL  P2, #$a0
-$038f: [ 9a ef ] ANL  P2, #$ef
+$038d: [ 8a a0 ] ORL  P2, #$a0   ; P2 |= 1010 0000 --> /CE == 1, IO == 1
+$038f: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
 $0391: [ 83    ] RET
 
 ?????????????????????????????
 -----------------------------
 $0392: [ 23 50 ] MOV  A, #$50
 $0394: [ 74 2e ] CALL $032e
-$0396: [ 9a df ] ANL  P2, #$df
-$0398: [ 8a 90 ] ORL  P2, #$90
+$0396: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
+$0398: [ 8a 90 ] ORL  P2, #$90   ; P2 |= 1001 0000 --> 8155 /CE == 1, IO == 1
 $039a: [ 83    ] RET
 
 ?????????????????????????????
@@ -755,34 +819,36 @@ $03bc: [ 83    ] RET             ; cycles: R3 * 201 * 2 + 1
 
 
 
-?????????????????  ; Probably "Save to tape" subroutine...
+?????????????????  ; Probably "load from/save to tape" subroutine...
 -----------------
-$03bd: [ b9 00 ] MOV  R1, #$00
+$03bd: [ b9 00 ] MOV  R1, #$00     ; 255 bytes to write
 $03bf: [ b8 3a ] MOV  R0, #$3a
-$03c1: [ f0    ] MOV  A, @R0
-$03c2: [ 12 eb ] JB0  $03eb
+$03c1: [ f0    ] MOV  A, @R0       ; ??????
+$03c2: [ 12 eb ] JB0  $03eb        ;
 $03c4: [ 97    ] CLR  C
-$03c5: [ b8 08 ] MOV  R0, #$08
-$03c7: [ 81    ] MOVX A, @R1
-$03c8: [ 67    ] RRC  A
-$03c9: [ e6 dd ] JNC  $03dd
-$03cb: [ 99 7f ] ANL  P1, #$7f
+$03c5: [ b8 08 ] MOV  R0, #$08     ; 8 bits to send
+$03c7: [ 81    ] MOVX A, @R1       ; Read a byte from RAM
+$03c8: [ 67    ] RRC  A            ; LSB -> Carry
+$03c9: [ e6 dd ] JNC  write_0      ; jump if 0 bit
+$03cb: [ 99 7f ] ANL  P1, #$7f     ; P1 &= 01111111 -> clear cass data
 $03cd: [ bb 1e ] MOV  R3, #$1e     ; 30 millis
 $03cf: [ 74 b6 ] CALL delay_millis
-$03d1: [ 89 80 ] ORL  P1, #$80
+$03d1: [ 89 80 ] ORL  P1, #$80     ; P1 |= 10000000 -> set cass data
 $03d3: [ bb 3c ] MOV  R3, #$3c     ; 60 millis
 $03d5: [ 74 b6 ] CALL delay_millis
-$03d7: [ e8 c8 ] DJNZ R0, $03c8
-$03d9: [ e9 bf ] DJNZ R1, $03bf
+$03d7: [ e8 c8 ] DJNZ R0, $03c8    ; next bit
+$03d9: [ e9 bf ] DJNZ R1, $03bf    ; next byte
 $03db: [ 97    ] CLR  C
 $03dc: [ 83    ] RET
-$03dd: [ 99 7f ] ANL  P1, #$7f
+write_0:
+$03dd: [ 99 7f ] ANL  P1, #$7f     ; P1 &= 01111111 -> clear cass data
 $03df: [ bb 3c ] MOV  R3, #$3c     ; 60 millis
 $03e1: [ 74 b6 ] CALL delay_millis
-$03e3: [ 89 80 ] ORL  P1, #$80
+$03e3: [ 89 80 ] ORL  P1, #$80     ; P1 |= 10000000 -> set cass data
 $03e5: [ bb 1e ] MOV  R3, #$1e     ; 30 millis
 $03e7: [ 74 b6 ] CALL delay_millis
-$03e9: [ 64 d7 ] JMP  $03d7
+$03e9: [ 64 d7 ] JMP  $03d7        ; back to main loop
+
 $03eb: [ 85    ] CLR  F0
 $03ec: [ 95    ] CPL  F0
 $03ed: [ 23 fe ] MOV  A, #$fe
@@ -1083,7 +1149,7 @@ $05b5: [ 2c    ] XCH  A, R4
 $05b6: [ 90    ] MOVX @R0, A
 $05b7: [ 23 bf ] MOV  A, #$bf
 $05b9: [ 74 33 ] CALL $0333
-$05bb: [ 9a 7f ] ANL  P2, #$7f
+$05bb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05bd: [ c4 2f ] JMP  $062f
 $05bf: [ 97    ] CLR  C
 $05c0: [ 03 f7 ] ADD  A, #$f7
@@ -1101,7 +1167,7 @@ $05d2: [ 80    ] MOVX A, @R0
 $05d3: [ 74 9b ] CALL $039b
 $05d5: [ 23 bf ] MOV  A, #$bf
 $05d7: [ 74 33 ] CALL $0333
-$05d9: [ 9a 7f ] ANL  P2, #$7f
+$05d9: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05db: [ c4 2f ] JMP  $062f
 $05dd: [ 97    ] CLR  C
 $05de: [ 03 f7 ] ADD  A, #$f7
@@ -1111,7 +1177,7 @@ $05e3: [ 74 79 ] CALL $0379
 $05e5: [ a4 d3 ] JMP  $05d3
 $05e7: [ 23 bf ] MOV  A, #$bf
 $05e9: [ 74 33 ] CALL $0333
-$05eb: [ 9a 7f ] ANL  P2, #$7f
+$05eb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05ed: [ 84 bd ] JMP  $04bd
 $05ef: [ 81    ] MOVX A, @R1
 $05f0: [ aa    ] MOV  R2, A
@@ -1186,10 +1252,10 @@ $065d: [ bc 03 ] MOV  R4, #$03
 $065f: [ c4 fd ] JMP  $06fd
 $0661: [ 23 ef ] MOV  A, #$ef
 $0663: [ 74 33 ] CALL $0333
-$0665: [ 8a 20 ] ORL  P2, #$20
-$0667: [ 9a ef ] ANL  P2, #$ef
+$0665: [ 8a 20 ] ORL  P2, #$20    ; P2 |= 0010 0000 --> /CE == 1
+$0667: [ 9a ef ] ANL  P2, #$ef    ; P2 &= 1110 1111 --> 8155 /CE == 0
 $0669: [ b9 00 ] MOV  R1, #$00
-$066b: [ 34 96 ] CALL $0196
+$066b: [ 34 96 ] CALL fetch_and_print_ram
 $066d: [ 44 21 ] JMP  $0221
 $066f: [ 04 98 ] JMP  $0098
 $0671: [ 04 86 ] JMP  wait_key
@@ -1213,7 +1279,7 @@ $068f: [ 97    ] CLR  C
 $0690: [ b8 05 ] MOV  R0, #$05
 $0692: [ ad    ] MOV  R5, A
 $0693: [ be 02 ] MOV  R6, #$02
-$0695: [ 34 83 ] CALL $0183
+$0695: [ 34 83 ] CALL print_value
 $0697: [ b9 3a ] MOV  R1, #$3a
 $0699: [ f1    ] MOV  A, @R1
 $069a: [ 12 a7 ] JB0  $06a7
@@ -1241,7 +1307,7 @@ $06b6: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $06b8: [ b0 73 ] MOV  @R0, #$73   ; ... to 'P'
 $06ba: [ b8 38 ] MOV  R0, #$38
 $06bc: [ be 02 ] MOV  R6, #$02
-$06be: [ 34 83 ] CALL $0183
+$06be: [ 34 83 ] CALL print_value
 $06c0: [ 83    ] RET
 $06c1: [ 34 79 ] CALL clear_display
 $06c3: [ bb ff ] MOV  R3, #$ff    ; 255 millis
@@ -1268,14 +1334,17 @@ $06e6: [ be 00 ] MOV  R6, #$00
 $06e8: [ 04 86 ] JMP  wait_key
 
 
+?????????????????????????? Print ACCU maybe?
+--------------------------
+print_accu:
 $06ea: [ be 00 ] MOV  R6, #$00
 $06ec: [ 85    ] CLR  F0
 $06ed: [ 95    ] CPL  F0
 $06ee: [ b8 36 ] MOV  R0, #$36
-$06f0: [ 34 83 ] CALL $0183
+$06f0: [ 34 83 ] CALL print_value
 $06f2: [ b8 37 ] MOV  R0, #$37
 $06f4: [ be 02 ] MOV  R6, #$02
-$06f6: [ 34 83 ] CALL $0183
+$06f6: [ 34 83 ] CALL print_value
 $06f8: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $06fa: [ b0 77 ] MOV  @R0, #$77   ; ... to 'A'
 $06fc: [ 83    ] RET
@@ -1289,7 +1358,7 @@ $0702: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0704: [ b0 71 ] MOV  @R0, #$71   ; ... to 'F'
 $0706: [ b8 04 ] MOV  R0, #$04
 $0708: [ be 02 ] MOV  R6, #$02
-$070a: [ 34 83 ] CALL $0183
+$070a: [ 34 83 ] CALL print_value
 $070c: [ 04 86 ] JMP  wait_key
 
 cas_handler:
@@ -1458,20 +1527,31 @@ $07e8: [ 74 2e ] CALL $032e
 $07ea: [ 83    ] RET
 
 
-???????????????????????
------------------------
-$07eb: [ ab    ] MOV  R3, A
-$07ec: [ 23 00 ] MOV  A, #$00
-$07ee: [ 6b    ] ADD  A, R3
-$07ef: [ e3    ] MOVP3 A, @A
-$07f0: [ ab    ] MOV  R3, A
-$07f1: [ fe    ] MOV  A, R6
-$07f2: [ 03 20 ] ADD  A, #$20
-$07f4: [ 17    ] INC  A
-$07f5: [ a8    ] MOV  R0, A
-$07f6: [ fb    ] MOV  A, R3
-$07f7: [ a0    ] MOV  @R0, A
-$07f8: [ 1e    ] INC  R6
+; Print single digit
+; ------------------
+; Moves a single digit store in A to display video to position R6, and
+; increases R6.
+;
+; Input:
+;   - A: Digit to print (0..9)
+;   - R6: Digit offset (0..4)
+;
+; Output:
+;   - R6: Next digit offset
+;
+print_digit:
+$07eb: [ ab    ] MOV  R3, A    ;
+$07ec: [ 23 00 ] MOV  A, #$00  ;
+$07ee: [ 6b    ] ADD  A, R3    ; A = A + 0?? Why this?
+$07ef: [ e3    ] MOVP3 A, @A   ; Load segment for digit in A
+$07f0: [ ab    ] MOV  R3, A    ; Store segment in R3
+$07f1: [ fe    ] MOV  A, R6    ; Digit offset to A
+$07f2: [ 03 20 ] ADD  A, #$20  ; add display base address
+$07f4: [ 17    ] INC  A        ; make room for leftmost indicator
+$07f5: [ a8    ] MOV  R0, A    ; move to address register
+$07f6: [ fb    ] MOV  A, R3    ;
+$07f7: [ a0    ] MOV  @R0, A   ; Store segment data in display
+$07f8: [ 1e    ] INC  R6       ; move to next digit
 $07f9: [ 83    ] RET
 
 
