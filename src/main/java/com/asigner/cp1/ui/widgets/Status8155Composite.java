@@ -32,12 +32,12 @@ import org.eclipse.swt.widgets.Group;
 public class Status8155Composite extends Composite  {
     private CLabel lblPaMode;
     private CLabel lblPaVal;
-    private Button btnPaInterruptEnabled;
+    private ReadonlyCheckbox btnPaInterruptEnabled;
     private BitsetWidget bitsetPaVal;
 
     private CLabel lblPbMode;
     private CLabel lblPbVal;
-    private Button btnPbInterruptEnabled;
+    private ReadonlyCheckbox btnPbInterruptEnabled;
     private BitsetWidget bitsetPbVal;
 
     private CLabel lblPcMode;
@@ -72,8 +72,7 @@ public class Status8155Composite extends Composite  {
             lblPaMode = new CLabel(grp, SWT.BORDER);
             lblPaMode.setText("OUTPUT");
 
-            btnPaInterruptEnabled = new Button(grp, SWT.CHECK);
-            btnPaInterruptEnabled.setEnabled(false);
+            btnPaInterruptEnabled = new ReadonlyCheckbox(grp, SWT.NONE);
             btnPaInterruptEnabled.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
             btnPaInterruptEnabled.setText("Interrupt Enabled");
 
@@ -98,8 +97,7 @@ public class Status8155Composite extends Composite  {
             lblPbMode = new CLabel(grp, SWT.BORDER);
             lblPbMode.setText("OUTPUT");
 
-            btnPbInterruptEnabled = new Button(grp, SWT.CHECK);
-            btnPbInterruptEnabled.setEnabled(false);
+            btnPbInterruptEnabled = new ReadonlyCheckbox(grp, SWT.NONE);
             btnPbInterruptEnabled.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
             btnPbInterruptEnabled.setText("Interrupt Enabled");
 
@@ -169,12 +167,12 @@ public class Status8155Composite extends Composite  {
         lblPaMode.setText(pid.getPaMode().toString());
         lblPaVal.setText(String.format("%02x", pid.getPaValue()));
         bitsetPaVal.setValue(pid.getPaValue());
-        btnPaInterruptEnabled.setSelection(pid.isPaInterruptEnabled());
+        btnPaInterruptEnabled.setChecked(pid.isPaInterruptEnabled());
 
         lblPbMode.setText(pid.getPbMode().toString());
         lblPbVal.setText(String.format("%02x", pid.getPbValue()));
         bitsetPbVal.setValue(pid.getPbValue());
-        btnPbInterruptEnabled.setSelection(pid.isPbInterruptEnabled());
+        btnPbInterruptEnabled.setChecked(pid.isPbInterruptEnabled());
 
         lblPcMode.setText(pid.getPcMode().toString());
         lblPcVal.setText(String.format("%02x", pid.getPcValue()));
