@@ -43,6 +43,7 @@ import com.asigner.cp1.ui.widgets.MemoryComposite;
 import com.asigner.cp1.ui.widgets.Status8049Composite;
 import com.asigner.cp1.ui.widgets.Status8155Composite;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -120,7 +121,6 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
      * Open the window.
      */
     public void open() {
-        Display display = Display.getDefault();
         createActions();
         createContents();
         shell.setMenuBar(createMenuBar());
@@ -158,9 +158,12 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
      * Create contents of the window.
      */
     protected void createContents() {
-        shell = new Shell();
+        Display display = Display.getDefault();
+        shell = new Shell(display, SWT.SHELL_TRIM | SWT.CENTER);
         shell.setText("Intel MCS-48 Emulator");
         shell.setLayout(new GridLayout(1, false));
+        Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
+        shell.setImage(icon);
 
         ToolBar toolbar = new ToolBar(shell, SWT.FLAT);
         ToolItem toolItem1 = new ActionToolItem(toolbar, SWT.PUSH, singleStepAction);

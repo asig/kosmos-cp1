@@ -24,6 +24,7 @@ import com.asigner.cp1.emulation.InputPin;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import com.asigner.cp1.ui.widgets.KosmosControlPanel;
@@ -133,9 +134,12 @@ public class KosmosPanelWindow {
      * Create contents of the window.
      */
     protected void createContents() {
-        shell = new Shell();
+        Display display = Display.getDefault();
+        shell = new Shell(display, SWT.SHELL_TRIM | SWT.CENTER);
         updateWindowTitle("stopped");
         shell.setLayout(new FillLayout(SWT.HORIZONTAL));
+        Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
+        shell.setImage(icon);
 
         Composite composite = new Composite(shell, SWT.NONE);
         GridLayout gl_composite = new GridLayout(1, false);
