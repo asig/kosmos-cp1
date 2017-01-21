@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="buildSrc" external.linked.project.path="$MODULE_DIR$/../../buildSrc" external.root.project.path="$MODULE_DIR$/../.." external.system.id="GRADLE" external.system.module.group="" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/../../buildSrc/build/classes/main" />
+    <output-test url="file://$MODULE_DIR$/../../buildSrc/build/classes/test" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../buildSrc">
+      <sourceFolder url="file://$MODULE_DIR$/../../buildSrc/src/main/groovy" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../buildSrc/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../buildSrc/src/test/groovy" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../buildSrc/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../buildSrc/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../buildSrc/src/test/resources" type="java-test-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/../../buildSrc/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../buildSrc/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="Gradle: gradle-api-3.1">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.gradle/caches/3.1/generated-gradle-jars/gradle-api-3.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Gradle: gradle-installation-beacon-3.1">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.gradle/wrapper/dists/gradle-3.1-bin/37qejo6a26ua35lyn7h1u9v2n/gradle-3.1/lib/gradle-installation-beacon-3.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Gradle: groovy-all-2.4.7">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.gradle/wrapper/dists/gradle-3.1-bin/37qejo6a26ua35lyn7h1u9v2n/gradle-3.1/lib/groovy-all-2.4.7.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>
