@@ -43,13 +43,15 @@ public class KosmosPanelWindow {
 
     private static final Logger logger = Logger.getLogger(KosmosPanelWindow.class.getName());
 
+    private static final String WINDOW_TITLE = "Kosmos CP1";
+
     private final Intel8049 cpu;
     private final Intel8155 pid;
 
     private Shell shell;
     private KosmosControlPanel kosmosControlPanel;
 
-    public KosmosPanelWindow(Intel8049 cpu, Intel8155 pid) {
+    public KosmosPanelWindow(Intel8049 cpu, Intel8155 pid, ExecutorThread executorThread) {
         this.cpu = cpu;
         this.pid = pid;
 
@@ -59,6 +61,36 @@ public class KosmosPanelWindow {
         // so we connect that pin to the panel to allow it to pick this up and then
         // send its data to the port.
         cpu.pinPROG.connectTo(new InputPin("PROG", this::pinProgWritten));
+
+        executorThread.addListener(new ExecutorThread.ExecutionListener() {
+            @Override
+            public void executionStarted() {
+                shell.getDisplay().syncExec(() -> updateWindowTitle("running"));
+            }
+
+            @Override
+            public void executionStopped() {
+                shell.getDisplay().syncExec(() -> updateWindowTitle("stopped"));
+            }
+
+            @Override
+            public void resetExecuted() {
+            }
+
+            @Override
+            public void breakpointHit(int addr) {
+                shell.getDisplay().syncExec(() -> updateWindowTitle("stopped"));
+            }
+
+            @Override
+            public void performanceUpdate(double performance) {
+                shell.getDisplay().syncExec(() -> updateWindowTitle(String.format("%d%%", (int)(performance*100+.5))));
+            }
+        });
+    }
+
+    private void updateWindowTitle(String status) {
+        shell.setText(WINDOW_TITLE + " (" + status + ")");
     }
 
     private void pinProgWritten(int oldValue, int newValue) {
@@ -102,7 +134,7 @@ public class KosmosPanelWindow {
      */
     protected void createContents() {
         shell = new Shell();
-        shell.setText("Kosmos CP1");
+        updateWindowTitle("stopped");
         shell.setLayout(new FillLayout(SWT.HORIZONTAL));
 
         Composite composite = new Composite(shell, SWT.NONE);
