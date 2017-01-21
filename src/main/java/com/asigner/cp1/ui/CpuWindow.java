@@ -59,7 +59,7 @@ import org.eclipse.swt.widgets.ToolItem;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class CpuWindow implements ExecutionListener, Intel8049.StateListener, Intel8155.StateListener {
+public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.StateListener, Intel8155.StateListener {
 
     private RunAction runAction;
     private StopAction stopAction;
@@ -105,7 +105,7 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
         traceExecutionAction = new TraceExecutionAction(executorThread, this);
         runAction = new RunAction(executorThread);
         stopAction = new StopAction(executorThread, this);
-        singleStepAction = new SingleStepAction(executorThread);
+        singleStepAction = new SingleStepAction(this, executorThread);
         saveDisassemblyAction = new SaveDisassemblyAction(cpu);
         loadStateAction = new LoadStateAction(cpu);
         saveStateAction = new SaveStateAction(cpu);
@@ -301,6 +301,9 @@ public class CpuWindow implements ExecutionListener, Intel8049.StateListener, In
             }});
     }
 
+    @Override
+    public void performanceUpdate(double performance) {
+    }
 
     @Override
     public void instructionExecuted() {
