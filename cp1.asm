@@ -14,11 +14,18 @@
 ;0x18 - 0x1f: Register Bank 1 (R0 - R7)
 
 ;0x20 - 0x25: 6 Digit "Video RAM"
+;0x26: ?
+;0x27 - 0x2b: decoded entered digits. most significant digit at 0x27
 
-;0x36: Accu MSB
-;0x37: Accu LSB
+;0x36: ???
+;0x37: Accu
+;0x38: PC
 ;0x39: Last byte read from external RAM
-;0x3a: Virtual Machine's Accumulator
+;0x3a: ????
+;0x3b: ?????
+;0x3c - 0x3e: buffer for atoi
+
+    .equ VM_PC, $38
 
 ;Global Register usage:
 ;----------------------
@@ -58,11 +65,11 @@ $0013: [ d1    ] .DB $D1 ; key '8'
 $0014: [ d1    ] .DB $D1 ; key '9'
 $0015: [ 21    ] .DB $21 ; key 'OUT'
 $0016: [ eb    ] .DB $eb ; key 'INP'
-$0017: [ 23    ] .DB $23 ; key 'CAS'
+$0017: [ 23    ] .DB $23 ; key 'CAL'
 $0018: [ 25    ] .DB $25 ; key 'STEP'
 $0019: [ 86    ] .DB $86 ; key 'STP'
 $001a: [ 1f    ] .DB $1F ; key 'RUN'
-$001b: [ 27    ] .DB $27 ; key 'CAL'
+$001b: [ 27    ] .DB $27 ; key 'CAS'
 $001c: [ c3    ] .DB $c3 ; key 'CLR'
 $001d: [ 98    ] .DB $98 ; key 'PC'
 $001e: [ bf    ] .DB $BF ; key 'ACC'
@@ -70,9 +77,9 @@ $001e: [ bf    ] .DB $BF ; key 'ACC'
 
 $001f: [ c4 03 ] JMP  run_handler
 $0021: [ 24 ff ] JMP  out_handler
-$0023: [ e4 0e ] JMP  cas_handler
+$0023: [ e4 0e ] JMP  cal_handler
 $0025: [ c4 22 ] JMP  step_handler
-$0027: [ 24 c4 ] JMP  cal_handler
+$0027: [ 24 c4 ] JMP  cas_handler
 
 ; ### Initialization code
 init:
@@ -144,11 +151,11 @@ $0094: [ b0 ff ] MOV  @R0, #$ff
 $0096: [ 04 76 ] JMP  $0076
 
 pc_handler:
-$0098: [ fe    ] MOV  A, R6
-$0099: [ c6 bb ] JZ   $00bb
-$009b: [ d3 03 ] XRL  A, #$03
-$009d: [ 96 c9 ] JNZ  $00c9
-$009f: [ b8 27 ] MOV  R0, #$27
+$0098: [ fe    ] MOV  A, R6       ; Load # of digits entered
+$0099: [ c6 bb ] JZ   zero_digits ; jump if zero
+$009b: [ d3 03 ] XRL  A, #$03     ; is it 3 digits?
+$009d: [ 96 c9 ] JNZ  $00c9       ; jump if not
+$009f: [ b8 27 ] MOV  R0, #$27    ; Load address of 1 decoded digit
 $00a1: [ 74 38 ] CALL $0338
 $00a3: [ b8 3a ] MOV  R0, #$3a
 $00a5: [ f0    ] MOV  A, @R0
@@ -158,12 +165,13 @@ $00aa: [ b0 73 ] MOV  @R0, #$73   ; ... to 'P'
 $00ac: [ b8 27 ] MOV  R0, #$27
 $00ae: [ ba 02 ] MOV  R2, #$02
 $00b0: [ 34 4e ] CALL $014e
-$00b2: [ b8 38 ] MOV  R0, #$38
+$00b2: [ b8 38 ] MOV  R0, #VM_PC
 $00b4: [ a0    ] MOV  @R0, A
 $00b5: [ be 00 ] MOV  R6, #$00
 $00b7: [ 04 86 ] JMP  wait_key
 $00b9: [ 24 46 ] JMP  $0146
-$00bb: [ d4 b4 ] CALL $06b4
+zero_digits:
+$00bb: [ d4 b4 ] CALL print_pc
 $00bd: [ 04 86 ] JMP  wait_key
 
 acc_handler:
@@ -171,11 +179,12 @@ $00bf: [ d4 ea ] CALL $06ea
 $00c1: [ 04 86 ] JMP  wait_key
 
 clr_handler:
-$00c3: [ 34 79 ] CALL clear_display
-$00c5: [ be 00 ] MOV  R6, #$00
+$00c3: [ 34 79 ] CALL clear_display  ; Clear display
+$00c5: [ be 00 ] MOV  R6, #$00       ; Clear entered digits
 $00c7: [ 04 86 ] JMP  wait_key
+
 $00c9: [ bc 01 ] MOV  R4, #$01
-$00cb: [ c4 fd ] JMP  $06fd
+$00cb: [ c4 fd ] JMP  show_error
 $00cd: [ 34 79 ] CALL clear_display
 $00cf: [ 04 d9 ] JMP  $00d9
 
@@ -257,12 +266,13 @@ $0144: [ 04 c9 ] JMP  $00c9
 $0146: [ 23 fb ] MOV  A, #$fb
 $0148: [ 74 33 ] CALL $0333
 $014a: [ bc 04 ] MOV  R4, #$04
-$014c: [ c4 fd ] JMP  $06fd
+$014c: [ c4 fd ] JMP  show_error
 
 
 ?????????
+Probably "atoi"
 Input
-- R0: Source Address
+- R0: Address of digits
 - R2: Iterations???
 Output:
 - F0:
@@ -270,7 +280,7 @@ Output:
 =========
 $014e: [ f9    ] MOV  A, R1     ; save R1 in...
 $014f: [ ab    ] MOV  R3, A     ; ... R3
-$0150: [ b9 3c ] MOV  R1, #$3c  ; Destination Adresse: 0x3c == 60
+$0150: [ b9 3c ] MOV  R1, #$3c  ; Destination Adresse: scratch area
 $0152: [ bc 03 ] MOV  R4, #$03  ; Size: 3
 $0154: [ f0    ] MOV  A, @R0    ; Copy from (R0)
 $0155: [ a1    ] MOV  @R1, A    ; to (R1)
@@ -396,25 +406,24 @@ $01bd: [ 1e    ] INC  R6          ; increment digits entered.
 $01be: [ 83    ] RET
 
 
-NON-TARGET ?????????
-====================
+stop_pressed:
 $01bf: [ 85    ] CLR  F0
 $01c0: [ 74 f3 ] CALL $03f3
 $01c2: [ 24 f1 ] JMP  $01f1
 
-cal_handler:
+cas_handler:
 $01c4: [ 34 79 ] CALL clear_display
 $01c6: [ 74 f3 ] CALL $03f3
-$01c8: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
-$01ca: [ b0 23 ] MOV  @R0, #$23   ; .. to 'CAL' symbol
-$01cc: [ 89 c0 ] ORL  P1, #$c0
+$01c8: [ b8 20 ] MOV  R0, #$20      ; Set left-most digit...
+$01ca: [ b0 23 ] MOV  @R0, #$23     ; .. to 'CAS' symbol
+$01cc: [ 89 c0 ] ORL  P1, #$c0      ; P1 |= 1100 0000 --> CassData == 1, CassWR == 1
 $01ce: [ b8 3a ] MOV  R0, #$3a
-$01d0: [ bc 3c ] MOV  R4, #$3c
+$01d0: [ bc 3c ] MOV  R4, #$3c      ; Loop max 60 times
 $01d2: [ bb fa ] MOV  R3, #$fa      ; Delay for...
 $01d4: [ 74 b6 ] CALL delay_millis  ; ... 250 millis
-$01d6: [ f0    ] MOV  A, @R0
-$01d7: [ 12 bf ] JB0  $01bf
-$01d9: [ ec d2 ] DJNZ R4, $01d2
+$01d6: [ f0    ] MOV  A, @R0        ; check content of #$3a
+$01d7: [ 12 bf ] JB0  stop_pressed  ; if bit 0 is set
+$01d9: [ ec d2 ] DJNZ R4, $01d2     ; wait for max. 15 secs
 $01db: [ 27    ] CLR  A
 $01dc: [ 74 0a ] CALL $030a
 $01de: [ 74 bd ] CALL $03bd
@@ -432,6 +441,8 @@ $01e9: [ 23 ff ] MOV  A, #$ff
 $01eb: [ 74 0a ] CALL $030a
 $01ed: [ 74 bd ] CALL $03bd
 $01ef: [ b6 fd ] JF0  $01fd
+
+
 $01f1: [ 99 7f ] ANL  P1, #$7f
 $01f3: [ 34 79 ] CALL clear_display
 $01f5: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
@@ -538,7 +549,7 @@ $028b: [ e7    ] RL   A
 $028c: [ 17    ] INC  A          ; A = 4 * (row - 1) + 1; [R2 starts with 6]
 $028d: [ 2b    ] XCH  A, R3      ; R3 = 4 * (row - 1) + 1; A = bit_num
 $028e: [ 37    ] CPL  A          ; Compute two's complement...
-$028f: [ 17    ] INC  A          ; of A --> A == -bit_num
+$028f: [ 17    ] INC  A          ; ... of A --> A == -bit_num
 $0290: [ 6b    ] ADD  A, R3      ; A = 4 * (row - 1) + 1 - bit_num
 $0291: [ ae    ] MOV  R6, A      ; Store A in R6
 $0292: [ f2 bc ] JB7  $02bc      ; Bit 7 Set? -> 2bc
@@ -904,7 +915,7 @@ $0432: [ 19    ] INC  R1
 $0433: [ b3    ] JMPP @A
 $0434: [ 23 01 ] MOV  A, #$01
 $0436: [ 74 33 ] CALL $0333
-$0438: [ b8 38 ] MOV  R0, #$38
+$0438: [ b8 38 ] MOV  R0, #VM_PC
 $043a: [ f0    ] MOV  A, @R0
 $043b: [ b8 3b ] MOV  R0, #$3b
 $043d: [ d0    ] XRL  A, @R0
@@ -960,7 +971,7 @@ $0489: [ eb 81 ] DJNZ R3, $0481
 $048b: [ ea 7f ] DJNZ R2, $047f
 $048d: [ c4 2f ] JMP  $062f
 $048f: [ 81    ] MOVX A, @R1
-$0490: [ b8 38 ] MOV  R0, #$38
+$0490: [ b8 38 ] MOV  R0, #VM_PC
 $0492: [ ab    ] MOV  R3, A
 $0493: [ a0    ] MOV  @R0, A
 $0494: [ c4 39 ] JMP  $0639
@@ -988,7 +999,7 @@ $04b7: [ c4 2f ] JMP  $062f
 $04b9: [ b0 01 ] MOV  @R0, #$01
 $04bb: [ c4 2f ] JMP  $062f
 $04bd: [ bc 05 ] MOV  R4, #$05
-$04bf: [ c4 fd ] JMP  $06fd
+$04bf: [ c4 fd ] JMP  show_error
 $04c1: [ b8 36 ] MOV  R0, #$36
 $04c3: [ f0    ] MOV  A, @R0
 $04c4: [ 96 bd ] JNZ  $04bd
@@ -1031,7 +1042,7 @@ $0500: [ a0    ] MOV  @R0, A
 $0501: [ c4 2f ] JMP  $062f
 $0503: [ c4 5d ] JMP  $065d
 $0505: [ bc 06 ] MOV  R4, #$06
-$0507: [ c4 fd ] JMP  $06fd
+$0507: [ c4 fd ] JMP  show_error
 $0509: [ 84 bd ] JMP  $04bd
 $050b: [ a5    ] CLR  F1
 $050c: [ b5    ] CPL  F1
@@ -1193,16 +1204,17 @@ $05ff: [ bc 03 ] MOV  R4, #$03
 $0601: [ a4 ac ] JMP  $05ac
 
 run_handler:
-$0603: [ fe    ] MOV  A, R6
-$0604: [ d3 01 ] XRL  A, #$01
-$0606: [ 96 14 ] JNZ  $0614
-$0608: [ b8 27 ] MOV  R0, #$27
-$060a: [ f0    ] MOV  A, @R0
-$060b: [ d3 09 ] XRL  A, #$09
-$060d: [ c6 78 ] JZ   $0678
-$060f: [ f0    ] MOV  A, @R0
-$0610: [ d3 08 ] XRL  A, #$08
-$0612: [ c6 7a ] JZ   $067a
+$0603: [ fe    ] MOV  A, R6      ; Load # of entered digits
+$0604: [ d3 01 ] XRL  A, #$01    ; is it 1?
+$0606: [ 96 14 ] JNZ  not_one    ; jump if not.
+$0608: [ b8 27 ] MOV  R0, #$27   ; load entered digit ...
+$060a: [ f0    ] MOV  A, @R0     ; ... to A
+$060b: [ d3 09 ] XRL  A, #$09    ; is it 9?
+$060d: [ c6 78 ] JZ   demo_9     ; jump if yes
+$060f: [ f0    ] MOV  A, @R0     ; load again
+$0610: [ d3 08 ] XRL  A, #$08    ; is i 8?
+$0612: [ c6 7a ] JZ   demo_8     ; jump if yes
+not_one
 $0614: [ 34 79 ] CALL clear_display
 $0616: [ be 00 ] MOV  R6, #$00
 $0618: [ b8 3a ] MOV  R0, #$3a
@@ -1213,7 +1225,7 @@ $061f: [ f0    ] MOV  A, @R0
 $0620: [ 32 53 ] JB1  $0653
 
 step_handler:
-$0622: [ b8 38 ] MOV  R0, #$38
+$0622: [ b8 38 ] MOV  R0, #VM_PC
 $0624: [ f0    ] MOV  A, @R0
 $0625: [ 74 0a ] CALL $030a
 $0627: [ 97    ] CLR  C
@@ -1222,7 +1234,7 @@ $0629: [ 03 e7 ] ADD  A, #$e7
 $062b: [ f6 59 ] JC   $0659
 $062d: [ 84 2f ] JMP  $042f
 $062f: [ 97    ] CLR  C
-$0630: [ b8 38 ] MOV  R0, #$38
+$0630: [ b8 38 ] MOV  R0, #VM_PC
 $0632: [ f0    ] MOV  A, @R0
 $0633: [ 03 01 ] ADD  A, #$01
 $0635: [ a0    ] MOV  @R0, A
@@ -1247,9 +1259,9 @@ $0653: [ 23 fd ] MOV  A, #$fd
 $0655: [ 74 33 ] CALL $0333
 $0657: [ c4 22 ] JMP  step_handler
 $0659: [ bc 02 ] MOV  R4, #$02
-$065b: [ c4 fd ] JMP  $06fd
+$065b: [ c4 fd ] JMP  show_error
 $065d: [ bc 03 ] MOV  R4, #$03
-$065f: [ c4 fd ] JMP  $06fd
+$065f: [ c4 fd ] JMP  show_error
 $0661: [ 23 ef ] MOV  A, #$ef
 $0663: [ 74 33 ] CALL $0333
 $0665: [ 8a 20 ] ORL  P2, #$20    ; P2 |= 0010 0000 --> /CE == 1
@@ -1262,8 +1274,14 @@ $0671: [ 04 86 ] JMP  wait_key
 $0673: [ 85    ] CLR  F0
 $0674: [ be 00 ] MOV  R6, #$00
 $0676: [ 04 98 ] JMP  $0098
-$0678: [ c4 c1 ] JMP  $06c1
-$067a: [ c4 7c ] JMP  $067c
+
+
+demo_9:
+$0678: [ c4 c1 ] JMP  demo_countdown
+demo_8:
+$067a: [ c4 7c ] JMP  demo_reactiontest
+
+demo_reactiontest
 $067c: [ 34 79 ] CALL clear_display
 $067e: [ 74 f3 ] CALL $03f3
 $0680: [ b8 43 ] MOV  R0, #$43
@@ -1299,16 +1317,19 @@ $06b1: [ 97    ] CLR  C
 $06b2: [ 04 86 ] JMP  wait_key
 ```
 
-???????????????????????
------------------------
-```
+; Print PC
+; --------
+; Print the current PC.
+print_pc
 $06b4: [ 34 79 ] CALL clear_display
-$06b6: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
-$06b8: [ b0 73 ] MOV  @R0, #$73   ; ... to 'P'
-$06ba: [ b8 38 ] MOV  R0, #$38
-$06bc: [ be 02 ] MOV  R6, #$02
-$06be: [ 34 83 ] CALL print_value
+$06b6: [ b8 20 ] MOV  R0, #$20      ; Set left-most digit...
+$06b8: [ b0 73 ] MOV  @R0, #$73     ; ... to 'P'
+$06ba: [ b8 38 ] MOV  R0, #VM_PC    ; Load address of VM's PC
+$06bc: [ be 02 ] MOV  R6, #$02      ; Start at Video RAM offset 2
+$06be: [ 34 83 ] CALL print_value   ; print the value
 $06c0: [ 83    ] RET
+
+demo_countdown:
 $06c1: [ 34 79 ] CALL clear_display
 $06c3: [ bb ff ] MOV  R3, #$ff    ; 255 millis
 $06c5: [ 74 b6 ] CALL delay_millis
@@ -1349,19 +1370,25 @@ $06f8: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $06fa: [ b0 77 ] MOV  @R0, #$77   ; ... to 'A'
 $06fc: [ 83    ] RET
 
-
+; Print Error code and jump into keyboard handler
+; -----------------------------------------------
+; Print the error code that's stored in R4, and then jumps
+; back to the keyboard handler. THIS IS NOT A SUBROUTINE.
+; Input:
+;   - R4: Error code
+show_error:
 $06fd: [ 34 79 ] CALL clear_display
 $06ff: [ 97    ] CLR  C
 $0700: [ 85    ] CLR  F0
 $0701: [ a5    ] CLR  F1
-$0702: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
-$0704: [ b0 71 ] MOV  @R0, #$71   ; ... to 'F'
-$0706: [ b8 04 ] MOV  R0, #$04
-$0708: [ be 02 ] MOV  R6, #$02
-$070a: [ 34 83 ] CALL print_value
+$0702: [ b8 20 ] MOV  R0, #$20       ; Set left-most digit...
+$0704: [ b0 71 ] MOV  @R0, #$71      ; ... to 'F'
+$0706: [ b8 04 ] MOV  R0, #$04       ; Load address of error code
+$0708: [ be 02 ] MOV  R6, #$02       ; Offset into Video RAM
+$070a: [ 34 83 ] CALL print_value    ; And print it
 $070c: [ 04 86 ] JMP  wait_key
 
-cas_handler:
+cal_handler:
 $070e: [ 34 79 ] CALL clear_display
 $0710: [ 74 f3 ] CALL $03f3
 $0712: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
@@ -1424,7 +1451,7 @@ $076f: [ 04 86 ] JMP  wait_key
 $0771: [ f9    ] MOV  A, R1
 $0772: [ c6 1d ] JZ   $071d
 $0774: [ bc 07 ] MOV  R4, #$07
-$0776: [ c4 fd ] JMP  $06fd
+$0776: [ c4 fd ] JMP  show_error
 $0778: [ 74 f3 ] CALL $03f3
 $077a: [ e4 64 ] JMP  $0764
 
