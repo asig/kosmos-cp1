@@ -64,7 +64,7 @@ public class DisassemblyComposite extends Composite {
 
     private static final int DECORATION_WIDTH = 2;
     private static final int MARGIN = 1;
-    private static final int MAX_LINE_WIDTH = 29 + DECORATION_WIDTH + 2 * MARGIN; // Depends on the formatting
+    private static final int MAX_LINE_WIDTH = 30 + DECORATION_WIDTH + 2 * MARGIN; // Depends on the formatting
 
     private final List<BreakpointChangedListener> listeners = new LinkedList<BreakpointChangedListener>();
 
