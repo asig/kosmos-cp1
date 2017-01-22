@@ -17,11 +17,20 @@
 ;0x26: ?
 ;0x27 - 0x2b: decoded entered digits. most significant digit at 0x27
 
+;0x30 - 0x35: last interrupt's key presses per line
 ;0x36: ???
 ;0x37: Accu
 ;0x38: PC
 ;0x39: Last byte read from external RAM
-;0x3a: ????
+;0x3a: status register
+;      bit 7: ?
+;      bit 6: enable IO on 8155s
+;      bit 5: ?
+;      bit 4: accessed RAM extension
+;      bit 3: ?
+;      bit 2: ?
+;      bit 1; STEP pressed
+;      bit 0: STP pressed
 ;0x3b: ?????
 ;0x3c - 0x3e: buffer for atoi
 
@@ -212,7 +221,7 @@ $00eb: [ fe    ] MOV  A, R6
 $00ec: [ d3 03 ] XRL  A, #$03
 $00ee: [ 96 e9 ] JNZ  $00e9
 $00f0: [ 23 f7 ] MOV  A, #$f7
-$00f2: [ 74 33 ] CALL $0333
+$00f2: [ 74 33 ] CALL clear_status_bits
 $00f4: [ b8 27 ] MOV  R0, #$27
 $00f6: [ 74 38 ] CALL $0338
 $00f8: [ b8 3a ] MOV  R0, #$3a
@@ -259,12 +268,12 @@ $0138: [ d0    ] XRL  A, @R0
 $0139: [ c6 3e ] JZ   $013e
 $013b: [ 1f    ] INC  R7
 $013c: [ 24 04 ] JMP  $0104
-$013e: [ 23 08 ] MOV  A, #$08
-$0140: [ 74 2e ] CALL $032e
+$013e: [ 23 08 ] MOV  A, #$08 ; mask 0000 1000
+$0140: [ 74 2e ] CALL set_status_bits
 $0142: [ 24 04 ] JMP  $0104
 $0144: [ 04 c9 ] JMP  $00c9
 $0146: [ 23 fb ] MOV  A, #$fb
-$0148: [ 74 33 ] CALL $0333
+$0148: [ 74 33 ] CALL clear_status_bits
 $014a: [ bc 04 ] MOV  R4, #$04
 $014c: [ c4 fd ] JMP  show_error
 
@@ -453,11 +462,11 @@ $01fd: [ 24 bf ] JMP  $01bf
 
 out_handler:
 $01ff: [ 23 f7 ] MOV  A, #$f7 ; 1111 0111 -> A
-$0201: [ 74 33 ] CALL $0333
+$0201: [ 74 33 ] CALL clear_status_bits
 $0203: [ fe    ] MOV  A, R6        ; Load number of digits that were entered
 $0204: [ c6 27 ] JZ   no_digits    ; jump if zero
 $0206: [ d3 03 ] XRL  A, #$03      ; is it 3?
-$0208: [ 96 40 ] JNZ  not_3_digits ; got to not_3_digits if not
+$0208: [ 96 40 ] JNZ  not_3_digits ; go to not_3_digits if not
 $020a: [ b8 27 ] MOV  R0, #$27
 $020c: [ 74 38 ] CALL $0338
 $020e: [ b8 3a ] MOV  R0, #$3a
@@ -515,13 +524,13 @@ $025a: [ 04 86 ] JMP  wait_key
 ```
 timer:
 $025c: [ d5    ] SEL  RB1        ; Switch to register bank 1
-$025d: [ 2f    ] XCH  A, R7      ; Exchange A and R7
+$025d: [ 2f    ] XCH  A, R7      ; Restore A from last interrupt
 $025e: [ 23 e0 ] MOV  A, #$e0    ; Reset timer...
 $0260: [ 62    ] MOV  T, A       ; ... to 0xe0 (== 224) --> 2560 micros per timer interrupt
 $0261: [ ea 6b ] DJNZ R2, $026b  ;
 $0263: [ b9 25 ] MOV  R1, #$25
-$0265: [ bd fe ] MOV  R5, #$fe
-$0267: [ ba 06 ] MOV  R2, #$06
+$0265: [ bd fe ] MOV  R5, #$fe   ; Init: current row selection mask
+$0267: [ ba 06 ] MOV  R2, #$06   ; Init: 6 rows
 $0269: [ bc 35 ] MOV  R4, #$35
 $026b: [ 8a a0 ] ORL  P2, #$a0   ; P2 |= 1010 0000 --> IO == 1, /CE == 1
 $026d: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
@@ -539,64 +548,78 @@ $027d: [ 0c    ] MOVD A, P4      ; ?????write to lower nibble of port 2, then re
 $027e: [ 97    ] CLR  C
 $027f: [ bb 04 ] MOV  R3, #$04   ; Test (keypad) bits read: 4 bits in total
 $0281: [ 67    ] RRC  A          ; shift lowest bit to carry
-$0282: [ f6 88 ] JC   $0288      ; bit set -> 288
+$0282: [ f6 88 ] JC   keymask_bit_set ; jump if set
 $0284: [ eb 81 ] DJNZ R3, $0281  ; not set, carry on with loop.
-$0286: [ 44 bc ] JMP  $02bc      ; TODO: Carry on with what?
+$0286: [ 44 bc ] JMP  no_key_pressed ; no key pressed
+keymask_bit_set:
 $0288: [ fa    ] MOV  A, R2      ;
 $0289: [ 07    ] DEC  A
 $028a: [ e7    ] RL   A
 $028b: [ e7    ] RL   A
-$028c: [ 17    ] INC  A          ; A = 4 * (row - 1) + 1; [R2 starts with 6]
-$028d: [ 2b    ] XCH  A, R3      ; R3 = 4 * (row - 1) + 1; A = bit_num
+$028c: [ 17    ] INC  A          ; A = 4 * (R2 - 1) + 1; R2 is '6 - physical row', i.e. R2 is 2..6
+$028d: [ 2b    ] XCH  A, R3      ; R3 = 4 * (R2 - 1) + 1; A = bit_num
 $028e: [ 37    ] CPL  A          ; Compute two's complement...
 $028f: [ 17    ] INC  A          ; ... of A --> A == -bit_num
 $0290: [ 6b    ] ADD  A, R3      ; A = 4 * (row - 1) + 1 - bit_num
-$0291: [ ae    ] MOV  R6, A      ; Store A in R6
+$0291: [ ae    ] MOV  R6, A      ; Store A in R6 (== last key press)
 $0292: [ f2 bc ] JB7  $02bc      ; Bit 7 Set? -> 2bc
 $0294: [ fc    ] MOV  A, R4
 $0295: [ a8    ] MOV  R0, A
 $0296: [ fe    ] MOV  A, R6
-$0297: [ d0    ] XRL  A, @R0
-$0298: [ c6 b8 ] JZ   $02b8
+$0297: [ d0    ] XRL  A, @R0     ; (R4) == R6 (same key pressed as during last interrupt?)
+$0298: [ c6 b8 ] JZ   key_still_pressed
 $029a: [ fe    ] MOV  A, R6
-$029b: [ a0    ] MOV  @R0, A
-$029c: [ fe    ] MOV  A, R6
-$029d: [ d3 0f ] XRL  A, #$0f
-$029f: [ c6 c2 ] JZ   $02c2
-$02a1: [ fe    ] MOV  A, R6
-$02a2: [ d3 0e ] XRL  A, #$0e
-$02a4: [ c6 c8 ] JZ   $02c8
-$02a6: [ fd    ] MOV  A, R5
-$02a7: [ e7    ] RL   A
-$02a8: [ ad    ] MOV  R5, A
-$02a9: [ c9    ] DEC  R1
-$02aa: [ cc    ] DEC  R4
-$02ab: [ b8 3a ] MOV  R0, #$3a
-$02ad: [ f0    ] MOV  A, @R0
-$02ae: [ 92 ce ] JB4  $02ce
-$02b0: [ d2 d4 ] JB6  $02d4
-$02b2: [ 9a 7f ] ANL  P2, #$7f ; P2 &= 0111 1111 --> IO == 0
-$02b4: [ 2f    ] XCH  A, R7
-$02b5: [ c5    ] SEL  RB0
-$02b6: [ 25    ] EN   TCNTI
-$02b7: [ 93    ] RETR
-$02b8: [ be 00 ] MOV  R6, #$00
-$02ba: [ 44 a6 ] JMP  $02a6
+$029b: [ a0    ] MOV  @R0, A        ; remember key press for next interrupt
+$029c: [ fe    ] MOV  A, R6         ; compare pressed key...
+$029d: [ d3 0f ] XRL  A, #$0f       ; ... with "STP".
+$029f: [ c6 c2 ] JZ   stop_pressed; ; jump if equal
+$02a1: [ fe    ] MOV  A, R6         ; compare pressed key...
+$02a2: [ d3 0e ] XRL  A, #$0e       ; ... with "STEP".
+$02a4: [ c6 c8 ] JZ   step_pressed  ; jump if equal
 
+move_to_next_row:
+$02a6: [ fd    ] MOV  A, R5         ; Load row selection mask
+$02a7: [ e7    ] RL   A             ; rotate to next position
+$02a8: [ ad    ] MOV  R5, A         ; Update mask
+$02a9: [ c9    ] DEC  R1            ; Move to previous Video RAM pos
+$02aa: [ cc    ] DEC  R4            ; Move to previous 'key pressed state' position
+$02ab: [ b8 3a ] MOV  R0, #$3a      ;
+$02ad: [ f0    ] MOV  A, @R0        ; Load status byte
+$02ae: [ 92 ce ] JB4  enable_ram_extension
+$02b0: [ d2 d4 ] JB6  enable_io
+$02b2: [ 9a 7f ] ANL  P2, #$7f ; otherwise, disable IO: P2 &= 0111 1111 --> IO == 0
+end_of_intr:
+$02b4: [ 2f    ] XCH  A, R7    ; save A for next interrupt
+$02b5: [ c5    ] SEL  RB0      ; switch back to register bank 0
+$02b6: [ 25    ] EN   TCNTI    ; enable interrupts again
+$02b7: [ 93    ] RETR          ; and continue execution
 
+key_still_pressed:
+$02b8: [ be 00 ] MOV  R6, #$00 ; don't register the key press, it wasn't released in between
+$02ba: [ 44 a6 ] JMP  move_to_next_row
+
+no_key_pressed:
 $02bc: [ fc    ] MOV  A, R4
 $02bd: [ a8    ] MOV  R0, A
-$02be: [ b0 00 ] MOV  @R0, #$00
-$02c0: [ 44 a6 ] JMP  $02a6
-$02c2: [ 23 01 ] MOV  A, #$01
-$02c4: [ 74 2e ] CALL $032e
-$02c6: [ 44 a6 ] JMP  $02a6
-$02c8: [ 23 02 ] MOV  A, #$02
-$02ca: [ 74 2e ] CALL $032e
-$02cc: [ 44 a6 ] JMP  $02a6
+$02be: [ b0 00 ] MOV  @R0, #$00 ; clear "last keypress state"
+$02c0: [ 44 a6 ] JMP  move_to_next_row
+
+stop_pressed:
+$02c2: [ 23 01 ] MOV  A, #$01  ; mask 0000 0001: 'STP pressed'
+$02c4: [ 74 2e ] CALL set_status_bits
+$02c6: [ 44 a6 ] JMP  move_to_next_row
+
+step_pressed:
+$02c8: [ 23 02 ] MOV  A, #$02  ; mask 0000 0010  'STEP pressed'
+$02ca: [ 74 2e ] CALL set_status_bits
+$02cc: [ 44 a6 ] JMP  move_to_next_row
+
+enable_ram_extension:
 $02ce: [ 9a df ] ANL  P2, #$df  ; P2 &= 1101 1111 --> /CE == 0
 $02d0: [ 8a 10 ] ORL  P2, #$10  ; P2 |= 0001 0000 --> 8155 /CE == 1
 $02d2: [ 44 b0 ] JMP  $02b0
+
+enable_io:
 $02d4: [ 8a 80 ] ORL  P2, #$80  ; P2 |= 1000 0000 --> IO == 1
 $02d6: [ 44 b4 ] JMP  $02b4
 $02d8: [ 83    ] RET
@@ -665,8 +688,8 @@ $0309: [ 6f    ] .DB  $6f  ; Digit '9'
 ------------------
 $030a: [ f2 19 ] JB7  upper_half ; Jump if addr >= 128
 $030c: [ ab    ] MOV  R3, A
-$030d: [ 23 ef ] MOV  A, #$ef
-$030f: [ 74 33 ] CALL $0333
+$030d: [ 23 ef ] MOV  A, #$ef    ; mask 1110 1111 ; 'access RAM extension'
+$030f: [ 74 33 ] CALL clear_status_bits
 $0311: [ 8a 20 ] ORL  P2, #$20   ; Disable extension RAM: P2 |= 0010 0000 --> /CE == 1
 $0313: [ 9a ef ] ANL  P2, #$ef   ; Enable default RAM: P2 &= 1110 1111 --> 8155 /CE == 0
 $0315: [ fb    ] MOV  A, R3
@@ -677,8 +700,8 @@ upper_half:
 $0319: [ 03 80 ] ADD  A, #$80    ; bring address to lower half
 $031b: [ 97    ] CLR  C          ; clear carry
 $031c: [ ab    ] MOV  R3, A      ; store address in R3
-$031d: [ 23 10 ] MOV  A, #$10
-$031f: [ 74 2e ] CALL $032e
+$031d: [ 23 10 ] MOV  A, #$10    ; mask 0001 0000: 'access RAM extension'
+$031f: [ 74 2e ] CALL set_status_bits
 $0321: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
 $0323: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
 $0325: [ fb    ] MOV  A, R3
@@ -692,15 +715,21 @@ $032a: [ 91    ] MOVX @R1, A
 $032b: [ e9 2a ] DJNZ R1, $032a
 $032d: [ 83    ] RET
 
-?????????????????????????????
------------------------------
+; Set bits in the status byte
+;-----------------------------
+; Input:
+;   - A: mask of bits to set in the status register
+set_status_bits
 $032e: [ b8 3a ] MOV  R0, #$3a
 $0330: [ 40    ] ORL  A, @R0
 $0331: [ a0    ] MOV  @R0, A
 $0332: [ 83    ] RET
 
-?????????????????????????????
------------------------------
+; Clear bits in the status byte
+;------------------------------
+; Input:
+;   - A: mask of bits to keep in the status register
+clear_status_bits
 $0333: [ b8 3a ] MOV  R0, #$3a
 $0335: [ 50    ] ANL  A, @R0
 $0336: [ a0    ] MOV  @R0, A
@@ -718,8 +747,8 @@ $0343: [ f0    ] MOV  A, @R0
 $0344: [ f2 40 ] JB7  $0340
 $0346: [ 64 49 ] JMP  $0349
 $0348: [ 85    ] CLR  F0
-$0349: [ 23 04 ] MOV  A, #$04
-$034b: [ 74 2e ] CALL $032e
+$0349: [ 23 04 ] MOV  A, #$04 ; mask 0000 0100
+$034b: [ 74 2e ] CALL set_status_bits
 $034d: [ 64 40 ] JMP  $0340
 
 ?????????????????????????????
@@ -773,18 +802,18 @@ $0383: [ 64 79 ] JMP  $0379
 
 ?????????????????????????????
 -----------------------------
-$0385: [ 23 40 ] MOV  A, #$40
-$0387: [ 74 2e ] CALL $032e
-$0389: [ 23 ef ] MOV  A, #$ef
-$038b: [ 74 33 ] CALL $0333
+$0385: [ 23 40 ] MOV  A, #$40    ; mask 0100 0000 ; 'enable IO'
+$0387: [ 74 2e ] CALL set_status_bits
+$0389: [ 23 ef ] MOV  A, #$ef    ; mask 1110 1111 ; 'access RAM extension'
+$038b: [ 74 33 ] CALL clear_status_bits
 $038d: [ 8a a0 ] ORL  P2, #$a0   ; P2 |= 1010 0000 --> /CE == 1, IO == 1
 $038f: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
 $0391: [ 83    ] RET
 
 ?????????????????????????????
 -----------------------------
-$0392: [ 23 50 ] MOV  A, #$50
-$0394: [ 74 2e ] CALL $032e
+$0392: [ 23 50 ] MOV  A, #$50    ; mask 0101 0000: 'enable IO' and 'access RAM extension'
+$0394: [ 74 2e ] CALL set_status_bits
 $0396: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
 $0398: [ 8a 90 ] ORL  P2, #$90   ; P2 |= 1001 0000 --> 8155 /CE == 1, IO == 1
 $039a: [ 83    ] RET
@@ -832,10 +861,10 @@ $03bc: [ 83    ] RET             ; cycles: R3 * 201 * 2 + 1
 
 ?????????????????  ; Probably "load from/save to tape" subroutine...
 -----------------
-$03bd: [ b9 00 ] MOV  R1, #$00     ; 255 bytes to write
-$03bf: [ b8 3a ] MOV  R0, #$3a
-$03c1: [ f0    ] MOV  A, @R0       ; ??????
-$03c2: [ 12 eb ] JB0  $03eb        ;
+$03bd: [ b9 00 ] MOV  R1, #$00     ; Load start address of RAM
+$03bf: [ b8 3a ] MOV  R0, #$3a     ;
+$03c1: [ f0    ] MOV  A, @R0       ; load #$3a
+$03c2: [ 12 eb ] JB0  $03eb        ; jump if stop is pressed.
 $03c4: [ 97    ] CLR  C
 $03c5: [ b8 08 ] MOV  R0, #$08     ; 8 bits to send
 $03c7: [ 81    ] MOVX A, @R1       ; Read a byte from RAM
@@ -862,14 +891,14 @@ $03e9: [ 64 d7 ] JMP  $03d7        ; back to main loop
 
 $03eb: [ 85    ] CLR  F0
 $03ec: [ 95    ] CPL  F0
-$03ed: [ 23 fe ] MOV  A, #$fe
-$03ef: [ 74 33 ] CALL $0333
+$03ed: [ 23 fe ] MOV  A, #$fe      ; mask 1110 1111 ; 'access RAM extension'
+$03ef: [ 74 33 ] CALL clear_status_bits
 $03f1: [ 64 db ] JMP  $03db
 
 
 
-$03f3: [ 23 fe ] MOV  A, #$fe
-$03f5: [ 74 33 ] CALL $0333
+$03f3: [ 23 fe ] MOV  A, #$fe      ; mask 1110 1111 ; 'access RAM extension'
+$03f5: [ 74 33 ] CALL clear_status_bits
 $03f7: [ 83    ] RET
 
 $03f8: [ 00    ] NOP
@@ -913,8 +942,8 @@ $042f: [ 81    ] MOVX A, @R1
 $0430: [ 03 00 ] ADD  A, #$00
 $0432: [ 19    ] INC  R1
 $0433: [ b3    ] JMPP @A
-$0434: [ 23 01 ] MOV  A, #$01
-$0436: [ 74 33 ] CALL $0333
+$0434: [ 23 01 ] MOV  A, #$01           ; mask: 0000 0001: 'STP pressed'
+$0436: [ 74 33 ] CALL clear_status_bits ; clear ALL but 'STP pressed'
 $0438: [ b8 38 ] MOV  R0, #VM_PC
 $043a: [ f0    ] MOV  A, @R0
 $043b: [ b8 3b ] MOV  R0, #$3b
@@ -1159,7 +1188,7 @@ $05b4: [ a8    ] MOV  R0, A
 $05b5: [ 2c    ] XCH  A, R4
 $05b6: [ 90    ] MOVX @R0, A
 $05b7: [ 23 bf ] MOV  A, #$bf
-$05b9: [ 74 33 ] CALL $0333
+$05b9: [ 74 33 ] CALL clear_status_bits
 $05bb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05bd: [ c4 2f ] JMP  $062f
 $05bf: [ 97    ] CLR  C
@@ -1177,7 +1206,7 @@ $05d0: [ 96 dd ] JNZ  $05dd
 $05d2: [ 80    ] MOVX A, @R0
 $05d3: [ 74 9b ] CALL $039b
 $05d5: [ 23 bf ] MOV  A, #$bf
-$05d7: [ 74 33 ] CALL $0333
+$05d7: [ 74 33 ] CALL clear_status_bits
 $05d9: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05db: [ c4 2f ] JMP  $062f
 $05dd: [ 97    ] CLR  C
@@ -1187,7 +1216,7 @@ $05e2: [ 80    ] MOVX A, @R0
 $05e3: [ 74 79 ] CALL $0379
 $05e5: [ a4 d3 ] JMP  $05d3
 $05e7: [ 23 bf ] MOV  A, #$bf
-$05e9: [ 74 33 ] CALL $0333
+$05e9: [ 74 33 ] CALL clear_status_bits
 $05eb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05ed: [ 84 bd ] JMP  $04bd
 $05ef: [ 81    ] MOVX A, @R1
@@ -1256,14 +1285,14 @@ $064d: [ c4 22 ] JMP  step_handler
 $064f: [ 74 f3 ] CALL $03f3
 $0651: [ c4 1d ] JMP  $061d
 $0653: [ 23 fd ] MOV  A, #$fd
-$0655: [ 74 33 ] CALL $0333
+$0655: [ 74 33 ] CALL clear_status_bits
 $0657: [ c4 22 ] JMP  step_handler
 $0659: [ bc 02 ] MOV  R4, #$02
 $065b: [ c4 fd ] JMP  show_error
 $065d: [ bc 03 ] MOV  R4, #$03
 $065f: [ c4 fd ] JMP  show_error
-$0661: [ 23 ef ] MOV  A, #$ef
-$0663: [ 74 33 ] CALL $0333
+$0661: [ 23 ef ] MOV  A, #$ef     ; mask 1110 1111 ; 'access RAM extension'
+$0663: [ 74 33 ] CALL clear_status_bits
 $0665: [ 8a 20 ] ORL  P2, #$20    ; P2 |= 0010 0000 --> /CE == 1
 $0667: [ 9a ef ] ANL  P2, #$ef    ; P2 &= 1110 1111 --> 8155 /CE == 0
 $0669: [ b9 00 ] MOV  R1, #$00
@@ -1543,14 +1572,14 @@ $07df: [ e4 d3 ] JMP  $07d3
 ???????????????????????
 -----------------------
 $07e1: [ 23 df ] MOV  A, #$df
-$07e3: [ 74 33 ] CALL $0333
+$07e3: [ 74 33 ] CALL clear_status_bits
 $07e5: [ 83    ] RET
 
 
 ???????????????????????
 -----------------------
-$07e6: [ 23 20 ] MOV  A, #$20
-$07e8: [ 74 2e ] CALL $032e
+$07e6: [ 23 20 ] MOV  A, #$20 ; mask 0010 0000
+$07e8: [ 74 2e ] CALL set_status_bits
 $07ea: [ 83    ] RET
 
 
