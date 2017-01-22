@@ -26,7 +26,7 @@ public class PerformanceMeasurer {
     private long cycles;
     private long cyclesTotal;
 
-    public void PerformanceMeasurer() {
+    public PerformanceMeasurer() {
         reset();
     }
 
