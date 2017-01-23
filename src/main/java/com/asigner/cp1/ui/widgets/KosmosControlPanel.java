@@ -58,6 +58,28 @@ import java.util.logging.Logger;
 
 public class KosmosControlPanel extends Composite {
 
+    private static final int BTN_0    = 0;
+    private static final int BTN_1    = 1;
+    private static final int BTN_2    = 2;
+    private static final int BTN_3    = 3;
+    private static final int BTN_4    = 4;
+    private static final int BTN_5    = 5;
+    private static final int BTN_6    = 6;
+    private static final int BTN_7    = 7;
+    private static final int BTN_8    = 8;
+    private static final int BTN_9    = 9;
+    private static final int BTN_OUT  = 10;
+    private static final int BTN_INP  = 11;
+    private static final int BTN_CAL  = 12;
+    private static final int BTN_STEP = 13;
+    private static final int BTN_STP  = 14;
+    private static final int BTN_RUN  = 15;
+    private static final int BTN_CAS  = 16;
+    private static final int BTN_CLR  = 17;
+    private static final int BTN_PC   = 18;
+    private static final int BTN_ACC  = 19;
+    private static final int BTNS_SIZE = 20;
+
     private static final Logger logger = Logger.getLogger(KosmosControlPanel.class.getName());
 
     private static final int BUTTON_HEIGHT = 50;
@@ -66,7 +88,7 @@ public class KosmosControlPanel extends Composite {
 
     private int keyMask[] = new int[6];
 
-    private CP1Button digitButtons[] = new CP1Button[10];
+    private CP1Button buttons[] = new CP1Button[BTNS_SIZE];
 
     private class KeyListener implements CP1Button.KeyListener {
         private final int row;
@@ -187,21 +209,21 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("7");
             btn.addKeyListener(new KeyListener(3, 3));
-            digitButtons[7] = btn;
+            buttons[BTN_7] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("8");
             btn.addKeyListener(new KeyListener(2, 0));
-            digitButtons[8] = btn;
+            buttons[BTN_8] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("9");
             btn.addKeyListener(new KeyListener(2, 1));
-            digitButtons[9] = btn;
+            buttons[BTN_9] = btn;
         }
 
         Composite composite_1 = new Composite(this, SWT.NONE);
@@ -216,6 +238,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("STEP");
             btn.setSubText("Schritt");
             btn.addKeyListener(new KeyListener(1, 1));
+            buttons[BTN_STEP] = btn;
         }
         {
             CP1Button btn = new CP1Button(composite_1, SWT.NONE);
@@ -223,6 +246,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("STP");
             btn.setSubText("Stopp");
             btn.addKeyListener(new KeyListener(1, 2));
+            buttons[BTN_STP] = btn;
         }
         {
             CP1Button btn = new CP1Button(composite_1, SWT.NONE);
@@ -230,6 +254,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("RUN");
             btn.setSubText("Lauf");
             btn.addKeyListener(new KeyListener(1, 3));
+            buttons[BTN_RUN] = btn;
         }
         {
             CP1Button btn = new CP1Button(composite_1, SWT.NONE);
@@ -237,6 +262,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("CAL");
             btn.setSubText("Cass. lesen");
             btn.addKeyListener(new KeyListener(0, 0));
+            buttons[BTN_CAL] = btn;
         }
 
         Composite rh_composite_1 = new Composite(this, SWT.NONE);
@@ -249,21 +275,21 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("4");
             btn.addKeyListener(new KeyListener(3, 0));
-            digitButtons[4] = btn;
+            buttons[BTN_4] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_1, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("5");
             btn.addKeyListener(new KeyListener(3, 1));
-            digitButtons[5] = btn;
+            buttons[BTN_5] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_1, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("6");
             btn.addKeyListener(new KeyListener(3, 2));
-            digitButtons[6] = btn;
+            buttons[BTN_6] = btn;
         }
 
 
@@ -279,6 +305,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("CLR");
             btn.setSubText("Irrtum");
             btn.addKeyListener(new KeyListener(0, 1));
+            buttons[BTN_CLR] = btn;
         }
         {
             CP1Button btn = new CP1Button(composite_2, SWT.NONE);
@@ -286,6 +313,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("ACC");
             btn.setSubText("Akku");
             btn.addKeyListener(new KeyListener(0, 3));
+            buttons[BTN_ACC] = btn;
         }
         {
             CP1Button btn = new CP1Button(composite_2, SWT.NONE);
@@ -293,6 +321,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("CAS");
             btn.setSubText("Cass. speichern");
             btn.addKeyListener(new KeyListener(1, 0));
+            buttons[BTN_CAS] = btn;
         }
 
         Composite rh_composite_2 = new Composite(this, SWT.NONE);
@@ -305,21 +334,21 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("1");
             btn.addKeyListener(new KeyListener(4, 1));
-            digitButtons[1] = btn;
+            buttons[BTN_1] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_2, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("2");
             btn.addKeyListener(new KeyListener(4, 2));
-            digitButtons[2] = btn;
+            buttons[BTN_2] = btn;
         }
         {
             CP1Button btn = new CP1Button(rh_composite_2, SWT.NONE);
             btn.setSize((int)(1.4 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("3");
             btn.addKeyListener(new KeyListener(4, 3));
-            digitButtons[3] = btn;
+            buttons[BTN_3] = btn;
         }
 
 
@@ -335,6 +364,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("PC");
             btn.setSubText("Programmzähler");
             btn.addKeyListener(new KeyListener(0, 2));
+            buttons[BTN_PC] = btn;
         }
         {
             CP1Button btn = new CP1Button(composite_3, SWT.NONE);
@@ -342,6 +372,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("OUT");
             btn.setSubText("auslesen");
             btn.addKeyListener(new KeyListener(2, 2));
+            buttons[BTN_OUT] = btn;
         }
         {
             CP1Button btn = new CP1Button(composite_3, SWT.NONE);
@@ -349,6 +380,7 @@ public class KosmosControlPanel extends Composite {
             btn.setText("INP");
             btn.setSubText("eingeben");
             btn.addKeyListener(new KeyListener(2, 3));
+            buttons[BTN_INP] = btn;
         }
 
         Composite rh_composite_3 = new Composite(this, SWT.NONE);
@@ -361,7 +393,7 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(3.0 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("0");
             btn.addKeyListener(new KeyListener(4, 0));
-            digitButtons[0] = btn;
+            buttons[BTN_0] = btn;
         }
         new Label(rh_composite_3, SWT.NONE);
         new Label(rh_composite_3, SWT.NONE);
@@ -369,23 +401,71 @@ public class KosmosControlPanel extends Composite {
         this.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                handleKey(e, true);
+                if (!handleKey(e, true)) {
+                    super.keyPressed(e);
+                }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
-                handleKey(e, false);
+                if (!handleKey(e, false)) {
+                    super.keyReleased(e);
+                };
             }
 
-            private void handleKey(KeyEvent e, boolean pressState) {
-                int digit = e.character - '0';
-                if (digit >= 0 && digit <= 9) {
-                    e.doit = false;
-                    CP1Button btn = digitButtons[digit];
-                    btn.setPressed(pressState);
-                } else {
-                    super.keyPressed(e);
+            private boolean handleKey(KeyEvent e, boolean pressState) {
+                CP1Button btn = null;
+                switch(e.character) {
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        btn = buttons[e.character - '0'];
+                        break;
+                    case 'o':
+                        btn = buttons[BTN_OUT];
+                        break;
+                    case '\n':
+                    case '\r':
+                        btn = buttons[BTN_INP];
+                        break;
+                    case 'l':
+                        btn = buttons[BTN_CAL];
+                        break;
+                    case 't':
+                        btn = buttons[BTN_STEP];
+                        break;
+                    case '.':
+                        btn = buttons[BTN_STP];
+                        break;
+                    case 'r':
+                        btn = buttons[BTN_RUN];
+                        break;
+                    case 's':
+                        btn = buttons[BTN_CAS];
+                        break;
+                    case '\b':
+                    case 0x7f:
+                        btn = buttons[BTN_CLR];
+                        break;
+                    case 'p':
+                        btn = buttons[BTN_PC];
+                        break;
+                    case 'a':
+                        btn = buttons[BTN_ACC];
+                        break;
                 }
+                if (btn != null) {
+                    e.doit = false;
+                    btn.setPressed(pressState);
+                }
+                return btn != null;
             }
         });
     }
