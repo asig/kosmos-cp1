@@ -11,3 +11,7 @@ Emulation:
 Implementation:
 [X] ExecutorThread should broadcast performance
 [ ] Throttle execution at 100%
+[ ] Menus in panel window
+[X] Keyboard shortcuts on panel window
+[ ] "About" dialog
+[ ] "Open window" menu items
