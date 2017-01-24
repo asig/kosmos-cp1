@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Label;
 import java.util.logging.Logger;
 
 /**
- * Keyboard matrix:
+ * Keyboard matrix according to the schematics:
  *
  *
  *   3-----2-----1-----0-------------------------   Row 4
@@ -53,6 +53,13 @@ import java.util.logging.Logger;
  *  Col   Col   Col   Col
  *   3     2     1     0
  *
+ *
+ * However, it seems that CAS and CAL are actually swapped. This is
+ * also visible when you compare the picture of the CP1 printed
+ * on the original box (CAL in the middle line, and CAS in the top
+ * line) with the actual computer (CAS in the middle line, CAL
+ * in the top line).
+ * Therefore, we use row 0 for CAS and row 1 for CAL.
  */
 
 
@@ -261,7 +268,7 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(2.6 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("CAL");
             btn.setSubText("Cass. lesen");
-            btn.addKeyListener(new KeyListener(0, 0));
+            btn.addKeyListener(new KeyListener(1, 0));
             buttons[BTN_CAL] = btn;
         }
 
@@ -320,7 +327,7 @@ public class KosmosControlPanel extends Composite {
             btn.setSize((int)(3.2 * BUTTON_HEIGHT), BUTTON_HEIGHT);
             btn.setText("CAS");
             btn.setSubText("Cass. speichern");
-            btn.addKeyListener(new KeyListener(1, 0));
+            btn.addKeyListener(new KeyListener(0, 0));
             buttons[BTN_CAS] = btn;
         }
 
