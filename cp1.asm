@@ -256,7 +256,7 @@ $012a: [ ac    ] MOV  R4, A
 $012b: [ f9    ] MOV  A, R1
 $012c: [ aa    ] MOV  R2, A
 $012d: [ ff    ] MOV  A, R7
-$012e: [ 74 0a ] CALL $030a
+$012e: [ 74 0a ] CALL compute_effective_address
 $0130: [ fa    ] MOV  A, R2
 $0131: [ 91    ] MOVX @R1, A
 $0132: [ 19    ] INC  R1
@@ -417,12 +417,12 @@ $01be: [ 83    ] RET
 
 stop_pressed:
 $01bf: [ 85    ] CLR  F0
-$01c0: [ 74 f3 ] CALL $03f3
+$01c0: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $01c2: [ 24 f1 ] JMP  $01f1
 
 cas_handler:
 $01c4: [ 34 79 ] CALL clear_display
-$01c6: [ 74 f3 ] CALL $03f3
+$01c6: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $01c8: [ b8 20 ] MOV  R0, #$20      ; Set left-most digit...
 $01ca: [ b0 23 ] MOV  @R0, #$23     ; .. to 'CAS' symbol
 $01cc: [ 89 c0 ] ORL  P1, #$c0      ; P1 |= 1100 0000 --> CassData == 1, CassWR == 1
@@ -434,7 +434,7 @@ $01d6: [ f0    ] MOV  A, @R0        ; check content of #$3a
 $01d7: [ 12 bf ] JB0  stop_pressed  ; if bit 0 is set
 $01d9: [ ec d2 ] DJNZ R4, $01d2     ; wait for max. 15 secs
 $01db: [ 27    ] CLR  A
-$01dc: [ 74 0a ] CALL $030a
+$01dc: [ 74 0a ] CALL compute_effective_address
 $01de: [ 74 bd ] CALL $03bd
 $01e0: [ b6 bf ] JF0  $01bf
 $01e2: [ b8 3b ] MOV  R0, #$3b
@@ -447,7 +447,7 @@ $01e9: [ 23 ff ] MOV  A, #$ff
 
 ?????????
 =========
-$01eb: [ 74 0a ] CALL $030a
+$01eb: [ 74 0a ] CALL compute_effective_address
 $01ed: [ 74 bd ] CALL $03bd
 $01ef: [ b6 fd ] JF0  $01fd
 
@@ -478,7 +478,7 @@ $0217: [ 34 4e ] CALL $014e
 $0219: [ af    ] MOV  R7, A
 $021a: [ 34 79 ] CALL clear_display
 $021c: [ ff    ] MOV  A, R7
-$021d: [ 74 0a ] CALL $030a
+$021d: [ 74 0a ] CALL compute_effective_address
 $021f: [ 34 96 ] CALL fetch_and_print_ram
 $0221: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0223: [ b0 39 ] MOV  @R0, #$39   ; ... to 'C'
@@ -684,8 +684,15 @@ $0308: [ 7f    ] .DB  $7f  ; Digit '8'
 $0309: [ 6f    ] .DB  $6f  ; Digit '9'
 
 
-??????????????????
-------------------
+; Compute the effective address of a VM byte
+; ------------------------------------------
+; Compute the effective address, also selecting
+; the correct 8155 chip
+; Input:
+;   - A: VM address (0 .. 255)
+; Output:
+;   - R1: 8155 address of the first byte
+compute_effective_address:
 $030a: [ f2 19 ] JB7  upper_half ; Jump if addr >= 128
 $030c: [ ab    ] MOV  R3, A
 $030d: [ 23 ef ] MOV  A, #$ef    ; mask 1110 1111 ; 'access RAM extension'
@@ -693,7 +700,8 @@ $030f: [ 74 33 ] CALL clear_status_bits
 $0311: [ 8a 20 ] ORL  P2, #$20   ; Disable extension RAM: P2 |= 0010 0000 --> /CE == 1
 $0313: [ 9a ef ] ANL  P2, #$ef   ; Enable default RAM: P2 &= 1110 1111 --> 8155 /CE == 0
 $0315: [ fb    ] MOV  A, R3
-$0316: [ e7    ] RL   A
+$0316: [ e7    ] RL   A          ; Effective Address = 2 * A
+cea_end:
 $0317: [ a9    ] MOV  R1, A
 $0318: [ 83    ] RET
 upper_half:
@@ -705,7 +713,7 @@ $031f: [ 74 2e ] CALL set_status_bits
 $0321: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
 $0323: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
 $0325: [ fb    ] MOV  A, R3
-$0326: [ 64 16 ] JMP  $0316
+$0326: [ 64 16 ] JMP  cea_end
 
 ?????????????????????????????
 -----------------------------
@@ -769,7 +777,7 @@ $035c: [ ab    ] MOV  R3, A
 $035d: [ 74 4f ] CALL $034f
 $035f: [ b6 64 ] JF0  $0364
 $0361: [ fb    ] MOV  A, R3
-$0362: [ 74 0a ] CALL $030a
+$0362: [ 74 0a ] CALL compute_effective_address
 $0364: [ 83    ] RET
 
 ?????????????????????????????
@@ -779,7 +787,7 @@ $0366: [ ab    ] MOV  R3, A
 $0367: [ 74 4f ] CALL $034f
 $0369: [ b6 78 ] JF0  $0378
 $036b: [ fb    ] MOV  A, R3
-$036c: [ 74 0a ] CALL $030a
+$036c: [ 74 0a ] CALL compute_effective_address
 $036e: [ 81    ] MOVX A, @R1
 $036f: [ 96 78 ] JNZ  $0378
 $0371: [ 19    ] INC  R1
@@ -896,7 +904,7 @@ $03ef: [ 74 33 ] CALL clear_status_bits
 $03f1: [ 64 db ] JMP  $03db
 
 
-
+clear_access_ram_extension_status_bit:
 $03f3: [ 23 fe ] MOV  A, #$fe      ; mask 1110 1111 ; 'access RAM extension'
 $03f5: [ 74 33 ] CALL clear_status_bits
 $03f7: [ 83    ] RET
@@ -1243,20 +1251,20 @@ $060d: [ c6 78 ] JZ   demo_9     ; jump if yes
 $060f: [ f0    ] MOV  A, @R0     ; load again
 $0610: [ d3 08 ] XRL  A, #$08    ; is i 8?
 $0612: [ c6 7a ] JZ   demo_8     ; jump if yes
-not_one
+not_one:
 $0614: [ 34 79 ] CALL clear_display
 $0616: [ be 00 ] MOV  R6, #$00
 $0618: [ b8 3a ] MOV  R0, #$3a
-$061a: [ f0    ] MOV  A, @R0
-$061b: [ 12 4f ] JB0  $064f
+$061a: [ f0    ] MOV  A, @R0       ; Load status byte
+$061b: [ 12 4f ] JB0  stop_pressed ; jump if STP pressed
 $061d: [ b8 3a ] MOV  R0, #$3a
-$061f: [ f0    ] MOV  A, @R0
-$0620: [ 32 53 ] JB1  $0653
+$061f: [ f0    ] MOV  A, @R0       ; Load status byte
+$0620: [ 32 53 ] JB1  $0653        ; jump if STEP pressed
 
 step_handler:
 $0622: [ b8 38 ] MOV  R0, #VM_PC
 $0624: [ f0    ] MOV  A, @R0
-$0625: [ 74 0a ] CALL $030a
+$0625: [ 74 0a ] CALL compute_effective_address
 $0627: [ 97    ] CLR  C
 $0628: [ 81    ] MOVX A, @R1
 $0629: [ 03 e7 ] ADD  A, #$e7
@@ -1282,8 +1290,12 @@ $0648: [ b8 3a ] MOV  R0, #$3a
 $064a: [ f0    ] MOV  A, @R0
 $064b: [ 12 61 ] JB0  $0661
 $064d: [ c4 22 ] JMP  step_handler
-$064f: [ 74 f3 ] CALL $03f3
+
+stop_pressed:
+$064f: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $0651: [ c4 1d ] JMP  $061d
+
+step_pressed:
 $0653: [ 23 fd ] MOV  A, #$fd
 $0655: [ 74 33 ] CALL clear_status_bits
 $0657: [ c4 22 ] JMP  step_handler
@@ -1312,7 +1324,7 @@ $067a: [ c4 7c ] JMP  demo_reactiontest
 
 demo_reactiontest
 $067c: [ 34 79 ] CALL clear_display
-$067e: [ 74 f3 ] CALL $03f3
+$067e: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $0680: [ b8 43 ] MOV  R0, #$43
 $0682: [ 10    ] INC  @R0
 $0683: [ f0    ] MOV  A, @R0        ; @R0 contains # of secs to delay
@@ -1336,7 +1348,7 @@ $069f: [ f6 a9 ] JC   $06a9
 $06a1: [ bb 01 ] MOV  R3, #$01      ; 1 milli
 $06a3: [ 74 b6 ] CALL delay_millis
 $06a5: [ c4 90 ] JMP  $0690
-$06a7: [ 74 f3 ] CALL $03f3
+$06a7: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $06a9: [ be 00 ] MOV  R6, #$00
 $06ab: [ b8 43 ] MOV  R0, #$43
 $06ad: [ fd    ] MOV  A, R5
@@ -1419,11 +1431,11 @@ $070c: [ 04 86 ] JMP  wait_key
 
 cal_handler:
 $070e: [ 34 79 ] CALL clear_display
-$0710: [ 74 f3 ] CALL $03f3
+$0710: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $0712: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0714: [ b0 1c ] MOV  @R0, #$1c   ; .. to 'CAL' symbol
 $0716: [ 27    ] CLR  A
-$0717: [ 74 0a ] CALL $030a
+$0717: [ 74 0a ] CALL compute_effective_address
 $0719: [ 99 bf ] ANL  P1, #$bf
 $071b: [ 89 80 ] ORL  P1, #$80
 $071d: [ b8 3a ] MOV  R0, #$3a
@@ -1452,7 +1464,7 @@ $0741: [ f0    ] MOV  A, @R0
 $0742: [ f2 46 ] JB7  $0746
 $0744: [ e4 64 ] JMP  $0764
 $0746: [ 23 80 ] MOV  A, #$80
-$0748: [ 74 0a ] CALL $030a
+$0748: [ 74 0a ] CALL compute_effective_address
 $074a: [ 27    ] CLR  A
 $074b: [ a9    ] MOV  R1, A
 $074c: [ ad    ] MOV  R5, A
@@ -1464,25 +1476,28 @@ $0755: [ f8    ] MOV  A, R0
 $0756: [ d3 08 ] XRL  A, #$08
 $0758: [ 96 4f ] JNZ  $074f
 $075a: [ b8 3a ] MOV  R0, #$3a
-$075c: [ f0    ] MOV  A, @R0
-$075d: [ 12 78 ] JB0  $0778
+$075c: [ f0    ] MOV  A, @R0      ; Load status byte
+$075d: [ 12 78 ] JB0  cal_stopped ; jump if bit set
 $075f: [ b8 08 ] MOV  R0, #$08
 $0761: [ f9    ] MOV  A, R1
 $0762: [ 96 4f ] JNZ  $074f
+cal_done:
 $0764: [ 34 79 ] CALL clear_display
 $0766: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
-$0768: [ b0 5c ] MOV  @R0, #$5c   ; ... to 'o'              TODO: where is 'o' used?
+$0768: [ b0 5c ] MOV  @R0, #$5c   ; ... to 'o'
 $076a: [ 97    ] CLR  C
 $076b: [ 85    ] CLR  F0
 $076c: [ a5    ] CLR  F1
 $076d: [ be 00 ] MOV  R6, #$00
 $076f: [ 04 86 ] JMP  wait_key
+
 $0771: [ f9    ] MOV  A, R1
 $0772: [ c6 1d ] JZ   $071d
-$0774: [ bc 07 ] MOV  R4, #$07
+$0774: [ bc 07 ] MOV  R4, #$07    ; F-007
 $0776: [ c4 fd ] JMP  show_error
-$0778: [ 74 f3 ] CALL $03f3
-$077a: [ e4 64 ] JMP  $0764
+cal_stopped:
+$0778: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
+$077a: [ e4 64 ] JMP  cal_done
 
 
 ???????????????????????
