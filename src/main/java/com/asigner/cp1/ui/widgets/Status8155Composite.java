@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Group;
 
-public class Status8155Composite extends Composite  {
+public class Status8155Composite extends Group  {
     private CLabel lblPaMode;
     private CLabel lblPaVal;
     private ReadonlyCheckbox btnPaInterruptEnabled;
@@ -50,6 +50,7 @@ public class Status8155Composite extends Composite  {
     private BitsetWidget bitsetWR;
 
     private Intel8155 pid;
+    private MemoryComposite memoryComposite;
 
     /**
      * Create the composite.
@@ -58,10 +59,16 @@ public class Status8155Composite extends Composite  {
      */
     public Status8155Composite(Composite parent, int style) {
         super(parent, style);
-        setLayout(new GridLayout(10, false));
+
+        setLayout(new GridLayout(2, false));
+
+        Composite cmp = new Composite(this, SWT.NONE);
+        cmp.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+        cmp.setLayout(new GridLayout(10, false));
+
 
         {
-            Group grp = new Group(this, SWT.NONE);
+            Group grp = new Group(cmp, SWT.NONE);
             grp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 10, 1));
             grp.setText("Port A");
             grp.setLayout(new GridLayout(3, false));
@@ -86,7 +93,7 @@ public class Status8155Composite extends Composite  {
         }
 
         {
-            Group grp = new Group(this, SWT.NONE);
+            Group grp = new Group(cmp, SWT.NONE);
             grp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 10, 1));
             grp.setText("Port B");
             grp.setLayout(new GridLayout(3, false));
@@ -111,7 +118,7 @@ public class Status8155Composite extends Composite  {
         }
 
         {
-            Group grp = new Group(this, SWT.NONE);
+            Group grp = new Group(cmp, SWT.NONE);
             grp.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 10, 1));
             grp.setText("Port C");
             grp.setLayout(new GridLayout(3, false));
@@ -132,34 +139,49 @@ public class Status8155Composite extends Composite  {
             bitsetPcVal = new BitsetWidget(grp, 6, SWT.NONE);
         }
 
-        Label lblCE = new Label(this, SWT.CHECK);
+        Label lblCE = new Label(cmp, SWT.CHECK);
         lblCE.setText("/CE");
-        bitsetCE = new BitsetWidget(this, 1, SWT.NONE);
+        bitsetCE = new BitsetWidget(cmp, 1, SWT.NONE);
         bitsetCE.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 
-        Label lblIO = new Label(this, SWT.CHECK);
+        Label lblIO = new Label(cmp, SWT.CHECK);
         lblIO.setText("IO");
-        bitsetIO = new BitsetWidget(this, 1, SWT.NONE);
+        bitsetIO = new BitsetWidget(cmp, 1, SWT.NONE);
         bitsetIO.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 
-        Label lblALE = new Label(this, SWT.CHECK);
+        Label lblALE = new Label(cmp, SWT.CHECK);
         lblALE.setText("ALE");
-        bitsetALE = new BitsetWidget(this, 1, SWT.NONE);
+        bitsetALE = new BitsetWidget(cmp, 1, SWT.NONE);
         bitsetALE.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 
-        Label lblRD = new Label(this, SWT.CHECK);
+        Label lblRD = new Label(cmp, SWT.CHECK);
         lblRD.setText("/RD");
-        bitsetRD = new BitsetWidget(this, 1, SWT.NONE);
+        bitsetRD = new BitsetWidget(cmp, 1, SWT.NONE);
         bitsetRD.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 
-        Label lblWR = new Label(this, SWT.CHECK);
+        Label lblWR = new Label(cmp, SWT.CHECK);
         lblWR.setText("/WR");
-        bitsetWR = new BitsetWidget(this, 1, SWT.NONE);
+        bitsetWR = new BitsetWidget(cmp, 1, SWT.NONE);
         bitsetWR.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+
+        Composite cmp2 = new Composite(this, SWT.NONE);
+        cmp2.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+        cmp2.setLayout(new GridLayout(1, false));
+
+        Label lblMemory = new Label(cmp2, SWT.NONE);
+        lblMemory.setText("Memory");
+
+        memoryComposite = new MemoryComposite(cmp2, SWT.NONE);
+        memoryComposite.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
+    }
+
+    public void setTraceExecution(boolean traceExecution) {
+        memoryComposite.setTraceExecution(traceExecution);
     }
 
     public void setPID(Intel8155 pid) {
         this.pid = pid;
+        memoryComposite.setRam(pid.getRam());
         updateState();
     }
 
@@ -185,5 +207,9 @@ public class Status8155Composite extends Composite  {
         bitsetWR.setValue(pid.isWrValue() ? 1 : 0);
     }
 
+    @Override
+    protected void checkSubclass() {
+        // Disable the check that prevents subclassing of SWT components
+    }
 }
 

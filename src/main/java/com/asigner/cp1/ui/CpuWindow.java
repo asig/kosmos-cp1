@@ -82,12 +82,6 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
     private Status8049Composite status8049Composite;
     private Status8155Composite status8155Composite;
     private DisassemblyComposite disassemblyComposite;
-    private MemoryComposite memory8049Composite;
-    private MemoryComposite memory8155Composite;
-
-    private BitsetWidget busWidget;
-    private BitsetWidget p1Widget;
-    private BitsetWidget p2Widget;
 
     public CpuWindow(Intel8049 cpu, Intel8155 pid, ExecutorThread executorThread) throws IOException {
         this.cpu = cpu;
@@ -188,76 +182,30 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
 
         Composite composite = new Composite(composite_1, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-        GridLayout layout = new GridLayout(2, false);
+        GridLayout layout = new GridLayout(1, false);
         layout.marginWidth = 0;
         layout.marginHeight = 0;
         composite.setLayout(layout);
 
-        Group group_1 = new Group(composite, SWT.NONE);
-        group_1.setText("Status (8049)");
-        group_1.setLayout(new GridLayout(3, false));
-        group_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-
-        status8049Composite = new Status8049Composite(group_1, SWT.NONE);
+        status8049Composite = new Status8049Composite(composite, SWT.NONE);
+        status8049Composite.setTraceExecution(isTraceExecution());
+        status8049Composite.setText("Status (8049)");
         status8049Composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
         status8049Composite.setCpu(cpu);
+        DataPort.Listener portListener = (oldValue, newValue) -> {
+        	if (isTraceExecution()) {
+        		shell.getDisplay().syncExec(() -> status8049Composite.updateState());
+        	}        	
+        };
+        cpu.getPort(0).addListener(portListener);
+        cpu.getPort(1).addListener(portListener);
+        cpu.getPort(2).addListener(portListener);
 
-        DataPort bus = cpu.getPort(0);
-        new Label(group_1, SWT.NONE).setText("BUS");
-        busWidget = new BitsetWidget(group_1, 8, SWT.NONE);
-        bus.addListener((oldValue, newValue) -> {
-            if (isTraceExecution()) {
-                shell.getDisplay().syncExec(() -> busWidget.setValue(newValue));
-            }
-        });
-
-        DataPort p1 = cpu.getPort(1);
-        new Label(group_1, SWT.NONE).setText("P1");
-        p1Widget = new BitsetWidget(group_1, 8, SWT.NONE);
-        p1.addListener((oldValue, newValue) -> {
-            if (isTraceExecution()) {
-                shell.getDisplay().syncExec(() -> p1Widget.setValue(newValue));
-            }
-        });
-
-        DataPort p2 = cpu.getPort(2);
-        new Label(group_1, SWT.NONE).setText("P2");
-        p2Widget = new BitsetWidget(group_1, 8, SWT.NONE);
-        new Label(group_1, SWT.NONE);
-        new Label(group_1, SWT.NONE);
-        p2.addListener((oldValue, newValue) -> {
-            if (isTraceExecution()) {
-                shell.getDisplay().syncExec(() -> p2Widget.setValue(newValue));
-            }
-        });
-
-
-        Group grpMemory = new Group(composite, SWT.NONE);
-        grpMemory.setLayout(new FillLayout(SWT.HORIZONTAL));
-        grpMemory.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-        grpMemory.setText("Memory (8049)");
-
-        memory8049Composite = new MemoryComposite(grpMemory, SWT.NONE);
-        memory8049Composite.setRam(cpu.getRam());
-        memory8049Composite.setTraceExecution(isTraceExecution());
-
-        Group group_2 = new Group(composite, SWT.NONE);
-        group_2.setText("Status (8155)");
-        group_2.setLayout(new GridLayout(1, false));
-        group_2.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-
-        status8155Composite = new Status8155Composite(group_2, SWT.NONE);
-        status8155Composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        status8155Composite = new Status8155Composite(composite, SWT.NONE);
+        status8155Composite.setText("Status (8155)");
+        status8155Composite.setTraceExecution(isTraceExecution());
+        status8155Composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         status8155Composite.setPID(pid);
-
-        Group grpMemory8155 = new Group(composite, SWT.NONE);
-        grpMemory8155.setLayout(new FillLayout(SWT.HORIZONTAL));
-        grpMemory8155.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-        grpMemory8155.setText("Memory (8155)");
-
-        memory8155Composite = new MemoryComposite(grpMemory8155, SWT.NONE);
-        memory8155Composite.setRam(pid.getRam());
-        memory8155Composite.setTraceExecution(isTraceExecution());
 
         stopAction.setEnabled(false);
 
@@ -269,8 +217,8 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
     }
 
     public void setTraceExecution(boolean traceExecution) {
-        memory8049Composite.setTraceExecution(traceExecution);
-        memory8155Composite.setTraceExecution(traceExecution);
+        status8049Composite.setTraceExecution(traceExecution);
+        status8155Composite.setTraceExecution(traceExecution);
         this.traceExecution = traceExecution;
     }
 
@@ -294,13 +242,10 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
-                memory8049Composite.redraw();
-                memory8155Composite.redraw();
                 status8049Composite.updateState();
-                status8155Composite.updateState();;
-                busWidget.redraw();
-                p1Widget.redraw();
-                p2Widget.redraw();
+                status8049Composite.redraw();
+                status8155Composite.updateState();
+                status8155Composite.redraw();
             }});
     }
 
@@ -380,8 +325,10 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         shell.getDisplay().syncExec(new Runnable() {
             @Override
             public void run() {
-                memory8049Composite.redraw();
-                memory8155Composite.redraw();
+                status8049Composite.updateState();
+                status8049Composite.redraw();
+                status8155Composite.updateState();
+                status8155Composite.redraw();
             }});
         updateView();
     }

@@ -81,12 +81,11 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
                 int bytePos = getBytePos(new Point(e.x, e.y));
                 if (bytePos != -1) {
                     InlineEdit edit = new InlineEdit(MemoryComposite.this, SWT.NONE);
-                    edit.init(getByteRect(bytePos), String.format("%02x", ram.read(bytePos)), 0, 255, i -> ram.write(bytePos,i));
+                    edit.init(getByteRect(bytePos, 2), String.format("%02x", ram.read(bytePos)), 0, 255, i -> ram.write(bytePos,i));
                     edit.setFont(font);
                 }
             }
         });
-
     }
 
     public boolean isTraceExecution() {
@@ -118,25 +117,25 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
 
     private int getBytePos(Point p) {
         int line = p.y / totalLineHeight;
-        int x = p.x / avgCharWidth;
-        if (x < 5) {
-            // in address range
-            return -1;
+
+        // Thanks to some minor differences on Macs, we can't just look at the character pos,
+        // but we rather need to check for each byte...
+        for (int i = 0; i < BYTES_PER_LINE; i++) {
+            int b = line * BYTES_PER_LINE + i;
+            Rectangle r = getByteRect(b, 0);
+            if (p.x >= r.x && p.x < r.x + r.width && p.y >= r.y && p.y < r.y + r.height) {
+                return b;
+            }
         }
-        x -= 5;
-        if (x % 3 == 0) {
-            // in white space
-            return -1;
-        }
-        return line * BYTES_PER_LINE + (x/3);
+        return -1;
     }
 
-    private Rectangle getByteRect(int b) {
+    private Rectangle getByteRect(int b, int margin) {
         int bOfs = b % BYTES_PER_LINE;
         int adjustment = isMac ? (bOfs * 2) : 0; // Some pixel adjustments for Mac.
         int y = (b/BYTES_PER_LINE) * totalLineHeight;
         int x = avgCharWidth * (5 + bOfs*3 + 1) + adjustment;
-        return new Rectangle(x - 2, y - 2, 2 * avgCharWidth + 4, totalLineHeight + 4);
+        return new Rectangle(x - margin, y - margin, 2 * avgCharWidth + 2 * margin, totalLineHeight + 2 * margin);
     }
 
     private void paint(PaintEvent event) {
