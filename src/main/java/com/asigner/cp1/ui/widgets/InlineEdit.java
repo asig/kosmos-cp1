@@ -81,6 +81,9 @@ public class InlineEdit extends Text {
         this.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent disposeEvent) {
+                if (!ok) {
+                    return;
+                }
                 String s = getText();
                 try {
                     int i = Integer.valueOf(s, 16);
@@ -97,5 +100,4 @@ public class InlineEdit extends Text {
     @Override
     protected void checkSubclass() {
     }
-
 }
