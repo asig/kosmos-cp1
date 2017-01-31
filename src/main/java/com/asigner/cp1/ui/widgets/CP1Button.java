@@ -20,6 +20,7 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
+import com.asigner.cp1.ui.OS;
 import com.asigner.cp1.ui.SWTResources;
 import com.google.common.base.Strings;
 import org.eclipse.swt.SWT;
@@ -46,6 +47,7 @@ public class CP1Button extends Composite {
 
     private static final String LARGE_FONT_NAME = "Helvetica Black";
     private static final String SMALL_FONT_NAME = "Helvetica";
+    private static final boolean isMac = OS.isMac();
 
     private boolean pressed = false;
     private boolean mousePressed = false;
@@ -61,8 +63,8 @@ public class CP1Button extends Composite {
     public CP1Button(Composite parent, int style) {
         super(parent, style);
 
-        largeFont = new Font(parent.getDisplay(), LARGE_FONT_NAME, 12, SWT.NONE);
-        smallFont = new Font(parent.getDisplay(), SMALL_FONT_NAME, 6, SWT.NONE);
+        largeFont = new Font(parent.getDisplay(), LARGE_FONT_NAME, scaleFontSize(12), SWT.NONE);
+        smallFont = new Font(parent.getDisplay(), SMALL_FONT_NAME, scaleFontSize(6), SWT.NONE);
 
         this.setSize((int)(3.2 * 50), 50);
         this.addPaintListener(this::paint);
@@ -156,8 +158,12 @@ public class CP1Button extends Composite {
         }
 
         double largeTextSizeFactor = Strings.isNullOrEmpty(subText) ? 0.5 : 0.375;
-        largeFont = new Font(this.getDisplay(), LARGE_FONT_NAME, (int)(height * largeTextSizeFactor), SWT.NONE);
-        smallFont = new Font(this.getDisplay(), SMALL_FONT_NAME, (int)(height * 0.15), SWT.NONE);
+        largeFont = new Font(this.getDisplay(), LARGE_FONT_NAME, scaleFontSize(height * largeTextSizeFactor), SWT.NONE);
+        smallFont = new Font(this.getDisplay(), SMALL_FONT_NAME, scaleFontSize(height * 0.15), SWT.NONE);
+    }
+
+    private int scaleFontSize(double fontSize) {
+        return (int)(isMac ? 1.3 * fontSize : fontSize);
     }
 
     @Override

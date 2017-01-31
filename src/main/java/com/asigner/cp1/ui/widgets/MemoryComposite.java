@@ -19,6 +19,7 @@
 
 package com.asigner.cp1.ui.widgets;
 
+import com.asigner.cp1.ui.OS;
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
@@ -45,11 +46,12 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     private static final Color FG = SWTResources.BLACK;
     private static final Color BG_SEL = SWTResources.RED;
     private static final Color FG_SEL = SWTResources.YELLOW;
+    private static final boolean isMac = OS.isMac();
 
     private Ram ram;
     private int lastWritten = -1;
 
-    private final FontMetrics fontMetrics;
+    private final int avgCharWidth;
     private final Font font;
     private final int totalLineHeight;
 
@@ -66,8 +68,9 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
         font = JFaceResources.getFont(JFaceResources.TEXT_FONT);
         GC gc = new GC(Display.getDefault());
         gc.setFont(font);
-        fontMetrics = gc.getFontMetrics();
+        FontMetrics fontMetrics = gc.getFontMetrics();
         totalLineHeight = 6*fontMetrics.getHeight()/6;
+        avgCharWidth = fontMetrics.getAverageCharWidth();
         gc.dispose();
         setFont(font);
 
@@ -107,16 +110,15 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
 
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
-        int cw = fontMetrics.getAverageCharWidth();
-        int w = cw * (6 + BYTES_PER_LINE * 3 - 1);
+        int adjustment = isMac ? (BYTES_PER_LINE * 2) : 0; // Some pixel adjustments for Mac.
+        int w = avgCharWidth * (6 + BYTES_PER_LINE * 3 - 1) + adjustment;
         int lines = ram != null ? (ram.size() + BYTES_PER_LINE - 1)/BYTES_PER_LINE : 0;
         return new Point(w,lines * totalLineHeight);
     }
 
     private int getBytePos(Point p) {
         int line = p.y / totalLineHeight;
-        int cw = fontMetrics.getAverageCharWidth();
-        int x = p.x / cw;
+        int x = p.x / avgCharWidth;
         if (x < 5) {
             // in address range
             return -1;
@@ -130,10 +132,11 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     }
 
     private Rectangle getByteRect(int b) {
-        int cw = fontMetrics.getAverageCharWidth();
+        int bOfs = b % BYTES_PER_LINE;
+        int adjustment = isMac ? (bOfs * 2) : 0; // Some pixel adjustments for Mac.
         int y = (b/BYTES_PER_LINE) * totalLineHeight;
-        int x = cw * (5 + (b%BYTES_PER_LINE)*3 + 1);
-        return new Rectangle(x - 2, y - 2, 2*cw + 4, totalLineHeight + 4);
+        int x = avgCharWidth * (5 + bOfs*3 + 1) + adjustment;
+        return new Rectangle(x - 2, y - 2, 2 * avgCharWidth + 4, totalLineHeight + 4);
     }
 
     private void paint(PaintEvent event) {
@@ -141,26 +144,25 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
         gc.setBackground(BG);
         gc.setForeground(FG);
         int lines = getLineCount();
-        int cw = fontMetrics.getAverageCharWidth();
         int curX = 0;
         for (int i = 0; i < lines; i++) {
             int curY =  i * totalLineHeight;
             curX = 0;
             gc.drawText(String.format("%04x:", i * BYTES_PER_LINE), curX, curY);
-            curX = 5 * cw;
+            curX = 5 * avgCharWidth;
             for(int j = 0; j < BYTES_PER_LINE; j++) {
                 int pos = i * BYTES_PER_LINE + j;
                 if (pos < ram.size()) {
                     if (pos != lastWritten) {
                         gc.drawText(String.format(" %02x", ram.read(pos)), curX, i * totalLineHeight);
-                        curX += 3 * cw;
+                        curX += 3 * avgCharWidth + 2;
                     } else {
                         gc.drawText(String.format(" ", ram.read(pos)), curX, i * totalLineHeight);
-                        curX += cw;
+                        curX += avgCharWidth;
                         gc.setBackground(BG_SEL);
                         gc.setForeground(FG_SEL);
                         gc.drawText(String.format("%02x", ram.read(pos)), curX, i * totalLineHeight);
-                        curX += 2 * cw;
+                        curX += 2 * avgCharWidth + 2;
                         gc.setBackground(BG);
                         gc.setForeground(FG);
                     }

@@ -19,6 +19,7 @@
 
 package com.asigner.cp1.ui.widgets;
 
+import com.asigner.cp1.ui.OS;
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -96,12 +97,13 @@ public class BitsetWidget extends Label {
     }
 
     private void drawBit(GC gc, int x, int y, boolean set) {
+        int finetuning = OS.isLinux() ? 1 : 0;
         gc.setBackground(bgCol);
         gc.fillArc(x, y, BOX_W, BOX_H, 0, 360);
         gc.drawArc(x, y, BOX_W, BOX_H, 0, 360);
         if (set) {
             gc.setBackground(fgCol);
-            gc.fillArc(x+INSET, y+INSET, BOX_W-2*INSET+1, BOX_H-2*INSET+1, 0, 360);
+            gc.fillArc(x+INSET, y+INSET, BOX_W-2*INSET+finetuning, BOX_H-2*INSET+finetuning, 0, 360);
         }
     }
 
