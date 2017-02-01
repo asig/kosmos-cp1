@@ -144,6 +144,7 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
         gc.setForeground(FG);
         int lines = getLineCount();
         int curX = 0;
+        int adjustment = isMac ? 2 : 0; // Some pixel adjustments for Mac.
         for (int i = 0; i < lines; i++) {
             int curY =  i * totalLineHeight;
             curX = 0;
@@ -154,14 +155,14 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
                 if (pos < ram.size()) {
                     if (pos != lastWritten) {
                         gc.drawText(String.format(" %02x", ram.read(pos)), curX, i * totalLineHeight);
-                        curX += 3 * avgCharWidth + 2;
+                        curX += 3 * avgCharWidth + adjustment;
                     } else {
                         gc.drawText(String.format(" ", ram.read(pos)), curX, i * totalLineHeight);
                         curX += avgCharWidth;
                         gc.setBackground(BG_SEL);
                         gc.setForeground(FG_SEL);
                         gc.drawText(String.format("%02x", ram.read(pos)), curX, i * totalLineHeight);
-                        curX += 2 * avgCharWidth + 2;
+                        curX += 2 * avgCharWidth + adjustment;
                         gc.setBackground(BG);
                         gc.setForeground(FG);
                     }
