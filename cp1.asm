@@ -106,11 +106,11 @@ $003c: [ b0 01 ] MOV  @R0, #$01  ; Set R1' to 1
 $003e: [ d4 b4 ] CALL $06b4
 $0040: [ 9a cf ] ANL  P2, #$cf   ; P2 &= 1100 1111 --> 8155 /CE == 0, /CE == 0
 $0042: [ 9a bf ] ANL  P2, #$bf   ; P2 &= 1011 1111 --> 8155 /Reset == 0
-$0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
-$0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1
+$0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0: Enable "internal" 8155
+$0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1: Disable CP5 8155
 $0048: [ b8 00 ] MOV  R0, #$00
 $004a: [ 23 0f ] MOV  A, #$0f
-$004c: [ 90    ] MOVX @R0, A
+$004c: [ 90    ] MOVX @R0, A     ; Write 0000 1111 to command register
 $004d: [ b8 02 ] MOV  R0, #$02
 $004f: [ 23 ff ] MOV  A, #$ff
 $0051: [ 90    ] MOVX @R0, A
@@ -1255,11 +1255,12 @@ not_one:
 $0614: [ 34 79 ] CALL clear_display
 $0616: [ be 00 ] MOV  R6, #$00
 $0618: [ b8 3a ] MOV  R0, #$3a
-$061a: [ f0    ] MOV  A, @R0       ; Load status byte
-$061b: [ 12 4f ] JB0  stop_pressed ; jump if STP pressed
+$061a: [ f0    ] MOV  A, @R0         ; load status byte
+$061b: [ 12 4f ] JB0  stop_pressed_2 ; jump if STP pressed
+check_step_key:
 $061d: [ b8 3a ] MOV  R0, #$3a
-$061f: [ f0    ] MOV  A, @R0       ; Load status byte
-$0620: [ 32 53 ] JB1  $0653        ; jump if STEP pressed
+$061f: [ f0    ] MOV  A, @R0         ; load status byte
+$0620: [ 32 53 ] JB1  step_pressed_2 ; jump if STEP pressed
 
 step_handler:
 $0622: [ b8 38 ] MOV  R0, #VM_PC
@@ -1291,14 +1292,15 @@ $064a: [ f0    ] MOV  A, @R0
 $064b: [ 12 61 ] JB0  $0661
 $064d: [ c4 22 ] JMP  step_handler
 
-stop_pressed:
+stop_pressed_2:
 $064f: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
-$0651: [ c4 1d ] JMP  $061d
+$0651: [ c4 1d ] JMP  check_step_key
 
-step_pressed:
+step_pressed_2:
 $0653: [ 23 fd ] MOV  A, #$fd
 $0655: [ 74 33 ] CALL clear_status_bits
 $0657: [ c4 22 ] JMP  step_handler
+
 $0659: [ bc 02 ] MOV  R4, #$02
 $065b: [ c4 fd ] JMP  show_error
 $065d: [ bc 03 ] MOV  R4, #$03
