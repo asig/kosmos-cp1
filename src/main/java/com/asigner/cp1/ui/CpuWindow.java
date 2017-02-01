@@ -362,7 +362,12 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 runAction.setEnabled(true);
             }});
         updateView();
-        shell.getDisplay().asyncExec(status8049Composite::updateState);
+        shell.getDisplay().asyncExec(() -> {
+            status8049Composite.updateState();
+            status8049Composite.redraw();
+            status8155Composite.updateState();
+            status8155Composite.redraw();
+        });
     }
 
     @Override
