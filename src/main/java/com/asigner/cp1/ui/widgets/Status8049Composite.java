@@ -167,17 +167,17 @@ public class Status8049Composite extends Group {
 
         lblA = new CLabel(cmp, SWT.BORDER | SWT.CENTER);
         lblA.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        lblA.setText("00");
+        lblA.setText("$00");
         addInlineEdit(lblA, 0,255, val -> cpu.setA(val));
 
         lblT = new CLabel(cmp, SWT.BORDER | SWT.CENTER);
         lblT.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
-        lblT.setText("00");
+        lblT.setText("$00");
         addInlineEdit(lblT, 0,255, val -> cpu.setT(val));
 
         lblPC = new CLabel(cmp, SWT.BORDER | SWT.CENTER);
         lblPC.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
-        lblPC.setText("000");
+        lblPC.setText("$000");
         addInlineEdit(lblPC, 0,2047, val -> cpu.setPC(val));;
         
         //////
@@ -259,19 +259,19 @@ public class Status8049Composite extends Group {
         int a = cpu.getA();
         if (this.a != a) {
             this.a = a;
-            lblA.setText(Integer.toHexString(a));
+            lblA.setText(String.format("$%02x", a));
         }
 
         int t = cpu.getT();
         if (this.t != t) {
             this.t = t;
-            lblT.setText(Integer.toHexString(t));
+            lblT.setText(String.format("$%02x", t));
         }
 
         int pc = cpu.getPC();
         if (this.pc != pc) {
             this.pc = pc;
-            lblPC.setText(Integer.toHexString(pc));
+            lblPC.setText(String.format("$%03x", pc));
         }
 
 
@@ -284,7 +284,7 @@ public class Status8049Composite extends Group {
         int bus = cpu.getPort(0).read();
         if (this.bus != bus) {
         	this.bus = bus;
-        	this.busWidget.setValue(bus);;
+        	this.busWidget.setValue(bus);
         }
 
         int p1 = cpu.getPort(1).read();

@@ -87,7 +87,7 @@ public class Status8155Composite extends Group  {
             l2.setText("Value:");
 
             lblPaVal = new CLabel(grp, SWT.BORDER);
-            lblPaVal.setText("0xFF");
+            lblPaVal.setText("$00");
 
             bitsetPaVal = new BitsetWidget(grp, 8, SWT.NONE);
         }
@@ -112,7 +112,7 @@ public class Status8155Composite extends Group  {
             l2.setText("Value:");
 
             lblPbVal = new CLabel(grp, SWT.BORDER);
-            lblPbVal.setText("0xFF");
+            lblPbVal.setText("$00");
 
             bitsetPbVal = new BitsetWidget(grp, 8, SWT.NONE);
         }
@@ -128,13 +128,13 @@ public class Status8155Composite extends Group  {
 
             lblPcMode = new CLabel(grp, SWT.BORDER);
             lblPcMode.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-            lblPcMode.setText("ALT1");
+            lblPcMode.setText("ALT4");
 
             Label l2 = new Label(grp, SWT.NONE);
             l2.setText("Value:");
 
             lblPcVal = new CLabel(grp, SWT.BORDER);
-            lblPcVal.setText("0xFF");
+            lblPcVal.setText("$00");
 
             bitsetPcVal = new BitsetWidget(grp, 6, SWT.NONE);
         }
@@ -187,17 +187,17 @@ public class Status8155Composite extends Group  {
 
     public void updateState() {
         lblPaMode.setText(pid.getPaMode().toString());
-        lblPaVal.setText(String.format("%02x", pid.getPaValue()));
+        lblPaVal.setText(String.format("$%02x", pid.getPaValue()));
         bitsetPaVal.setValue(pid.getPaValue());
         btnPaInterruptEnabled.setChecked(pid.isPaInterruptEnabled());
 
         lblPbMode.setText(pid.getPbMode().toString());
-        lblPbVal.setText(String.format("%02x", pid.getPbValue()));
+        lblPbVal.setText(String.format("$%02x", pid.getPbValue()));
         bitsetPbVal.setValue(pid.getPbValue());
         btnPbInterruptEnabled.setChecked(pid.isPbInterruptEnabled());
 
         lblPcMode.setText(pid.getPcMode().toString());
-        lblPcVal.setText(String.format("%02x", pid.getPcValue()));
+        lblPcVal.setText(String.format("$%02x", pid.getPcValue()));
         bitsetPcVal.setValue(pid.getPcValue());
 
         bitsetCE.setValue(pid.isCeValue() ? 1 : 0);
