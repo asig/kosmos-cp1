@@ -77,6 +77,7 @@ public class DataPort {
 
     public void connectBitTo(int bit, Pin other) {
         this.sinks[bit].add(other);
+        other.write((this.value & (1<<bit)) != 0 ? 1 : 0);
     }
 
     public void addListener(Listener listener) {
