@@ -204,11 +204,10 @@ public class Intel8049 {
         state.timerRunning = false;
         state.inInterrupt = false;
 
-        for (DataPort p : ports) {
-            if (p != null) {
-                p.write(0);
-            }
-        }
+        ports[0].write(0x00);
+        ports[1].write(0xff);
+        ports[2].write(0xff);
+
         ram.clear();
 
         listeners.forEach(StateListener::resetExecuted);

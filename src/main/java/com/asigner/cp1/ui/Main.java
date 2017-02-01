@@ -24,10 +24,7 @@ import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,6 +66,9 @@ public class Main {
             p2.connectBitTo(6, pid.pinReset);
             p2.connectBitTo(7, pid.pinIO);
             p2.connectBitTo(4, pid.pinCELowActive);
+
+            // Now, reset the CPU
+            cpu.reset();
 
             CpuWindow cpuWindow = new CpuWindow(cpu, pid, executorThread);
             KosmosPanelWindow panelWindow = new KosmosPanelWindow(cpu, pid, executorThread);

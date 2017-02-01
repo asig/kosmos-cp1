@@ -18,8 +18,8 @@
 ;0x27 - 0x2b: decoded entered digits. most significant digit at 0x27
 
 ;0x30 - 0x35: last interrupt's key presses per line
-;0x36: Accu MSB
-;0x37: Accu LSB
+;0x36: ???
+;0x37: Accu
 ;0x38: PC
 ;0x39: Last byte read from external RAM
 ;0x3a: status register
@@ -31,8 +31,7 @@
 ;      bit 2: ?
 ;      bit 1; STEP pressed
 ;      bit 0: STP pressed
-;0x3b: extensions status register?
-;      bit 7: CP5 (RAM extension) installed?
+;0x3b: ?????
 ;0x3c - 0x3e: buffer for atoi
 
     .equ VM_PC, $38
@@ -107,11 +106,11 @@ $003c: [ b0 01 ] MOV  @R0, #$01  ; Set R1' to 1
 $003e: [ d4 b4 ] CALL $06b4
 $0040: [ 9a cf ] ANL  P2, #$cf   ; P2 &= 1100 1111 --> 8155 /CE == 0, /CE == 0
 $0042: [ 9a bf ] ANL  P2, #$bf   ; P2 &= 1011 1111 --> 8155 /Reset == 0
-$0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
-$0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1
+$0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0: Enable "internal" 8155
+$0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1: Disable CP5 8155
 $0048: [ b8 00 ] MOV  R0, #$00
 $004a: [ 23 0f ] MOV  A, #$0f
-$004c: [ 90    ] MOVX @R0, A
+$004c: [ 90    ] MOVX @R0, A     ; Write 0000 1111 to command register
 $004d: [ b8 02 ] MOV  R0, #$02
 $004f: [ 23 ff ] MOV  A, #$ff
 $0051: [ 90    ] MOVX @R0, A

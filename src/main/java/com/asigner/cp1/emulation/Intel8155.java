@@ -109,10 +109,6 @@ public class Intel8155 {
         paValue = 0;
         pbValue = 0;
         pcValue = 0;
-        ioValue = false;
-        ceValue = false;
-        rdValue = false;
-        wrValue = false;
 
         ram.clear();
 
