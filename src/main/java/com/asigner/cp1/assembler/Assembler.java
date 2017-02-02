@@ -111,6 +111,22 @@ public class Assembler {
         }
     };
 
+    private ParamHandler equHandler = new BasicParamHandler() {
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+            if (!checkParamSize(lineNum, 2, params)) {
+                return;
+            }
+            String name = params.get(0);
+            if (consts.containsKey(name)) {
+                error(String.format("Line %d: name %s is already used.", lineNum, name));
+                return;
+            }
+            int val = parseInt(lineNum, params.get(1));
+            consts.put(name, val);
+        }
+    };
+
     private ParamHandler dataHandler = new BasicParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
@@ -170,6 +186,7 @@ public class Assembler {
     private Map<String, OpDesc> ops = ImmutableMap.<String, OpDesc>builder()
             .put(".ORG", new OpDesc(0, orgHandler))
             .put(".DB", new OpDesc(0, dataHandler))
+            .put(".EQU", new OpDesc(0, equHandler))
             .put("HLT", new OpDesc(1, nullHandler))
             .put("ANZ", new OpDesc(2, nullHandler))
             .put("VZG", new OpDesc(3, constHandler))

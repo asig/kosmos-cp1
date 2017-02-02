@@ -106,6 +106,22 @@ public class AssemblerTest {
                 3,250);
     }
 
+    @Test
+    public void testEqu() {
+        String source =
+                " .EQU foo, 250  \n" +
+                " VZG foo \n";
+
+        Assembler assembler = new Assembler(source);
+        assembler.assemble();
+        assertEquals(0, assembler.getErrors().size());
+        byte[] code = assembler.getCode();
+        assertEquals(256, code.length);
+        checkContent(code,
+                3,250
+        );
+    }
+
     private void checkContent(byte[] code, int ... values) {
         for (int i = 0; i < values.length; i++) {
             assertEquals(values[i], code[i] & 0xff);
