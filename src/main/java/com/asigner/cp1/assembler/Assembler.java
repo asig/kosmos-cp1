@@ -58,6 +58,29 @@ public class Assembler {
         }
     };
 
+    private ParamHandler orgHandler = new ParamHandler() {
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+            if (params.size() != 1) {
+                error("Line " + lineNum + ": One param expected");
+            }
+            String param = params.get(0);
+            try {
+                if (param.startsWith("$")) {
+                    pc = Integer.parseInt(param.substring(1, 16));
+                } else {
+                    pc = Integer.parseInt(param);
+                }
+                if (pc < 0 || pc > 255) {
+                    error("Line " + lineNum + ": " + param + " is out of range");
+                    pc = 0;
+                }
+            } catch(NumberFormatException e) {
+                error("Line " + lineNum + ": " + param + " is not a valid number");
+            }
+        }
+    };
+
     private ParamHandler dataHandler = new ParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
@@ -98,6 +121,7 @@ public class Assembler {
     };
 
     private Map<String, OpDesc> ops = ImmutableMap.<String, OpDesc>builder()
+            .put(".ORG", new OpDesc(0, orgHandler))
             .put(".DB", new OpDesc(0, dataHandler))
             .put("HLT", new OpDesc(1, nullHandler))
             .put("ANZ", new OpDesc(2, nullHandler))
