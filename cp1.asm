@@ -31,7 +31,7 @@
 ;      bit 2: ?
 ;      bit 1; STEP pressed
 ;      bit 0: STP pressed
-;0x3b: ?????
+;0x3b: memory size
 ;0x3c - 0x3e: buffer for atoi
 
     .equ VM_PC, $38
@@ -110,31 +110,34 @@ $0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0: Enable "in
 $0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1: Disable CP5 8155
 $0048: [ b8 00 ] MOV  R0, #$00
 $004a: [ 23 0f ] MOV  A, #$0f
-$004c: [ 90    ] MOVX @R0, A     ; Write 0000 1111 to command register
+$004c: [ 90    ] MOVX @R0, A     ; Write 0000 1111 to command register: Port A and B are OUTPUT, Port C is ALT2
 $004d: [ b8 02 ] MOV  R0, #$02
 $004f: [ 23 ff ] MOV  A, #$ff
-$0051: [ 90    ] MOVX @R0, A
-$0052: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
-$0054: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
+$0051: [ 90    ] MOVX @R0, A     ; Write 1111 1111 to Port B
+$0052: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0: Enable CP5 8155
+$0054: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1: Disable "internal" 8155
 $0056: [ b8 00 ] MOV  R0, #$00
 $0058: [ 23 0d ] MOV  A, #$0d
-$005a: [ 90    ] MOVX @R0, A
+$005a: [ 90    ] MOVX @R0, A     ; Write 0000 1101 to command register: Port A is OUTPUT, Port B is INPUT, Port C is ALT2
 $005b: [ b8 01 ] MOV  R0, #$01
 $005d: [ 23 ff ] MOV  A, #$ff
-$005f: [ 90    ] MOVX @R0, A
+$005f: [ 90    ] MOVX @R0, A     ; Write 1111 1111 to Port A
 $0060: [ b8 03 ] MOV  R0, #$03
-$0062: [ 90    ] MOVX @R0, A
-$0063: [ 9a 5f ] ANL  P2, #$5f     P2 &= 0101 1111 --> /CE == 0, IO == 0
+$0062: [ 90    ] MOVX @R0, A     ; Write 1111 1111 to Port A
+
+; Test whether extension is available:
+$0063: [ 9a 5f ] ANL  P2, #$5f   ; P2 &= 0101 1111 --> /CE == 0, IO == 0
 $0065: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
 $0067: [ b8 13 ] MOV  R0, #$13
 $0069: [ 23 5a ] MOV  A, #$5a
-$006b: [ 90    ] MOVX @R0, A
+$006b: [ 90    ] MOVX @R0, A     ; Store $5a at $13
 $006c: [ 27    ] CLR  A
-$006d: [ 80    ] MOVX A, @R0
-$006e: [ d3 5a ] XRL  A, #$5a
-$0070: [ b8 3b ] MOV  R0, #$3b
-$0072: [ c6 94 ] JZ   $0094
-$0074: [ b0 7f ] MOV  @R0, #$7f
+$006d: [ 80    ] MOVX A, @R0     ; Read again from $13
+$006e: [ d3 5a ] XRL  A, #$5a    ; Test if it is what we wrote?
+$0070: [ b8 3b ] MOV  R0, #$3b   ; Load address of "memory size"
+$0072: [ c6 94 ] JZ   cp5_present
+$0074: [ b0 7f ] MOV  @R0, #$7f  ; 127 words of memory
+init_cont:
 $0076: [ bb 04 ] MOV  R3, #$04
 $0078: [ b8 3f ] MOV  R0, #$3f
 $007a: [ 23 ff ] MOV  A, #$ff
@@ -157,9 +160,9 @@ $0090: [ 60    ] ADD  A, @R0      ; Add the currently pressed key
 $0091: [ b0 00 ] MOV  @R0, #$00   ; clear R6'
 $0093: [ b3    ] JMPP @A          ; jump to key handler
 
-????????
-$0094: [ b0 ff ] MOV  @R0, #$ff   ; 
-$0096: [ 04 76 ] JMP  $0076       ; 
+cp5_present:
+$0094: [ b0 ff ] MOV  @R0, #$ff   ; 255 words of memory
+$0096: [ 04 76 ] JMP  init_cont
 
 pc_handler:
 $0098: [ fe    ] MOV  A, R6       ; Load # of digits entered
