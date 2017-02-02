@@ -1,4 +1,6 @@
-Emulation:
+TODO
+====
+
 [ ] Switch to a simple event bus, get rid of all the listeners
 [ ] more breakpoint types?
 [X] menu bar
@@ -6,12 +8,22 @@ Emulation:
 [ ] more actions:
     [ ] load state
     [ ] save state
-    [X] save disassembly
+    [X] save disassembly (8049)
 
-Implementation:
 [X] ExecutorThread should broadcast performance
 [ ] Throttle execution at 100%
 [ ] Menus in panel window
 [X] Keyboard shortcuts on panel window
 [ ] "About" dialog
 [ ] "Open window" menu items
+[ ] CP1 assembly language
+    [ ] Assembler
+    [ ] Store memory as listing
+[ ] Extension Modules
+    [X] Support for CP5
+    [ ] Support for CP3 (Cassette)
+    [ ] Enable/Disable modules in settings dialog
+
+Bugs
+====
+[ ] Don't crash when a window is closed (add isDisposed() checks)

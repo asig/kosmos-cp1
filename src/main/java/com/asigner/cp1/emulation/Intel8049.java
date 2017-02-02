@@ -88,8 +88,8 @@ public class Intel8049 {
 
     private Disassembler disassembler;
 
-    public Intel8049(Ram ram, Rom rom, DataPort bus, DataPort p1, DataPort p2) {
-        this.ram = ram;
+    public Intel8049(Rom rom, DataPort bus, DataPort p1, DataPort p2) {
+        this.ram = new Ram(128);
         this.rom = rom;
         this.disassembler = new Disassembler(rom);
         this.state = new State();

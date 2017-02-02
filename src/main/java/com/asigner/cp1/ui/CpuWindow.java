@@ -36,10 +36,8 @@ import com.asigner.cp1.ui.actions.StopAction;
 import com.asigner.cp1.ui.actions.TraceExecutionAction;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.ui.widgets.ActionToolItem;
-import com.asigner.cp1.ui.widgets.BitsetWidget;
 import com.asigner.cp1.ui.widgets.CheckboxToolItem;
 import com.asigner.cp1.ui.widgets.DisassemblyComposite;
-import com.asigner.cp1.ui.widgets.MemoryComposite;
 import com.asigner.cp1.ui.widgets.Status8049Composite;
 import com.asigner.cp1.ui.widgets.Status8155Composite;
 import org.eclipse.swt.SWT;
@@ -50,7 +48,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -76,16 +73,19 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
     private Shell shell;
     private Intel8049 cpu;
     private Intel8155 pid;
+    private Intel8155 pidExtension;
     private ExecutorThread executorThread;
     private boolean traceExecution = true;
 
-    private Status8049Composite status8049Composite;
-    private Status8155Composite status8155Composite;
-    private DisassemblyComposite disassemblyComposite;
+    private Status8049Composite status8049;
+    private Status8155Composite status8155;
+    private Status8155Composite status8155Extension;
+    private DisassemblyComposite disassembly;
 
-    public CpuWindow(Intel8049 cpu, Intel8155 pid, ExecutorThread executorThread) throws IOException {
+    public CpuWindow(Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) throws IOException {
         this.cpu = cpu;
         this.pid = pid;
+        this.pidExtension = pidExtension;
         this.executorThread = executorThread;
 
         cpu.addListener(this);
@@ -176,9 +176,9 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         group.setLayout(new FillLayout(SWT.HORIZONTAL));
         group.setText("Disassembly");
 
-        disassemblyComposite = new DisassemblyComposite(group, SWT.NONE);
-        disassemblyComposite.setRom(cpu.getRom());
-        disassemblyComposite.addListener((addr, enabled) -> executorThread.enableBreakpoint(addr, enabled));
+        disassembly = new DisassemblyComposite(group, SWT.NONE);
+        disassembly.setRom(cpu.getRom());
+        disassembly.addListener((addr, enabled) -> executorThread.enableBreakpoint(addr, enabled));
 
         Composite composite = new Composite(composite_1, SWT.NONE);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
@@ -187,25 +187,31 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         layout.marginHeight = 0;
         composite.setLayout(layout);
 
-        status8049Composite = new Status8049Composite(composite, SWT.NONE);
-        status8049Composite.setTraceExecution(isTraceExecution());
-        status8049Composite.setText("Status (8049)");
-        status8049Composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
-        status8049Composite.setCpu(cpu);
+        status8049 = new Status8049Composite(composite, SWT.NONE);
+        status8049.setTraceExecution(isTraceExecution());
+        status8049.setText("8049 (Main unit)");
+        status8049.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
+        status8049.setCpu(cpu);
         DataPort.Listener portListener = (oldValue, newValue) -> {
-        	if (isTraceExecution()) {
-        		shell.getDisplay().syncExec(() -> status8049Composite.updateState());
-        	}        	
+            if (isTraceExecution()) {
+                shell.getDisplay().syncExec(() -> status8049.updateState());
+            }
         };
         cpu.getPort(0).addListener(portListener);
         cpu.getPort(1).addListener(portListener);
         cpu.getPort(2).addListener(portListener);
 
-        status8155Composite = new Status8155Composite(composite, SWT.NONE);
-        status8155Composite.setText("Status (8155)");
-        status8155Composite.setTraceExecution(isTraceExecution());
-        status8155Composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-        status8155Composite.setPID(pid);
+        status8155 = new Status8155Composite(composite, SWT.NONE);
+        status8155.setText("8155 (Main unit)");
+        status8155.setTraceExecution(isTraceExecution());
+        status8155.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        status8155.setPID(pid);
+
+        status8155Extension = new Status8155Composite(composite, SWT.NONE);
+        status8155Extension.setText("8155 (CP5 memory extension)");
+        status8155Extension.setTraceExecution(isTraceExecution());
+        status8155Extension.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+        status8155Extension.setPID(pidExtension);
 
         stopAction.setEnabled(false);
 
@@ -217,8 +223,9 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
     }
 
     public void setTraceExecution(boolean traceExecution) {
-        status8049Composite.setTraceExecution(traceExecution);
-        status8155Composite.setTraceExecution(traceExecution);
+        status8049.setTraceExecution(traceExecution);
+        status8155.setTraceExecution(traceExecution);
+        status8155Extension.setTraceExecution(traceExecution);
         this.traceExecution = traceExecution;
     }
 
@@ -242,10 +249,12 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
-                status8049Composite.updateState();
-                status8049Composite.redraw();
-                status8155Composite.updateState();
-                status8155Composite.redraw();
+                status8049.updateState();
+                status8049.redraw();
+                status8155.updateState();
+                status8155.redraw();
+                status8155Extension.updateState();
+                status8155Extension.redraw();
             }});
     }
 
@@ -260,41 +269,39 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         }
         updateView();
         shell.getDisplay().asyncExec(() -> {
-            status8049Composite.updateState();
-            status8155Composite.updateState();
+            status8049.updateState();
         });
+        update8155States();
     }
 
     @Override
     public void commandRegisterWritten() {
-        if (!isTraceExecution()) {
-            return;
-        }
-        shell.getDisplay().asyncExec(status8155Composite::updateState);
+        update8155States();
     }
 
     @Override
     public void portWritten(Port port, int value) {
-        if (!isTraceExecution()) {
-            return;
-        }
-        shell.getDisplay().asyncExec(status8155Composite::updateState);
+        update8155States();
     }
 
     @Override
     public void memoryWritten() {
-        if (!isTraceExecution()) {
-            return;
-        }
-        shell.getDisplay().asyncExec(status8155Composite::updateState);
+        update8155States();
     }
 
     @Override
     public void pinsChanged() {
+        update8155States();
+    }
+
+    private void update8155States() {
         if (!isTraceExecution()) {
             return;
         }
-        shell.getDisplay().asyncExec(status8155Composite::updateState);
+        shell.getDisplay().asyncExec(() -> {
+            status8155.updateState();
+            status8155Extension.updateState();
+        });
     }
 
     @Override
@@ -308,20 +315,19 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
             }});
         updateView();
         shell.getDisplay().asyncExec(() -> {
-            status8049Composite.updateState();
-            status8049Composite.redraw();
-            status8155Composite.updateState();
-            status8155Composite.redraw();
+            status8049.updateState();
+            status8049.redraw();
         });
+        update8155States();
     }
 
     @Override
     public void stateChanged(Intel8049.State newState) {
         if (isTraceExecution()) {
-            if (disassemblyComposite.getSelectedAddress() != cpu.getPC()) {
+            if (disassembly.getSelectedAddress() != cpu.getPC()) {
                 updateView();
             }
-            shell.getDisplay().asyncExec(status8049Composite::updateState);
+            shell.getDisplay().asyncExec(status8049::updateState);
         }
     }
 
@@ -330,16 +336,15 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         shell.getDisplay().syncExec(new Runnable() {
             @Override
             public void run() {
-                status8049Composite.updateState();
-                status8049Composite.redraw();
-                status8155Composite.updateState();
-                status8155Composite.redraw();
+                status8049.updateState();
+                status8049.redraw();
             }});
+        update8155States();
         updateView();
     }
 
     public void updateView() {
-        shell.getDisplay().syncExec(() -> disassemblyComposite.selectAddress(cpu.getPC()));
+        shell.getDisplay().syncExec(() -> disassembly.selectAddress(cpu.getPC()));
     }
 
     /**
@@ -352,15 +357,12 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
             DataPort bus = new DataPort("BUS");
             DataPort p1 = new DataPort("P1");
             DataPort p2 = new DataPort("P2");
-            Intel8049 cpu = new Intel8049(ram, rom, bus, p1, p2);
-            Intel8155 pid = new Intel8155(bus, new Ram(256));
+            Intel8049 cpu = new Intel8049(rom, bus, p1, p2);
+            Intel8155 pid = new Intel8155(bus);
+            Intel8155 pidExtension = new Intel8155(bus);
 
-            ExecutorThread executorThread = new ExecutorThread(cpu, pid);
-            CpuWindow cpuWindow = new CpuWindow(
-                    new Intel8049(ram, rom, bus, p1, p2),
-                    new Intel8155(bus, new Ram(256)),
-                    executorThread
-            );
+            ExecutorThread executorThread = new ExecutorThread(cpu, pid, pidExtension);
+            CpuWindow cpuWindow = new CpuWindow(cpu, pid, pidExtension, executorThread);
             executorThread.start();
             cpuWindow.open();
             Display display = Display.getDefault();

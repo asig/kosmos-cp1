@@ -55,12 +55,14 @@ public class ExecutorThread extends Thread {
     private final List<ExecutionListener> listeners = new LinkedList<ExecutionListener>();
     private final Intel8049 cpu;
     private final Intel8155 pid;
+    private final Intel8155 pidExtension;
     private boolean isRunning = false;
     private boolean breakOnMovx = false;
 
-    public ExecutorThread(Intel8049 cpu, Intel8155 pid) {
+    public ExecutorThread(Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension) {
         this.cpu = cpu;
         this.pid = pid;
+        this.pidExtension = pidExtension;
     }
 
     public void addListener(ExecutionListener listener) {
@@ -121,8 +123,10 @@ public class ExecutorThread extends Thread {
                         break;
                     case RESET:
                         stopExecution();
+                        // TODO(asigner): Reset should be done by setting the reset line.
                         cpu.reset();
                         pid.reset();
+                        pidExtension.reset();
                         listeners.forEach(ExecutionListener::resetExecuted);
                         break;
                     case QUIT:

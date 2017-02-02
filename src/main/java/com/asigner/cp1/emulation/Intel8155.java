@@ -81,9 +81,9 @@ public class Intel8155 {
     private int pbValue;
     private int pcValue;
 
-    public Intel8155(DataPort bus, Ram ram) {
+    public Intel8155(DataPort bus) {
         this.bus = bus;
-        this.ram = ram;
+        this.ram = new Ram(256);
         reset();
     }
 
