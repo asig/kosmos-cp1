@@ -25,6 +25,8 @@ import com.google.common.collect.Lists;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +50,48 @@ public class Assembler {
 
     }
 
-    private ParamHandler nullHandler = new ParamHandler() {
+    private abstract class BasicParamHandler implements ParamHandler {
+        protected boolean checkParamSize(int lineNo, int expectedParams, List<String> params) {
+            if (params.size() != expectedParams) {
+                error(String.format("Line %d: %d params expected, but %d params encountered.", lineNo, expectedParams, params.size()));
+                return false;
+            }
+            return true;
+        }
+
+        protected Integer parseInt(int lineNo, String s) {
+            Integer i = parseOptInt(lineNo, s);
+            if (i == null) {
+                error("Line " + lineNo + ": " + s + " is not a valid number");
+                i = 0;
+            }
+            return i;
+        }
+
+        protected Integer parseOptInt(int lineNo, String s) {
+            int i;
+            try {
+                if (s.startsWith("$")) {
+                    i = Integer.parseInt(s.substring(1, 16));
+                } else {
+                    i = Integer.parseInt(s);
+                }
+                if (i < 0 || i > 255) {
+                    error("Line " + lineNo + ": " + s + " is out of range");
+                    i = 0;
+                }
+            } catch (NumberFormatException e) {
+                Integer c = consts.get(s);
+                if (c == null) {
+                    return null;
+                }
+                i = c;
+            }
+            return i;
+        }
+    }
+
+    private ParamHandler nullHandler = new BasicParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
             if (params.size() > 0) {
@@ -58,65 +101,69 @@ public class Assembler {
         }
     };
 
-    private ParamHandler orgHandler = new ParamHandler() {
+    private ParamHandler orgHandler = new BasicParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
-            if (params.size() != 1) {
-                error("Line " + lineNum + ": One param expected");
+            if (!checkParamSize(lineNum, 1, params)) {
+                return;
             }
-            String param = params.get(0);
-            try {
-                if (param.startsWith("$")) {
-                    pc = Integer.parseInt(param.substring(1, 16));
-                } else {
-                    pc = Integer.parseInt(param);
-                }
-                if (pc < 0 || pc > 255) {
-                    error("Line " + lineNum + ": " + param + " is out of range");
-                    pc = 0;
-                }
-            } catch(NumberFormatException e) {
-                error("Line " + lineNum + ": " + param + " is not a valid number");
-            }
+            pc = parseInt(lineNum, params.get(0));
         }
     };
 
-    private ParamHandler dataHandler = new ParamHandler() {
+    private ParamHandler dataHandler = new BasicParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
             for (String param : params) {
-                try {
-                    int val;
-                    if (param.startsWith("$")) {
-                        val = Integer.parseInt(param.substring(1, 16));
-                    } else {
-                        val = Integer.parseInt(param);
-                    }
-                    if (val < 0 || val > 255) {
-                        error("Line " + lineNum + ": " + param + " is out of range");
-                        val = 0;
-                    }
-                    memory[pc++] = val;
-                } catch(NumberFormatException e) {
-                    error("Line " + lineNum + ": " + param + " is not a valid number");
-                }
+                int val = parseInt(lineNum, param);
+                memory[pc++] = val;
             }
         }
     };
 
-    private static ParamHandler addressHandler = new ParamHandler() {
+    private ParamHandler addressHandler = new BasicParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
+            if (!checkParamSize(lineNum, 1, params)) {
+                return;
+            }
+            String param = params.get(0);
+            Integer val = parseOptInt(lineNum, param);
+            if (val == null) {
+                Integer i = labels.get(param);
+                if (i == null) {
+                    addPendingReference(param, pc);
+                    val = 0;
+                } else {
+                    val = i;
+                }
+            }
+            memory[pc++] = opcode << 8 | val;
         }
     };
-    private static ParamHandler constHandler = new ParamHandler() {
+
+    private ParamHandler constHandler = new BasicParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
+            if (!checkParamSize(lineNum, 1, params)) {
+                return;
+            }
+            int i = parseInt(lineNum, params.get(0));
+            memory[pc++] = opcode << 8 | i;
         }
     };
-    private static ParamHandler optConstHandler = new ParamHandler() {
+
+    private ParamHandler optConstHandler = new BasicParamHandler() {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
+            int i = 0;
+            if (params.size() != 0) {
+                if (!checkParamSize(lineNum, 1, params)) {
+                    return;
+                }
+                i = parseInt(lineNum, params.get(0));
+            }
+            memory[pc++] = opcode << 8 | i;
         }
     };
 
@@ -153,24 +200,52 @@ public class Assembler {
     private int pc = 0;
 
     private Map<String, Integer> labels = new HashMap<String, Integer>();
+    private Map<String, Integer> consts = new HashMap<String, Integer>();
     private Map<String, List<Integer>> pendingReferences = new HashMap<String, List<Integer>>();
+    private List<String> errors;
 
     private List<String> text;
     private String outputName;
 
-    private Assembler(String inputName, String outputName) throws IOException {
-        BufferedReader in = new BufferedReader(new FileReader(inputName));
+    public Assembler(Reader input) throws IOException {
+        loadSource(input);
+    }
+
+    public Assembler(String source) {
+        try {
+            loadSource(new StringReader(source));
+        } catch (IOException e) {
+            throw new RuntimeException("Can't happen");
+        }
+    }
+
+    private void loadSource(Reader reader) throws IOException {
+        BufferedReader in = new BufferedReader(reader);
         text = new LinkedList<String>();
         String line = in.readLine();
         while(line != null) {
-            text.add(line.trim());
+            text.add(line);
             line = in.readLine();
         }
     }
 
-    private void go() {
+    public void assemble() {
+        labels = new HashMap<String, Integer>();
+        consts = new HashMap<String, Integer>();
+        pendingReferences = new HashMap<String, List<Integer>>();
+        errors = Lists.newArrayList();
+        pc = 0;
+
         for (int i = 0; i < text.size(); i++) {
             handleLine(i+1, text.get(i));
+        }
+        if (pendingReferences.size() > 0) {
+            for (String label : pendingReferences.keySet()) {
+                error("Unresolved label " + label);
+            }
+        }
+        if (pc > 256) {
+            error("Program too large");
         }
     }
 
@@ -180,9 +255,9 @@ public class Assembler {
         // remove comments
         int idx = line.indexOf(";");
         if (idx >= 0) {
-            line = line.substring(idx);
+            line = line.substring(0, idx);
         }
-        if (line.isEmpty()) {
+        if (line.trim().isEmpty()) {
             return;
         }
 
@@ -190,26 +265,38 @@ public class Assembler {
 
         // label
         String label = "";
-        if (Character.isLetter(label.charAt(curPos))) {
+        if (Character.isLetter(line.charAt(curPos))) {
             while (Character.isLetterOrDigit(line.charAt(curPos))) {
                 label += line.charAt(curPos++);
             }
         }
 
         // skip whitespace
-        while (Character.isWhitespace(line.charAt(curPos++))) ;
+        while (Character.isWhitespace(line.charAt(curPos))) {
+            curPos++;
+        };
 
         // opcode
-        String opcode = "";
+        String opcode = "" + line.charAt(curPos++);
         while (Character.isLetterOrDigit(line.charAt(curPos))) {
             opcode += line.charAt(curPos++);
         }
 
         // skip whitespace
-        while (Character.isWhitespace(line.charAt(curPos++))) ;
+        while (curPos < line.length() && Character.isWhitespace(line.charAt(curPos))) {
+            curPos++;
+        }
 
         // parameters
-        List<String> params = Lists.newArrayList(line.substring(curPos).split(",")).stream().map(String::trim).collect(Collectors.toList());
+        List<String> params;
+        String rawParams = line.substring(curPos).trim();
+        if (rawParams.isEmpty()) {
+            params = Lists.newArrayList();
+        } else {
+            params = Lists.newArrayList(rawParams.split(",")).stream()
+                    .map(String::trim)
+                    .collect(Collectors.toList());
+        }
 
         // add and resolve label
         if (!label.isEmpty()) {
@@ -235,8 +322,31 @@ public class Assembler {
         }
     }
 
+    private void addPendingReference(String label, int address) {
+        List<Integer> pendingRefs = pendingReferences.get(label);
+        if (pendingRefs == null) {
+            pendingRefs = Lists.newLinkedList();
+        }
+        pendingRefs.add(address);
+        pendingReferences.put(label, pendingRefs);
+    }
+
     private void error(String msg) {
-        System.err.println(msg);
+        errors.add(msg);
+    }
+
+    public byte[] getCode() {
+        int size = pc > 127 ? 512 : 256;
+        byte[] code = new byte[size];
+        for (int i = 0; i < pc; i++) {
+            code[2 * i + 0] = (byte)((memory[i] >> 8) & 0xff);
+            code[2 * i + 1] = (byte)(memory[i] & 0xff);
+        }
+        return code;
+    }
+
+    public List<String> getErrors() {
+        return errors;
     }
 
     private static void usage() {
@@ -244,18 +354,13 @@ public class Assembler {
     }
 
     public static void main(String args[]) {
-
-        String input = " \t    MOV a   b";
-        String parts[] = input.split("\\s+");
-        for(String p : parts) {
-            System.err.println("Prt: " + p);
-        }
         if (args.length != 2) {
             usage();
             return;
         }
         try {
-            new Assembler(args[0], args[1]).go();
+            Assembler assembler = new Assembler(new FileReader(args[0]));
+            assembler.assemble();
         } catch (IOException e) {
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
