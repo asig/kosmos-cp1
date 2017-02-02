@@ -12,13 +12,12 @@ the virtual machine, but also contained a well written introduction to
 the inner workings of a computer.
 
 Unlike other programs, kosmos-cp1 does not only simulate the Kosmos CP1's
-virtual machine, but emulates the underlying hardware (an Intel 8049 and an
-Intel 8155).
+virtual machine, but is a cycle-exact emulation of the underlying hardware
+(an Intel 8049 and an Intel 8155).
 
 ## What is currently emulated?
-The current version emulates the base unit, without any extensions. I'm
-planning to add support for the "CP5" memory extensions as well as the "CP2"
-cassette interface.
+The current version emulates the base unit, as well as the "CP3" memory
+extension. I'm planning to also add support for the "CP2" cassette interface.
 
 ## Further reading
 You can find scans of all the manuals at http://www.retrozone.ch/cp1/

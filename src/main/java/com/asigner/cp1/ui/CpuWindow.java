@@ -208,7 +208,7 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         status8155.setPID(pid);
 
         status8155Extension = new Status8155Composite(composite, SWT.NONE);
-        status8155Extension.setText("8155 (CP5 memory extension)");
+        status8155Extension.setText("8155 (CP3 memory extension)");
         status8155Extension.setTraceExecution(isTraceExecution());
         status8155Extension.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         status8155Extension.setPID(pidExtension);

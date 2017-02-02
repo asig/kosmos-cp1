@@ -20,8 +20,8 @@ TODO
     [ ] Assembler
     [ ] Store memory as listing
 [ ] Extension Modules
-    [X] Support for CP5
-    [ ] Support for CP3 (Cassette)
+    [X] Support for CP3
+    [ ] Support for CP2 (Cassette)
     [ ] Enable/Disable modules in settings dialog
 
 Bugs

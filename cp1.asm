@@ -107,14 +107,14 @@ $003e: [ d4 b4 ] CALL $06b4
 $0040: [ 9a cf ] ANL  P2, #$cf   ; P2 &= 1100 1111 --> 8155 /CE == 0, /CE == 0
 $0042: [ 9a bf ] ANL  P2, #$bf   ; P2 &= 1011 1111 --> 8155 /Reset == 0
 $0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0: Enable "internal" 8155
-$0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1: Disable CP5 8155
+$0046: [ 8a 20 ] ORL  P2, #$20   ; P2 |= 0010 0000 --> /CE == 1: Disable CP3 8155
 $0048: [ b8 00 ] MOV  R0, #$00
 $004a: [ 23 0f ] MOV  A, #$0f
 $004c: [ 90    ] MOVX @R0, A     ; Write 0000 1111 to command register: Port A and B are OUTPUT, Port C is ALT2
 $004d: [ b8 02 ] MOV  R0, #$02
 $004f: [ 23 ff ] MOV  A, #$ff
 $0051: [ 90    ] MOVX @R0, A     ; Write 1111 1111 to Port B
-$0052: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0: Enable CP5 8155
+$0052: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0: Enable CP3 8155
 $0054: [ 8a 10 ] ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1: Disable "internal" 8155
 $0056: [ b8 00 ] MOV  R0, #$00
 $0058: [ 23 0d ] MOV  A, #$0d
@@ -135,7 +135,7 @@ $006c: [ 27    ] CLR  A
 $006d: [ 80    ] MOVX A, @R0     ; Read again from $13
 $006e: [ d3 5a ] XRL  A, #$5a    ; Test if it is what we wrote?
 $0070: [ b8 3b ] MOV  R0, #$3b   ; Load address of "memory size"
-$0072: [ c6 94 ] JZ   cp5_present
+$0072: [ c6 94 ] JZ   cp3_present
 $0074: [ b0 7f ] MOV  @R0, #$7f  ; 127 words of memory
 init_cont:
 $0076: [ bb 04 ] MOV  R3, #$04
@@ -160,7 +160,7 @@ $0090: [ 60    ] ADD  A, @R0      ; Add the currently pressed key
 $0091: [ b0 00 ] MOV  @R0, #$00   ; clear R6'
 $0093: [ b3    ] JMPP @A          ; jump to key handler
 
-cp5_present:
+cp3_present:
 $0094: [ b0 ff ] MOV  @R0, #$ff   ; 255 words of memory
 $0096: [ 04 76 ] JMP  init_cont
 
@@ -1357,10 +1357,10 @@ $0636: [ ab    ] MOV  R3, A
 $0637: [ f6 5d ] JC   error_f003     ; Jump if PC overflowed
 $0639: [ b8 3b ] MOV  R0, #$3b
 $063b: [ f0    ] MOV  A, @R0         ; Load extension status
-$063c: [ f2 41 ] JB7  cp5_installed    
+$063c: [ f2 41 ] JB7  cp3_installed
 $063e: [ fb    ] MOV  A, R3          ; Restore PC to A
 $063f: [ f2 5d ] JB7  error_f003     ; show error if PC >= 128     
-cp5_installed:
+cp3_installed:
 $0641: [ b6 73 ] JF0  single_step_done  ; break if in single-step-mode
 $0643: [ b8 3a ] MOV  R0, #$3a
 $0645: [ f0    ] MOV  A, @R0         ; load status byte
