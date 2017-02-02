@@ -19,67 +19,112 @@
 
 package com.asigner.cp1.assembler;
 
-import java.io.*;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-/**
- * Created by IntelliJ IDEA.
- * User: asigner
- * Date: 3/28/11
- * Time: 3:59 PM
- * To change this template use File | Settings | File Templates.
- */
 public class Assembler {
 
     private interface ParamHandler {
-
-
+        void generate(int lineNum, int opcode, List<String> params);
     }
 
-    private static ParamHandler nullHandler = new ParamHandler() {};
-    private static ParamHandler addressHandler = new ParamHandler() {};
-    private static ParamHandler constHandler = new ParamHandler() {};
-    private static ParamHandler optConstHandler = new ParamHandler() {};
-
-    private static enum Mnemonic {
-        HLT(1, nullHandler),
-        ANZ(2, nullHandler),
-        VZG(3, constHandler),
-        AKO(4, constHandler),
-        LDA(5, addressHandler),
-        ABS(6, addressHandler),
-        ADD(7, addressHandler),
-        SUB(8, addressHandler),
-        SPU(9, addressHandler),
-        VGL(10, addressHandler),
-        SPB(11, addressHandler),
-        VGR(12, addressHandler),
-        VKL(13, addressHandler),
-        NEG(14, nullHandler),
-        UND(15, addressHandler),
-        P1E(16, optConstHandler),
-        P1A(17, optConstHandler),
-        P2A(18, optConstHandler),
-        LIA(19, addressHandler),
-        AIS(20, addressHandler),
-        SIU(21, addressHandler),
-        P3E(22, optConstHandler),
-        P4A(23, optConstHandler),
-        P5A(24, optConstHandler);
-
+    private static class OpDesc {
         private final int opCode;
-        private final ParamHandler paramHandler;
+        private final ParamHandler handler;
 
-        private Mnemonic(int opCode, ParamHandler paramHandler) {
+        public OpDesc(int opCode, ParamHandler handler) {
             this.opCode = opCode;
-            this.paramHandler = paramHandler;
+            this.handler = handler;
         }
+
     }
 
-    private final Map<String, Mnemonic> ops = new HashMap<String, Mnemonic>();
+    private ParamHandler nullHandler = new ParamHandler() {
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+            if (params.size() > 0) {
+                error("Line " + lineNum + ": No parameters expected");
+            }
+            memory[pc++] = opcode << 8 | 0;
+        }
+    };
+
+    private ParamHandler dataHandler = new ParamHandler() {
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+            for (String param : params) {
+                try {
+                    int val;
+                    if (param.startsWith("$")) {
+                        val = Integer.parseInt(param.substring(1, 16));
+                    } else {
+                        val = Integer.parseInt(param);
+                    }
+                    if (val < 0 || val > 255) {
+                        error("Line " + lineNum + ": " + param + " is out of range");
+                        val = 0;
+                    }
+                    memory[pc++] = val;
+                } catch(NumberFormatException e) {
+                    error("Line " + lineNum + ": " + param + " is not a valid number");
+                }
+            }
+        }
+    };
+
+    private static ParamHandler addressHandler = new ParamHandler() {
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+        }
+    };
+    private static ParamHandler constHandler = new ParamHandler() {
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+        }
+    };
+    private static ParamHandler optConstHandler = new ParamHandler() {
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+        }
+    };
+
+    private Map<String, OpDesc> ops = ImmutableMap.<String, OpDesc>builder()
+            .put(".DB", new OpDesc(0, dataHandler))
+            .put("HLT", new OpDesc(1, nullHandler))
+            .put("ANZ", new OpDesc(2, nullHandler))
+            .put("VZG", new OpDesc(3, constHandler))
+            .put("AKO", new OpDesc(4, constHandler))
+            .put("LDA", new OpDesc(5, addressHandler))
+            .put("ABS", new OpDesc(6, addressHandler))
+            .put("ADD", new OpDesc(7, addressHandler))
+            .put("SUB", new OpDesc(8, addressHandler))
+            .put("SPU", new OpDesc(9, addressHandler))
+            .put("VGL", new OpDesc(10, addressHandler))
+            .put("SPB", new OpDesc(11, addressHandler))
+            .put("VGR", new OpDesc(12, addressHandler))
+            .put("VKL", new OpDesc(13, addressHandler))
+            .put("NEG", new OpDesc(14, nullHandler))
+            .put("UND", new OpDesc(15, addressHandler))
+            .put("P1E", new OpDesc(16, optConstHandler))
+            .put("P1A", new OpDesc(17, optConstHandler))
+            .put("P2A", new OpDesc(18, optConstHandler))
+            .put("LIA", new OpDesc(19, addressHandler))
+            .put("AIS", new OpDesc(20, addressHandler))
+            .put("SIU", new OpDesc(21, addressHandler))
+            .put("P3E", new OpDesc(22, optConstHandler))
+            .put("P4A", new OpDesc(23, optConstHandler))
+            .put("P5A", new OpDesc(24, optConstHandler))
+            .build();
+
     private final int memory[] = new int[256];
     private int pc = 0;
 
@@ -97,19 +142,15 @@ public class Assembler {
             text.add(line.trim());
             line = in.readLine();
         }
-
-        for(Mnemonic m : Mnemonic.values()) {
-            ops.put(m.name(), m);
-        }
     }
 
     private void go() {
         for (int i = 0; i < text.size(); i++) {
-            handleLine(text.get(i));
+            handleLine(i+1, text.get(i));
         }
     }
 
-    private void handleLine(String line) {
+    private void handleLine(int lineNum, String line) {
         // Format: [label] [op/directive] [param] {"," param }
 
         // remove comments
@@ -143,11 +184,8 @@ public class Assembler {
         // skip whitespace
         while (Character.isWhitespace(line.charAt(curPos++))) ;
 
-        // parameter
-        String param = "";
-        while (!Character.isWhitespace(line.charAt(curPos))) {
-            param += line.charAt(curPos++);
-        }
+        // parameters
+        List<String> params = Lists.newArrayList(line.substring(curPos).split(",")).stream().map(String::trim).collect(Collectors.toList());
 
         // add and resolve label
         if (!label.isEmpty()) {
@@ -155,11 +193,11 @@ public class Assembler {
         }
 
         // find opcode
-        Mnemonic m = ops.get(opcode);
-        if (m == null) {
+        OpDesc op = ops.get(opcode);
+        if (op == null) {
             error("Unknown mnemonic");
         }
-
+        op.handler.generate(lineNum, op.opCode, params);
     }
 
     private void addLabel(String label, int address) {
