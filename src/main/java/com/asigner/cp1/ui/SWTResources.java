@@ -53,6 +53,10 @@ public class SWTResources {
         return img;
     }
 
+    public static Color getColor(int swtColor) {
+        return Display.getCurrent().getSystemColor(swtColor);
+    }
+
     public static Color getColor(RGB rgb) {
         if (rgb == null) {
             return null;
