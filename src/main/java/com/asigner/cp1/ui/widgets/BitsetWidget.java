@@ -21,6 +21,7 @@ package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.OS;
 import com.asigner.cp1.ui.SWTResources;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
@@ -57,7 +58,6 @@ public class BitsetWidget extends Label {
      */
     public BitsetWidget(Composite parent, int size, int style) {
         super(parent, style);
-        setForeground(fgCol);
         this.size = size;
         this.addPaintListener(new PaintListener() {
             @Override
@@ -85,25 +85,35 @@ public class BitsetWidget extends Label {
     }
 
     private void paint(GC gc) {
-        // Fill background
-        gc.setBackground(this.getBackground());
-        gc.fillRectangle(this.getBounds());
-
-        int mask = 1 << (size-1);
+        int mask = 1 << (size - 1);
         for (int i = 0; i < size; i++) {
             drawBit(gc, BORDER_LEFT + i * (BOX_W + SEPARATOR_WIDTH), BORDER_TOP, (value & mask) > 0);
             mask >>= 1;
         }
     }
 
+
     private void drawBit(GC gc, int x, int y, boolean set) {
         int finetuning = OS.isLinux() ? 1 : 0;
-        gc.setBackground(bgCol);
-        gc.fillArc(x, y, BOX_W, BOX_H, 0, 360);
-        gc.drawArc(x, y, BOX_W, BOX_H, 0, 360);
-        if (set) {
-            gc.setBackground(fgCol);
-            gc.fillArc(x+INSET, y+INSET, BOX_W-2*INSET+finetuning, BOX_H-2*INSET+finetuning, 0, 360);
+        if (isEnabled()) {
+            gc.setBackground(bgCol);
+            gc.setForeground(fgCol);
+            gc.fillArc(x, y, BOX_W, BOX_H, 0, 360);
+            gc.drawArc(x, y, BOX_W, BOX_H, 0, 360);
+            if (set) {
+                gc.setBackground(fgCol);
+                gc.fillArc(x + INSET, y + INSET, BOX_W - 2 * INSET + finetuning, BOX_H - 2 * INSET + finetuning, 0, 360);
+            }
+        } else {
+            gc.setBackground(getBackground());
+            gc.setForeground(SWTResources.getColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND));
+            gc.fillArc(x, y, BOX_W, BOX_H, 0, 360);
+            gc.drawArc(x, y, BOX_W, BOX_H, 0, 360);
+            if (set) {
+                gc.setBackground(SWTResources.getColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND));
+                gc.fillArc(x + INSET, y + INSET, BOX_W - 2 * INSET + finetuning, BOX_H - 2 * INSET + finetuning, 0, 360);
+            }
+
         }
     }
 

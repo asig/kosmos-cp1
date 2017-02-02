@@ -46,6 +46,7 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     private static final Color FG = SWTResources.BLACK;
     private static final Color BG_SEL = SWTResources.RED;
     private static final Color FG_SEL = SWTResources.YELLOW;
+
     private static final boolean isMac = OS.isMac();
 
     private Ram ram;
@@ -140,8 +141,14 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
 
     private void paint(PaintEvent event) {
         GC gc = event.gc;
-        gc.setBackground(BG);
-        gc.setForeground(FG);
+        boolean isEnabled = isEnabled();
+        if (isEnabled) {
+            gc.setBackground(BG);
+            gc.setForeground(FG);
+        } else {
+            gc.setBackground(getBackground());
+            gc.setForeground(SWTResources.getColor(SWT.COLOR_TITLE_INACTIVE_FOREGROUND));
+        }
         int lines = getLineCount();
         int curX = 0;
         int adjustment = isMac ? 2 : 0; // Some pixel adjustments for Mac.
@@ -153,7 +160,7 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
             for(int j = 0; j < BYTES_PER_LINE; j++) {
                 int pos = i * BYTES_PER_LINE + j;
                 if (pos < ram.size()) {
-                    if (pos != lastWritten) {
+                    if (pos != lastWritten || !isEnabled) {
                         gc.drawText(String.format(" %02x", ram.read(pos)), curX, i * totalLineHeight);
                         curX += 3 * avgCharWidth + adjustment;
                     } else {
