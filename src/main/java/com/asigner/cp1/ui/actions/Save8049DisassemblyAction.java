@@ -32,12 +32,12 @@ import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.util.Disassembler;
 import com.asigner.cp1.emulation.util.Disassembler.Line;
 
-public class SaveDisassemblyAction extends Action {
+public class Save8049DisassemblyAction extends Action {
 
     private final Intel8049 cpu;
 
-    public SaveDisassemblyAction(Intel8049 cpu) {
-        super("Save disassembly...");
+    public Save8049DisassemblyAction(Intel8049 cpu) {
+        super("Save 8049 disassembly...");
         this.cpu = cpu;
     }
 
@@ -45,7 +45,7 @@ public class SaveDisassemblyAction extends Action {
     public void run() {
         FileDialog fd = new FileDialog(Display.getCurrent().getActiveShell(), SWT.SAVE);
         fd.setText("Save");
-        String[] filterExt = { "*.txt", "*.*" };
+        String[] filterExt = { "*.asm", "*.*" };
         fd.setFilterExtensions(filterExt);
         String selected = fd.open();
         if (selected != null) {
