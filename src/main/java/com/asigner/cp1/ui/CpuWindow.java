@@ -25,12 +25,13 @@ import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
 import com.asigner.cp1.ui.actions.AboutAction;
+import com.asigner.cp1.ui.actions.AssemblerAction;
 import com.asigner.cp1.ui.actions.BreakOnMovxAction;
-import com.asigner.cp1.ui.actions.LoadStateAction;
+import com.asigner.cp1.ui.actions.LoadAction;
 import com.asigner.cp1.ui.actions.ResetAction;
 import com.asigner.cp1.ui.actions.RunAction;
-import com.asigner.cp1.ui.actions.SaveDisassemblyAction;
-import com.asigner.cp1.ui.actions.SaveStateAction;
+import com.asigner.cp1.ui.actions.SaveAction;
+import com.asigner.cp1.ui.actions.Save8049DisassemblyAction;
 import com.asigner.cp1.ui.actions.SingleStepAction;
 import com.asigner.cp1.ui.actions.StopAction;
 import com.asigner.cp1.ui.actions.TraceExecutionAction;
@@ -65,9 +66,10 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
     private ResetAction resetAction;
     private BreakOnMovxAction breakOnMovxAction;
     private TraceExecutionAction traceExecutionAction;
-    private SaveDisassemblyAction saveDisassemblyAction;
-    private LoadStateAction loadStateAction;
-    private SaveStateAction saveStateAction;
+    private Save8049DisassemblyAction save8049DisassemblyAction;
+    private LoadAction loadAction;
+    private SaveAction saveAction;
+    private AssemblerAction assemblerAction;
     private AboutAction aboutAction;
 
     private Shell shell;
@@ -101,9 +103,10 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         runAction = new RunAction(executorThread);
         stopAction = new StopAction(executorThread, this);
         singleStepAction = new SingleStepAction(this, executorThread);
-        saveDisassemblyAction = new SaveDisassemblyAction(cpu);
-        loadStateAction = new LoadStateAction(cpu);
-        saveStateAction = new SaveStateAction(cpu);
+        save8049DisassemblyAction = new Save8049DisassemblyAction(cpu);
+        loadAction = new LoadAction(shell, pid, pidExtension);
+        saveAction = new SaveAction(shell, pid, pidExtension);
+        assemblerAction = new AssemblerAction(shell, pid, pidExtension);
         aboutAction = new AboutAction();
 
         resetAction.setDependentActions(singleStepAction, runAction, stopAction);
@@ -115,8 +118,10 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
      * Open the window.
      */
     public void open() {
+        createShell();
         createActions();
         createContents();
+
         shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
@@ -130,10 +135,12 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         Menu menu = new Menu(shell, SWT.BAR);
 
         Menu fileMenu = new Menu(menu);
-        new ActionMenuItem(fileMenu, SWT.NONE, saveDisassemblyAction);
+        new ActionMenuItem(fileMenu, SWT.NONE, save8049DisassemblyAction);
         new MenuItem(fileMenu, SWT.SEPARATOR);
-        new ActionMenuItem(fileMenu, SWT.NONE, loadStateAction);
-        new ActionMenuItem(fileMenu, SWT.NONE, saveStateAction);
+        new ActionMenuItem(fileMenu, SWT.NONE, loadAction);
+        new ActionMenuItem(fileMenu, SWT.NONE, saveAction);
+        new MenuItem(fileMenu, SWT.SEPARATOR);
+        new ActionMenuItem(fileMenu, SWT.NONE, assemblerAction);
 
         Menu helpMenu = new Menu(menu);
         new ActionMenuItem(helpMenu, SWT.NONE, aboutAction);
@@ -148,17 +155,19 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         return menu;
     }
 
-    /**
-     * Create contents of the window.
-     */
-    protected void createContents() {
+    private void createShell() {
         Display display = Display.getDefault();
         shell = new Shell(display, SWT.SHELL_TRIM | SWT.CENTER);
         shell.setText("Intel MCS-48 Emulator");
         shell.setLayout(new GridLayout(1, false));
         Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
         shell.setImage(icon);
+    }
 
+    /**
+     * Create contents of the window.
+     */
+    protected void createContents() {
         ToolBar toolbar = new ToolBar(shell, SWT.FLAT);
         ToolItem toolItem1 = new ActionToolItem(toolbar, SWT.PUSH, singleStepAction);
         ToolItem toolItem2 = new ActionToolItem(toolbar, SWT.PUSH, runAction);
@@ -237,6 +246,10 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(false);
                 stopAction.setEnabled(true);
                 runAction.setEnabled(false);
+
+                saveAction.setEnabled(false);
+                loadAction.setEnabled(false);
+                assemblerAction.setEnabled(false);
             }});
     }
 
@@ -249,6 +262,11 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
+
+                saveAction.setEnabled(true);
+                loadAction.setEnabled(true);
+                assemblerAction.setEnabled(true);
+
                 status8049.updateState();
                 status8049.redraw();
                 status8155.updateState();
@@ -312,6 +330,11 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
+
+                saveAction.setEnabled(true);
+                loadAction.setEnabled(true);
+                assemblerAction.setEnabled(true);
+
             }});
         updateView();
         shell.getDisplay().asyncExec(() -> {
