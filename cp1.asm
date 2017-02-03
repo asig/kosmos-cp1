@@ -18,8 +18,8 @@
 ;0x27 - 0x2b: decoded entered digits. most significant digit at 0x27
 
 ;0x30 - 0x35: last interrupt's key presses per line
-;0x36: ???
-;0x37: Accu
+;0x36: Accu MSB
+;0x37: Accu LSB
 ;0x38: PC
 ;0x39: Last byte read from external RAM
 ;0x3a: status register
@@ -198,7 +198,7 @@ $00c5: [ be 00 ] MOV  R6, #$00       ; Clear entered digits
 $00c7: [ 04 86 ] JMP  wait_key
 
 $00c9: [ bc 01 ] MOV  R4, #$01
-$00cb: [ c4 fd ] JMP  show_error
+$00cb: [ c4 fd ] JMP  show_error     ; F-001
 $00cd: [ 34 79 ] CALL clear_display
 $00cf: [ 04 d9 ] JMP  $00d9
 
@@ -280,7 +280,7 @@ $0144: [ 04 c9 ] JMP  $00c9
 $0146: [ 23 fb ] MOV  A, #$fb
 $0148: [ 74 33 ] CALL clear_status_bits
 $014a: [ bc 04 ] MOV  R4, #$04
-$014c: [ c4 fd ] JMP  show_error
+$014c: [ c4 fd ] JMP  show_error     ; F-004
 
 
 ?????????
@@ -1086,7 +1086,7 @@ $04b7: [ c4 2f ] JMP  $062f
 $04b9: [ b0 01 ] MOV  @R0, #$01
 $04bb: [ c4 2f ] JMP  $062f
 $04bd: [ bc 05 ] MOV  R4, #$05
-$04bf: [ c4 fd ] JMP  show_error
+$04bf: [ c4 fd ] JMP  show_error     ; F-005
 
 opcode_UND:
 $04c1: [ b8 36 ] MOV  R0, #$36
@@ -1135,7 +1135,7 @@ $0500: [ a0    ] MOV  @R0, A
 $0501: [ c4 2f ] JMP  $062f
 $0503: [ c4 5d ] JMP  $065d
 $0505: [ bc 06 ] MOV  R4, #$06
-$0507: [ c4 fd ] JMP  show_error
+$0507: [ c4 fd ] JMP  show_error     ; F-006
 $0509: [ 84 bd ] JMP  $04bd
 
 opcode_SUB:
