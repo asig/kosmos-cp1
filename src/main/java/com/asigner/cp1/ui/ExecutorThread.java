@@ -108,7 +108,7 @@ public class ExecutorThread extends Thread {
                     case SINGLE_STEP:
                         if (isRunning) {
                             stopExecution();
-                            listeners.forEach(ExecutionListener::executionStarted);
+                            listeners.forEach(ExecutionListener::executionStopped);
                         }
                         executeInstr();
                         break;
