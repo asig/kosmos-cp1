@@ -13,7 +13,9 @@ the inner workings of a computer.
 
 Unlike other programs, kosmos-cp1 does not only simulate the Kosmos CP1's
 virtual machine, but is a cycle-exact emulation of the underlying hardware
-(an Intel 8049 and an Intel 8155).
+(an Intel 8049 and an Intel 8155). Therefore, you'll get the "full" CP1
+experience, and can also run the demo programs described in the manual,
+"9 RUN" and "8 RUN".
 
 ## What is currently emulated?
 The current version emulates the base unit, as well as the "CP3" memory
