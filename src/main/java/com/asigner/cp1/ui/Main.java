@@ -54,8 +54,8 @@ public class Main {
             DataPort p1 = new DataPort("P1");
             DataPort p2 = new DataPort("P2");
             Intel8049 cpu = new Intel8049(rom, bus, p1, p2);
-            Intel8155 pid = new Intel8155(bus);
-            Intel8155 pidExtension = new Intel8155(bus);
+            Intel8155 pid = new Intel8155("internal", bus);
+            Intel8155 pidExtension = new Intel8155("extension", bus);
             ExecutorThread executorThread = new ExecutorThread(cpu, pid, pidExtension);
 
             // Connect the relevant pins to the main unit's 8155
