@@ -1,7 +1,7 @@
 line := [ident ":"] [directive | instr] "\n" .
 instr = ident [ param ]
 param = number | ident.
-directive = orgDirective | dbDirective .
-orgDirective = ".ORG" number .
+directive = orgDirective | dbDirective | equDirective .
+orgDirective = ".ORG" (number | ident ) .
 dbDirective = ".DB" byteSpec { "," byteSpec }.
-byteSpec = number [ "dup" (number | '?') ] .
+equDirective = ".EQU" ident "," (ident | number) .
