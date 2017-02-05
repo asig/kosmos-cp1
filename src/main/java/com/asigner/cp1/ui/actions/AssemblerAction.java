@@ -22,6 +22,7 @@ package com.asigner.cp1.ui.actions;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.ui.AssemblerDialog;
+import com.asigner.cp1.ui.ExecutorThread;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Shell;
 
@@ -30,12 +31,14 @@ public class AssemblerAction extends Action {
     private final Shell shell;
     private final Intel8155 pid;
     private final Intel8155 pidExtension;
+    private final ExecutorThread executor;
 
-    public AssemblerAction(Shell shell, Intel8155 pid, Intel8155 pidExtension) {
+    public AssemblerAction(Shell shell, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executor) {
         super("Assembler");
         this.shell = shell;
         this.pid = pid;
         this.pidExtension = pidExtension;
+        this.executor = executor;
     }
 
 
@@ -43,6 +46,7 @@ public class AssemblerAction extends Action {
     public void run() {
         AssemblerDialog dlg = new AssemblerDialog(shell);
         dlg.setResultListener(code -> {
+            executor.postCommand(ExecutorThread.Command.STOP);
             Ram ram = pid.getRam();
             for (int i = 0; i < 256; i++) {
                 ram.write(i, code[i]);

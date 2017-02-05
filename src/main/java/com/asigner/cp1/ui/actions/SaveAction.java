@@ -20,6 +20,7 @@
 package com.asigner.cp1.ui.actions;
 
 import com.asigner.cp1.emulation.Intel8155;
+import com.asigner.cp1.ui.ExecutorThread;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
@@ -32,16 +33,19 @@ public class SaveAction extends Action {
     private final Shell shell;
     private final Intel8155 pid;
     private final Intel8155 pidExtension;
+    private final ExecutorThread executor;
 
-    public SaveAction(Shell shell, Intel8155 pid, Intel8155 pidExtension) {
+    public SaveAction(Shell shell, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executor) {
         super("Save");
         this.shell = shell;
         this.pid = pid;
         this.pidExtension = pidExtension;
+        this.executor = executor;
     }
 
     @Override
     public void run() {
+        executor.postCommand(ExecutorThread.Command.STOP);
         FileDialog fd = new FileDialog(shell, SWT.SAVE);
         fd.setFilterExtensions(new String [] {"*.bin"});
         String result = fd.open();

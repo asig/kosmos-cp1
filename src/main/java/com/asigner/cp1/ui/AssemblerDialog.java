@@ -1,6 +1,7 @@
 package com.asigner.cp1.ui;
 
 import com.asigner.cp1.assembler.Assembler;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -36,7 +37,7 @@ public class AssemblerDialog extends Dialog {
      * @param parent
      */
     public AssemblerDialog(Shell parent) {
-        super(parent, SWT.DIALOG_TRIM);
+        super(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.SHELL_TRIM);
         setText("Assembler");
     }
 
@@ -72,8 +73,10 @@ public class AssemblerDialog extends Dialog {
         Label lblNewLabel_1 = new Label(shell, SWT.NONE);
         lblNewLabel_1.setText("Source");
 
-        src = new StyledText(shell, SWT.BORDER);
+        src = new StyledText(shell, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         src.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        src.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
+
 
         Label lblNewLabel = new Label(shell, SWT.NONE);
         lblNewLabel.setText("Results");

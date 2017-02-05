@@ -104,9 +104,9 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         stopAction = new StopAction(executorThread, this);
         singleStepAction = new SingleStepAction(this, executorThread);
         save8049DisassemblyAction = new Save8049DisassemblyAction(cpu);
-        loadAction = new LoadAction(shell, pid, pidExtension);
-        saveAction = new SaveAction(shell, pid, pidExtension);
-        assemblerAction = new AssemblerAction(shell, pid, pidExtension);
+        loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
+        saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
+        assemblerAction = new AssemblerAction(shell, pid, pidExtension, executorThread);
         aboutAction = new AboutAction();
 
         resetAction.setDependentActions(singleStepAction, runAction, stopAction);
@@ -246,10 +246,6 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(false);
                 stopAction.setEnabled(true);
                 runAction.setEnabled(false);
-
-                saveAction.setEnabled(false);
-                loadAction.setEnabled(false);
-                assemblerAction.setEnabled(false);
             }});
     }
 
@@ -262,11 +258,6 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
-
-                saveAction.setEnabled(true);
-                loadAction.setEnabled(true);
-                assemblerAction.setEnabled(true);
-
                 status8049.updateState();
                 status8049.redraw();
                 status8155.updateState();
@@ -330,11 +321,6 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
-
-                saveAction.setEnabled(true);
-                loadAction.setEnabled(true);
-                assemblerAction.setEnabled(true);
-
             }});
         updateView();
         shell.getDisplay().asyncExec(() -> {
@@ -381,8 +367,8 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
             DataPort p1 = new DataPort("P1");
             DataPort p2 = new DataPort("P2");
             Intel8049 cpu = new Intel8049(rom, bus, p1, p2);
-            Intel8155 pid = new Intel8155(bus);
-            Intel8155 pidExtension = new Intel8155(bus);
+            Intel8155 pid = new Intel8155("internal", bus);
+            Intel8155 pidExtension = new Intel8155("extension", bus);
 
             ExecutorThread executorThread = new ExecutorThread(cpu, pid, pidExtension);
             CpuWindow cpuWindow = new CpuWindow(cpu, pid, pidExtension, executorThread);
