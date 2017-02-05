@@ -109,9 +109,9 @@ public class KosmosPanelWindow {
                 }
             }
             int keyMask = kosmosControlPanel.getKeyMask(row);
-            cpu.getPort(2).write(keyMask);
+            cpu.getPort(2).write(keyMask, 0x0f); // only the lower 4 bits of the port are connected to the key matrix. DO NOT TOUCH the upper nibble, as this is connected to the 8155s.
             if (logger.isLoggable(Level.FINEST)) {
-                logger.finest(String.format("Writing to Port 2: KeyMask for row %d == %02x", row, keyMask));
+                logger.finest(String.format("Writing to Port 2: KeyMask for row %d == $%02x", row, keyMask));
             }
         }
 
