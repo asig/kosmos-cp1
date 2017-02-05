@@ -61,6 +61,7 @@ public class Intel8155 {
     public final Pin pinReset = new InputPin("Reset", this::writeReset);
     public final Pin pinCELowActive = new InputPin("Reset", this::writeCE);
 
+    private final String name;
     private final DataPort bus;
     private final Ram ram;
 
@@ -81,7 +82,8 @@ public class Intel8155 {
     private int pbValue;
     private int pcValue;
 
-    public Intel8155(DataPort bus) {
+    public Intel8155(String name, DataPort bus) {
+        this.name = name;
         this.bus = bus;
         this.ram = new Ram(256);
         reset();
@@ -172,8 +174,7 @@ public class Intel8155 {
         listeners.forEach(StateListener::pinsChanged);
         if (prev == 1 && cur == 0) {
             addressLatch = bus.read();
-            String message = String.format("latching address: 0x%02x", addressLatch);
-            logger.fine(message);
+            log(Level.FINEST, () -> String.format("bus -> address latch: $%02x", addressLatch));
         }
     }
 
@@ -182,9 +183,7 @@ public class Intel8155 {
         listeners.forEach(StateListener::pinsChanged);
         if (prev == 0 && cur == 1) {
             if (ceValue) {
-                if (logger.isLoggable(Level.FINEST)) {
-                    logger.finest("/CE not active, ignoring read from address " + addressLatch);
-                }
+                log(Level.FINEST, () -> String.format("/CE not active, ignoring read from address $%02x", addressLatch));
                 return;
             }
             if (ioValue) {
@@ -192,30 +191,30 @@ public class Intel8155 {
                 switch (addressLatch & 3) {
                     case 0:
                         data = 0; // TODO(asigner): return REAL data
-                        log(Level.FINEST, () -> String.format("status -> bus: 0x%02x", data));
+                        log(Level.FINEST, () -> String.format("%s: status -> bus: $%02x", data));
                         bus.write(data);
                         break;
                     case 1:
                         data = paValue;
-                        log(Level.FINEST, () -> String.format("pa -> bus: 0x%02x", data));
+                        log(Level.FINEST, () -> String.format("%s: pa -> bus: $%02x", data));
                         bus.write(data);
                         break;
                     case 2:
                         data = pbValue;
-                        log(Level.FINEST, () -> String.format("pb -> bus: 0x%02x", data));
+                        log(Level.FINEST, () -> String.format("%s: pb -> bus: $%02x", data));
                         bus.write(data);
                         break;
                     case 3:
                         data = pcValue;
-                        log(Level.FINEST, () -> String.format("pc -> bus: 0x%02x", data));
+                        log(Level.FINEST, () -> String.format("%s: pc -> bus: $%02x", data));
                         bus.write(data);
                         break;
                     default:
-                        throw new IllegalStateException("Unhandled IO write to address " + addressLatch);
+                        throw new IllegalStateException(String.format("%s: Unhandled IO write to address $%02x", name, addressLatch));
                 }
             } else {
                 int data = ram.read(addressLatch);
-                log(Level.FINEST, () -> String.format("mem -> bus: 0x%02x", data));
+                log(Level.FINEST, () -> String.format("mem[$%02x] -> bus: $%02x", addressLatch, data));
                 bus.write(data);
             }
         }
@@ -226,7 +225,7 @@ public class Intel8155 {
         listeners.forEach(StateListener::pinsChanged);
         if (prev == 0 && cur == 1) {
             if (ceValue) {
-                log(Level.FINEST, () -> "/CE not active, ignoring write to address " + addressLatch);
+                log(Level.FINEST, () -> String.format("/CE not active, ignoring write to address $%02x", addressLatch));
                 return;
             }
             int data = bus.read();
@@ -263,17 +262,17 @@ public class Intel8155 {
                     case 1:
                         paValue = data;
                         listeners.forEach(l -> l.portWritten(StateListener.Port.A, data));
-                        log(Level.FINEST, () -> String.format("bus -> pa: 0x%02x", data));
+                        log(Level.FINEST, () -> String.format("bus -> pa: $%02x", data));
                         break;
                     case 2:
                         pbValue = data;
                         listeners.forEach(l -> l.portWritten(StateListener.Port.B, data));
-                        log(Level.FINEST, () -> String.format("bus -> pb: 0x%02x", data));
+                        log(Level.FINEST, () -> String.format("bus -> pb: $%02x", data));
                         break;
                     case 3:
                         pcValue = data;
                         listeners.forEach(l -> l.portWritten(StateListener.Port.C, data));
-                        log(Level.FINEST, () -> String.format("bus -> pc: 0x%02x", data));
+                        log(Level.FINEST, () -> String.format("bus -> pc: $%02x", data));
                         break;
                     default:
                         throw new IllegalStateException("Unhandled IO write to address " + addressLatch);
@@ -282,13 +281,13 @@ public class Intel8155 {
             } else {
                 ram.write(addressLatch, data);
                 listeners.forEach(StateListener::memoryWritten);
-                log(Level.FINEST, () -> String.format("bus -> mem: 0x%02x", data));
+                log(Level.FINEST, () -> String.format("bus -> mem[%02x]: $%02x", addressLatch, data));
             }
         }
     }
 
     private void writeReset(int prev, int cur) {
-        log(Level.FINEST, () -> String.format("Reset set to: 0x%02x", cur));
+        log(Level.FINEST, () -> String.format("Reset set to: $%02x", cur));
         if (cur == 1) {
             reset();
         }
@@ -297,18 +296,18 @@ public class Intel8155 {
     private void writeCE(int prev, int cur) {
         this.ceValue = cur > 0;
         listeners.forEach(StateListener::pinsChanged);
-        log(Level.FINEST, () -> String.format("/CE set to: 0x%02x", cur));
+        log(Level.FINEST, () -> String.format("/CE set to: $%02x", cur));
     }
 
     private void writeIO(int prev, int cur) {
         this.ioValue = cur > 0;
         listeners.forEach(StateListener::pinsChanged);
-        log(Level.FINEST, () -> String.format("IO set to: 0x%02x", cur));
+        log(Level.FINEST, () -> String.format("IO set to: $%02x", cur));
     }
 
     private void log(Level level, Supplier<String> supplier) {
         if (logger.isLoggable(level)) {
-            logger.log(level, supplier.get());
+            logger.log(level, name + ": " + supplier.get());
         }
     }
 }

@@ -346,7 +346,7 @@ public class Intel8049 {
 
         if (logger.isLoggable(Level.FINEST)) {
             Disassembler.Line line = disassembler.disassemble(state.PC);
-            logger.finest(String.format("Executing instr: %04x %s", line.getAddress(), line.getDisassembly()));
+            logger.finest(String.format("Executing instr: %03x %s", line.getAddress(), line.getDisassembly()));
         }
 
         int cycles = 1;
