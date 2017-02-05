@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Assembler {
@@ -59,16 +61,7 @@ public class Assembler {
             return true;
         }
 
-        protected Integer parseInt(int lineNo, String s) {
-            Integer i = parseOptInt(lineNo, s);
-            if (i == null) {
-                error("Line " + lineNo + ": " + s + " is not a valid number");
-                i = 0;
-            }
-            return i;
-        }
-
-        protected Integer parseOptInt(int lineNo, String s) {
+        protected Integer parseIntOrLabel(int lineNo, String s) {
             int i;
             try {
                 if (s.startsWith("$")) {
@@ -83,7 +76,11 @@ public class Assembler {
             } catch (NumberFormatException e) {
                 Integer c = consts.get(s);
                 if (c == null) {
-                    return null;
+                    c = labels.get(s);
+                    if (c == null) {
+                        addPendingReference(s, pc);
+                        c = 0;
+                    }
                 }
                 i = c;
             }
@@ -107,7 +104,7 @@ public class Assembler {
             if (!checkParamSize(lineNum, 1, params)) {
                 return;
             }
-            pc = parseInt(lineNum, params.get(0));
+            pc = parseIntOrLabel(lineNum, params.get(0));
         }
     };
 
@@ -122,7 +119,7 @@ public class Assembler {
                 error(String.format("Line %d: name %s is already used.", lineNum, name));
                 return;
             }
-            int val = parseInt(lineNum, params.get(1));
+            int val = parseIntOrLabel(lineNum, params.get(1));
             consts.put(name, val);
         }
     };
@@ -131,8 +128,30 @@ public class Assembler {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
             for (String param : params) {
-                int val = parseInt(lineNum, param);
+                int val = parseIntOrLabel(lineNum, param);
                 memory[pc++] = val;
+            }
+        }
+    };
+
+    private ParamHandler rawHandler = new BasicParamHandler() {
+        private final Pattern rawPattern = Pattern.compile("([0-9]{2})\\.([0-9]{3})");
+
+        @Override
+        public void generate(int lineNum, int opcode, List<String> params) {
+            for (String param : params) {
+                Matcher m = rawPattern.matcher(param);
+                if (!m.matches()) {
+                    error("Line " + lineNum + ": " + param + " is not a valid raw value.");
+                    continue;
+                }
+                int msb = Integer.valueOf(m.group(1));
+                int lsb = Integer.valueOf(m.group(2));
+                if (msb > 255 || lsb > 255) {
+                    error("Line " + lineNum + ": " + param + " is not a valid raw value.");
+                    continue;
+                }
+                memory[pc++] = (msb << 8) | lsb;
             }
         }
     };
@@ -144,16 +163,7 @@ public class Assembler {
                 return;
             }
             String param = params.get(0);
-            Integer val = parseOptInt(lineNum, param);
-            if (val == null) {
-                Integer i = labels.get(param);
-                if (i == null) {
-                    addPendingReference(param, pc);
-                    val = 0;
-                } else {
-                    val = i;
-                }
-            }
+            Integer val = parseIntOrLabel(lineNum, param);
             memory[pc++] = opcode << 8 | val;
         }
     };
@@ -164,7 +174,7 @@ public class Assembler {
             if (!checkParamSize(lineNum, 1, params)) {
                 return;
             }
-            int i = parseInt(lineNum, params.get(0));
+            int i = parseIntOrLabel(lineNum, params.get(0));
             memory[pc++] = opcode << 8 | i;
         }
     };
@@ -177,7 +187,7 @@ public class Assembler {
                 if (!checkParamSize(lineNum, 1, params)) {
                     return;
                 }
-                i = parseInt(lineNum, params.get(0));
+                i = parseIntOrLabel(lineNum, params.get(0));
             }
             memory[pc++] = opcode << 8 | i;
         }
@@ -187,6 +197,7 @@ public class Assembler {
             .put(".ORG", new OpDesc(0, orgHandler))
             .put(".DB", new OpDesc(0, dataHandler))
             .put(".EQU", new OpDesc(0, equHandler))
+            .put(".RAW", new OpDesc(0, rawHandler))
             .put("HLT", new OpDesc(1, nullHandler))
             .put("ANZ", new OpDesc(2, nullHandler))
             .put("VZG", new OpDesc(3, constHandler))
@@ -323,9 +334,10 @@ public class Assembler {
         // find opcode
         OpDesc op = ops.get(opcode);
         if (op == null) {
-            error("Unknown mnemonic");
+            error("Line " + lineNum + ": " + opcode + " is an unknown mnemonic");
+        } else {
+            op.handler.generate(lineNum, op.opCode, params);
         }
-        op.handler.generate(lineNum, op.opCode, params);
     }
 
     private void addLabel(String label, int address) {

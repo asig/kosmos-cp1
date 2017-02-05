@@ -80,6 +80,68 @@ public class AssemblerTest {
     }
 
     @Test
+    public void testForwardReference() {
+        String source =
+                "    LDA L \n" +
+                "    AKO L \n" +
+                "L   HLT \n";
+
+        Assembler assembler = new Assembler(source);
+        assembler.assemble();
+        assertEquals(0, assembler.getErrors().size());
+        byte[] code = assembler.getCode();
+        assertEquals(256, code.length);
+        checkContent(code,
+                5,2,
+                4, 2,
+                1,0);
+    }
+
+    @Test
+    public void testBackwardReference() {
+        String source =
+                "    .ORG 5 \n" +
+                "    AKO 0 \n" +
+                "L   AKO 0 \n" +
+                "    AKO 0 \n" +
+                "    SPU  L \n";
+
+        Assembler assembler = new Assembler(source);
+        assembler.assemble();
+        assertEquals(0, assembler.getErrors().size());
+        byte[] code = assembler.getCode();
+        assertEquals(256, code.length);
+        checkContent(code,
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
+                0, 0,
+                4, 0,
+                4, 0,
+                4, 0,
+                9, 6);
+    }
+
+    @Test
+    public void testRaw() {
+        String source =
+                "    .RAW 12.123, 23.234, 22.222 \n" +
+                "    .RAW 11.111 \n";
+
+        Assembler assembler = new Assembler(source);
+        assembler.assemble();
+        assertEquals(0, assembler.getErrors().size());
+        byte[] code = assembler.getCode();
+        assertEquals(256, code.length);
+        checkContent(code,
+                12, 123,
+                23, 234,
+                22, 222,
+                11, 111);
+    }
+    
+    @Test
     public void testOrg() {
         String source =
                 " .ORG 5 \n" +
