@@ -45,7 +45,10 @@ public class SaveAction extends Action {
 
     @Override
     public void run() {
-        executor.postCommand(ExecutorThread.Command.STOP);
+        boolean running = executor.isRunning();
+        if (running) {
+            executor.postCommand(ExecutorThread.Command.STOP);
+        }
         FileDialog fd = new FileDialog(shell, SWT.SAVE);
         fd.setFilterExtensions(new String [] {"*.bin"});
         String result = fd.open();
@@ -62,6 +65,9 @@ public class SaveAction extends Action {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+        if (running) {
+            executor.postCommand(ExecutorThread.Command.START);
         }
     }
 }

@@ -77,6 +77,10 @@ public class ExecutorThread extends Thread {
         this.breakOnMovx = enabled;
     }
 
+    public boolean isRunning() {
+        return isRunning;
+    }
+
     public void enableBreakpoint(int addr, boolean enabled) {
         if (enabled) {
             breakpoints.add(addr);

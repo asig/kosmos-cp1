@@ -46,7 +46,10 @@ public class AssemblerAction extends Action {
     public void run() {
         AssemblerDialog dlg = new AssemblerDialog(shell);
         dlg.setResultListener(code -> {
-            executor.postCommand(ExecutorThread.Command.STOP);
+            boolean running = executor.isRunning();
+            if (running) {
+                executor.postCommand(ExecutorThread.Command.STOP);
+            }
             Ram ram = pid.getRam();
             for (int i = 0; i < 256; i++) {
                 ram.write(i, code[i]);
@@ -56,6 +59,9 @@ public class AssemblerAction extends Action {
                 for (int i = 0; i < 256; i++) {
                     ram.write(i, code[256 + i]);
                 }
+            }
+            if (running) {
+                executor.postCommand(ExecutorThread.Command.START);
             }
         });
         dlg.open();
