@@ -69,6 +69,7 @@ dependencies {
     // providedCompile group: 'org.eclipse', name: 'platform-minimal', version: '4.5.1', configuration: 'linux-gtk-x86_64'
 
     compile 'com.google.guava:guava:19.0'
+    compile 'commons-io:commons-io:2.5'
 
     // OS-dependent runtimes
     runtimeLinux group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'linux-gtk-x86_64'

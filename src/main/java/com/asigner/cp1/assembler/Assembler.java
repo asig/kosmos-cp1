@@ -21,14 +21,13 @@ package com.asigner.cp1.assembler;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -248,13 +247,7 @@ public class Assembler {
     }
 
     private void loadSource(Reader reader) throws IOException {
-        BufferedReader in = new BufferedReader(reader);
-        text = new LinkedList<String>();
-        String line = in.readLine();
-        while(line != null) {
-            text.add(line);
-            line = in.readLine();
-        }
+        text = IOUtils.readLines(reader);
     }
 
     public void assemble() {
