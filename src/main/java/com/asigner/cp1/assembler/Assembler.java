@@ -287,19 +287,19 @@ public class Assembler {
         // label
         String label = "";
         if (Character.isLetter(line.charAt(curPos))) {
-            while (Character.isLetterOrDigit(line.charAt(curPos))) {
+            while (curPos < line.length() && Character.isLetterOrDigit(line.charAt(curPos))) {
                 label += line.charAt(curPos++);
             }
         }
 
         // skip whitespace
-        while (Character.isWhitespace(line.charAt(curPos))) {
+        while (curPos < line.length() && Character.isWhitespace(line.charAt(curPos))) {
             curPos++;
         };
 
         // opcode
         String opcode = "" + line.charAt(curPos++);
-        while (Character.isLetterOrDigit(line.charAt(curPos))) {
+        while (curPos < line.length() && Character.isLetterOrDigit(line.charAt(curPos))) {
             opcode += line.charAt(curPos++);
         }
 
