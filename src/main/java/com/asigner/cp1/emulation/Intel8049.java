@@ -431,7 +431,7 @@ public class Intel8049 {
             case 0x12: case 0x32: case 0x52: case 0x72: case 0x92: case 0xb2: case 0xd2: case 0xf2: {
                 // JBb addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 int b = (op >> 5) & 0x7;
@@ -467,7 +467,7 @@ public class Intel8049 {
 
             case 0x16: { // JTF addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (state.TF) {
@@ -512,7 +512,7 @@ public class Intel8049 {
 
             case 0x26: { // JNT0 addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (!state.T0) {
@@ -553,7 +553,7 @@ public class Intel8049 {
 
             case 0x36: { // JT0 addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (state.T0) {
@@ -620,7 +620,7 @@ public class Intel8049 {
 
             case 0x46: { // JNT1 addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (!state.T1) {
@@ -666,7 +666,7 @@ public class Intel8049 {
 
             case 0x56: { // JT1 addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (state.T1) {
@@ -738,7 +738,7 @@ public class Intel8049 {
 
             case 0x76: { // JF1 addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (state.F1 != 0) {
@@ -790,7 +790,7 @@ public class Intel8049 {
 
             case 0x86: { // JNI addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (state.notINT) {
@@ -860,7 +860,7 @@ public class Intel8049 {
 
             case 0x96: { // JNZ addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (state.A != 0) {
@@ -962,7 +962,7 @@ public class Intel8049 {
 
             case 0xb6: { // JF0 addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (getBit(state.PSW, F0_BIT) > 0) {
@@ -988,7 +988,7 @@ public class Intel8049 {
 
             case 0xc6: { // JZ addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (state.A == 0) {
@@ -1056,7 +1056,7 @@ public class Intel8049 {
 
             case 0xe6: { // JNC addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (getBit(state.PSW, CY_BIT) == 0) {
@@ -1074,7 +1074,7 @@ public class Intel8049 {
                 // DJNZ Rr, addr
                 int r = op & 0x7;
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 int val = readReg(r) - 1;
@@ -1099,7 +1099,7 @@ public class Intel8049 {
 
             case 0xf6: { // JC addr
                 int addr = fetch();
-                addr = (state.PC & 0xf00) | (addr & 0xff);
+                addr = ( (state.PC-1) & 0xf00) | (addr & 0xff);
                 cycles++;
                 tick();
                 if (getBit(state.PSW, CY_BIT) != 0) {

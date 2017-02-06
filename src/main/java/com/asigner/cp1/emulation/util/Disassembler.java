@@ -85,6 +85,7 @@ public class Disassembler {
             int op = rom.read(pos++) & 0xff;
             int r, p, b, addr;
             int data;
+            int ofs;
 
             switch(op) {
                 case 0x00:
@@ -133,8 +134,8 @@ public class Disassembler {
                     break;
 
                 case 0x12: case 0x32: case 0x52: case 0x72: case 0x92: case 0xb2: case 0xd2: case 0xf2:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     b = (op >> 5) & 0x7;
                     lines.add(emit(curPos, 2, "JB" + b, formatAddr(addr)));
                     break;
@@ -154,8 +155,8 @@ public class Disassembler {
                     break;
 
                 case 0x16:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JTF", formatAddr(addr)));
                     break;
 
@@ -183,8 +184,8 @@ public class Disassembler {
                     break;
 
                 case 0x26:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JNT0", formatAddr(addr)));
                     break;
 
@@ -207,8 +208,8 @@ public class Disassembler {
                     break;
 
                 case 0x36:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JT0", formatAddr(addr)));
                     break;
 
@@ -245,8 +246,8 @@ public class Disassembler {
                     break;
 
                 case 0x46:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JNT1", formatAddr(addr)));
                     break;
 
@@ -274,8 +275,8 @@ public class Disassembler {
                     break;
 
                 case 0x56:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JT1", formatAddr(addr)));
                     break;
 
@@ -320,8 +321,8 @@ public class Disassembler {
                     break;
 
                 case 0x76:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JF1", formatAddr(addr)));
                     break;
 
@@ -348,8 +349,8 @@ public class Disassembler {
                     break;
 
                 case 0x86:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JNI", formatAddr(addr)));
                     break;
 
@@ -383,8 +384,8 @@ public class Disassembler {
                     break;
 
                 case 0x96:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JNZ", formatAddr(addr)));
                     break;
 
@@ -445,8 +446,8 @@ public class Disassembler {
                     break;
 
                 case 0xb6:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JF0", formatAddr(addr)));
                     break;
 
@@ -461,8 +462,8 @@ public class Disassembler {
                     break;
 
                 case 0xc6:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JZ", formatAddr(addr)));
                     break;
 
@@ -507,8 +508,8 @@ public class Disassembler {
                     break;
 
                 case 0xe6:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JNC", formatAddr(addr)));
                     break;
 
@@ -517,8 +518,8 @@ public class Disassembler {
                     break;
 
                 case 0xe8: case 0xe9: case 0xea: case 0xeb: case 0xec: case 0xed: case 0xee: case 0xef:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     r = op & 0x7;
                     lines.add(emit(curPos, 2, "DJNZ", "R" + r, formatAddr(addr)));
                     break;
@@ -533,8 +534,8 @@ public class Disassembler {
                     break;
 
                 case 0xf6:
-                    addr = rom.read(pos++);
-                    addr = (pos & 0xf00) | (addr & 0xff);
+                    ofs = rom.read(pos++);
+                    addr = (curPos & 0xf00) | (ofs & 0xff);
                     lines.add(emit(curPos, 2, "JC", formatAddr(addr)));
                     break;
 
