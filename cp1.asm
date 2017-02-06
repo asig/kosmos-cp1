@@ -824,8 +824,9 @@ $038d: [ 8a a0 ] ORL  P2, #$a0   ; P2 |= 1010 0000 --> /CE == 1, IO == 1
 $038f: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0
 $0391: [ 83    ] RET
 
-?????????????????????????????
------------------------------
+; Turn CP3 8155 to IO mode, disable internal 8155
+; -----------------------------------------------
+enable_cp3_io:
 $0392: [ 23 50 ] MOV  A, #$50    ; mask 0101 0000: 'enable IO' and 'access RAM extension'
 $0394: [ 74 2e ] CALL set_status_bits
 $0396: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
@@ -1120,7 +1121,9 @@ opcode_ANZ:
 $04eb: [ d4 ea ] CALL $06ea
 $04ed: [ c4 2f ] JMP  $062f
 $04ef: [ a4 0f ] JMP  $050f
-$04f1: [ a4 05 ] JMP  $0505
+
+error_f006_trampoline:
+$04f1: [ a4 05 ] JMP  error_f006
 
 opcode_ADD:
 $04f3: [ 74 65 ] CALL $0365
@@ -1130,10 +1133,12 @@ $04f9: [ 76 ef ] JF1  $04ef
 $04fb: [ 97    ] CLR  C
 $04fc: [ 81    ] MOVX A, @R1
 $04fd: [ 60    ] ADD  A, @R0
-$04fe: [ f6 f1 ] JC   $05f1
+$04fe: [ f6 f1 ] JC   error_f006_trampoline
 $0500: [ a0    ] MOV  @R0, A
 $0501: [ c4 2f ] JMP  $062f
 $0503: [ c4 5d ] JMP  $065d
+
+error_f006:
 $0505: [ bc 06 ] MOV  R4, #$06
 $0507: [ c4 fd ] JMP  show_error     ; F-006
 $0509: [ 84 bd ] JMP  $04bd
@@ -1153,7 +1158,7 @@ $0518: [ 37    ] CPL  A
 $0519: [ 97    ] CLR  C
 $051a: [ 03 01 ] ADD  A, #$01
 $051c: [ 60    ] ADD  A, @R0
-$051d: [ e6 05 ] JNC  $0505
+$051d: [ e6 05 ] JNC  error_f006
 $051f: [ 97    ] CLR  C
 $0520: [ f0    ] MOV  A, @R0
 $0521: [ 07    ] DEC  A
@@ -1279,7 +1284,7 @@ $05c7: [ a4 b3 ] JMP  $05b3
 opcode_P3E:
 $05c9: [ 81    ] MOVX A, @R1
 $05ca: [ ac    ] MOV  R4, A
-$05cb: [ 74 92 ] CALL $0392
+$05cb: [ 74 92 ] CALL enable_cp3_io
 $05cd: [ b8 02 ] MOV  R0, #$02
 $05cf: [ fc    ] MOV  A, R4
 $05d0: [ 96 dd ] JNZ  $05dd
@@ -1303,7 +1308,7 @@ $05ed: [ 84 bd ] JMP  $04bd
 opcode_P4A:
 $05ef: [ 81    ] MOVX A, @R1
 $05f0: [ aa    ] MOV  R2, A
-$05f1: [ 74 92 ] CALL $0392
+$05f1: [ 74 92 ] CALL enable_cp3_io
 $05f3: [ b9 41 ] MOV  R1, #$41
 $05f5: [ bc 01 ] MOV  R4, #$01
 $05f7: [ a4 ac ] JMP  $05ac
@@ -1311,7 +1316,7 @@ $05f7: [ a4 ac ] JMP  $05ac
 opcode_P5A:
 $05f9: [ 81    ] MOVX A, @R1
 $05fa: [ aa    ] MOV  R2, A
-$05fb: [ 74 92 ] CALL $0392
+$05fb: [ 74 92 ] CALL enable_cp3_io
 $05fd: [ b9 42 ] MOV  R1, #$42
 $05ff: [ bc 03 ] MOV  R4, #$03
 $0601: [ a4 ac ] JMP  $05ac
