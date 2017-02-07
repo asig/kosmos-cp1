@@ -98,7 +98,7 @@ public class AssemblerDialog extends Dialog {
         Label lblNewLabel_2 = new Label(shell, SWT.NONE);
         lblNewLabel_2.setText("Sample Listings:");
 
-        Combo sampleListingsCombo = new Combo(shell, SWT.NONE);
+        Combo sampleListingsCombo = new Combo(shell, SWT.READ_ONLY);
         sampleListingsCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         for (SampleCode code : sampleListings) {
             sampleListingsCombo.add(code.getName());
