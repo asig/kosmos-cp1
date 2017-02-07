@@ -447,11 +447,6 @@ $01e4: [ f0    ] MOV  A, @R0
 $01e5: [ f2 e9 ] JB7  $01e9
 $01e7: [ 24 f1 ] JMP  $01f1
 $01e9: [ 23 ff ] MOV  A, #$ff
-
-// FALLTHROUGH!
-
-?????????
-=========
 $01eb: [ 74 0a ] CALL compute_effective_address
 $01ed: [ 74 bd ] CALL $03bd
 $01ef: [ b6 fd ] JF0  $01fd
@@ -1012,6 +1007,8 @@ $0458: [ 19    ] INC  R1
 $0459: [ f0    ] MOV  A, @R0
 $045a: [ 91    ] MOVX @R1, A
 $045b: [ c4 2f ] JMP  $062f
+
+
 $045d: [ c4 5d ] JMP  $065d
 
 opcode_LDA:
