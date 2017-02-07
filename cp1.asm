@@ -225,7 +225,7 @@ inp_handler:
 $00eb: [ fe    ] MOV  A, R6
 $00ec: [ d3 03 ] XRL  A, #$03
 $00ee: [ 96 e9 ] JNZ  $00e9
-$00f0: [ 23 f7 ] MOV  A, #$f7           ; 1111 0111 
+$00f0: [ 23 f7 ] MOV  A, #$f7           ; 1111 0111
 $00f2: [ 74 33 ] CALL clear_status_bits
 $00f4: [ b8 27 ] MOV  R0, #$27
 $00f6: [ 74 38 ] CALL $0338
@@ -828,8 +828,11 @@ $0396: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
 $0398: [ 8a 90 ] ORL  P2, #$90   ; P2 |= 1001 0000 --> 8155 /CE == 1, IO == 1
 $039a: [ 83    ] RET
 
-?????????????????????????????
------------------------------
+; Stores R0 in VM's Accumulator
+;-------------------------------
+; Inputs:
+; - R0: Value to be stored
+save_to_accu:
 $039b: [ b8 36 ] MOV  R0, #$36
 $039d: [ b0 00 ] MOV  @R0, #$00
 $039f: [ 18    ] INC  R0
@@ -981,10 +984,10 @@ $0438: [ b8 38 ] MOV  R0, #VM_PC
 $043a: [ f0    ] MOV  A, @R0            ; Load VM PC into A
 $043b: [ b8 3b ] MOV  R0, #$3b
 $043d: [ d0    ] XRL  A, @R0            ; Compare A with ($3b)
-$043e: [ c6 44 ] JZ   $0444     
+$043e: [ c6 44 ] JZ   $0444
 $0440: [ 85    ] CLR  F0
 $0441: [ 95    ] CPL  F0
-$0442: [ c4 2f ] JMP  $062f
+$0442: [ c4 2f ] JMP  end_of_instr
 
 $0444: [ c4 73 ] JMP  $0673
 
@@ -994,7 +997,7 @@ $0448: [ b0 00 ] MOV  @R0, #$00
 $044a: [ 18    ] INC  R0
 $044b: [ 81    ] MOVX A, @R1
 $044c: [ a0    ] MOV  @R0, A
-$044d: [ c4 2f ] JMP  $062f
+$044d: [ c4 2f ] JMP  end_of_instr
 
 opcode_ABS:
 $044f: [ 74 5b ] CALL $035b
@@ -1006,7 +1009,7 @@ $0457: [ 18    ] INC  R0
 $0458: [ 19    ] INC  R1
 $0459: [ f0    ] MOV  A, @R0
 $045a: [ 91    ] MOVX @R1, A
-$045b: [ c4 2f ] JMP  $062f
+$045b: [ c4 2f ] JMP  end_of_instr
 
 
 $045d: [ c4 5d ] JMP  $065d
@@ -1021,7 +1024,7 @@ $0467: [ 18    ] INC  R0
 $0468: [ 19    ] INC  R1
 $0469: [ 81    ] MOVX A, @R1
 $046a: [ a0    ] MOV  @R0, A
-$046b: [ c4 2f ] JMP  $062f
+$046b: [ c4 2f ] JMP  end_of_instr
 
 opcode_LIA:
 $046d: [ 74 5b ] CALL $035b
@@ -1046,7 +1049,7 @@ $0485: [ ed 85 ] DJNZ R5, $0485
 $0487: [ ec 83 ] DJNZ R4, $0483
 $0489: [ eb 81 ] DJNZ R3, $0481
 $048b: [ ea 7f ] DJNZ R2, $047f
-$048d: [ c4 2f ] JMP  $062f
+$048d: [ c4 2f ] JMP  end_of_instr
 
 opcode_SPU:
 $048f: [ 81    ] MOVX A, @R1
@@ -1059,7 +1062,7 @@ opcode_SPB:
 $0496: [ b8 3a ] MOV  R0, #$3a
 $0498: [ f0    ] MOV  A, @R0
 $0499: [ b2 9d ] JB5  $049d
-$049b: [ c4 2f ] JMP  $062f
+$049b: [ c4 2f ] JMP  end_of_instr
 $049d: [ 84 8f ] JMP  $048f
 
 opcode_SIU:
@@ -1080,9 +1083,9 @@ $04b0: [ f6 bd ] JC   $04bd
 $04b2: [ f0    ] MOV  A, @R0
 $04b3: [ c6 b9 ] JZ   $04b9
 $04b5: [ b0 00 ] MOV  @R0, #$00
-$04b7: [ c4 2f ] JMP  $062f
+$04b7: [ c4 2f ] JMP  end_of_instr
 $04b9: [ b0 01 ] MOV  @R0, #$01
-$04bb: [ c4 2f ] JMP  $062f
+$04bb: [ c4 2f ] JMP  end_of_instr
 $04bd: [ bc 05 ] MOV  R4, #$05
 $04bf: [ c4 fd ] JMP  show_error     ; F-005
 
@@ -1110,13 +1113,13 @@ $04de: [ c6 bb ] JZ   $04bb
 $04e0: [ 81    ] MOVX A, @R1
 $04e1: [ c6 e7 ] JZ   $04e7
 $04e3: [ b0 01 ] MOV  @R0, #$01
-$04e5: [ c4 2f ] JMP  $062f
+$04e5: [ c4 2f ] JMP  end_of_instr
 $04e7: [ b0 00 ] MOV  @R0, #$00
-$04e9: [ c4 2f ] JMP  $062f
+$04e9: [ c4 2f ] JMP  end_of_instr
 
 opcode_ANZ:
 $04eb: [ d4 ea ] CALL $06ea
-$04ed: [ c4 2f ] JMP  $062f
+$04ed: [ c4 2f ] JMP  end_of_instr
 $04ef: [ a4 0f ] JMP  $050f
 
 error_f006_trampoline:
@@ -1132,7 +1135,7 @@ $04fc: [ 81    ] MOVX A, @R1
 $04fd: [ 60    ] ADD  A, @R0
 $04fe: [ f6 f1 ] JC   error_f006_trampoline
 $0500: [ a0    ] MOV  @R0, A
-$0501: [ c4 2f ] JMP  $062f
+$0501: [ c4 2f ] JMP  end_of_instr
 $0503: [ c4 5d ] JMP  $065d
 
 error_f006:
@@ -1161,9 +1164,9 @@ $0520: [ f0    ] MOV  A, @R0
 $0521: [ 07    ] DEC  A
 $0522: [ eb 21 ] DJNZ R3, $0521
 $0524: [ a0    ] MOV  @R0, A
-$0525: [ c4 2f ] JMP  $062f
+$0525: [ c4 2f ] JMP  end_of_instr
 $0527: [ b0 00 ] MOV  @R0, #$00
-$0529: [ c4 2f ] JMP  $062f
+$0529: [ c4 2f ] JMP  end_of_instr
 
 opcode_VGL:
 $052b: [ f4 e1 ] CALL $07e1
@@ -1174,7 +1177,7 @@ $0533: [ 81    ] MOVX A, @R1
 $0534: [ d0    ] XRL  A, @R0
 $0535: [ c6 3a ] JZ   $053a
 $0537: [ 97    ] CLR  C
-$0538: [ c4 2f ] JMP  $062f
+$0538: [ c4 2f ] JMP  end_of_instr
 $053a: [ f4 e6 ] CALL $07e6
 $053c: [ a4 37 ] JMP  $0537
 
@@ -1207,15 +1210,19 @@ $0562: [ 81    ] MOVX A, @R1
 $0563: [ 6b    ] ADD  A, R3
 $0564: [ e6 3a ] JNC  $053a
 $0566: [ a4 37 ] JMP  $0537
-$0568: [ a4 74 ] JMP  $0574
+
+single_pin_trampoline:
+$0568: [ a4 74 ] JMP  single_pin
 
 opcode_P1E:
-$056a: [ 81    ] MOVX A, @R1
-$056b: [ 96 68 ] JNZ  $0568
-$056d: [ 89 ff ] ORL  P1, #$ff
-$056f: [ 09    ] IN   A, P1
-$0570: [ 74 9b ] CALL $039b
-$0572: [ c4 2f ] JMP  $062f
+$056a: [ 81    ] MOVX A, @R1                ; load operand
+$056b: [ 96 68 ] JNZ  single_pin_trampoline ; Jump if a single pin is selected
+$056d: [ 89 ff ] ORL  P1, #$ff              ; Set all pins to "input mode"
+$056f: [ 09    ] IN   A, P1                 ; Read value from port
+$0570: [ 74 9b ] CALL save_to_accu          ; and save it in the accu
+$0572: [ c4 2f ] JMP  end_of_instr
+
+single_pin:
 $0574: [ ac    ] MOV  R4, A
 $0575: [ 97    ] CLR  C
 $0576: [ 03 f7 ] ADD  A, #$f7
@@ -1233,7 +1240,7 @@ $0585: [ 39    ] OUTL P1, A
 $0586: [ 09    ] IN   A, P1
 $0587: [ 74 79 ] CALL $0379
 $0589: [ 74 9b ] CALL $039b
-$058b: [ c4 2f ] JMP  $062f
+$058b: [ c4 2f ] JMP  end_of_instr
 
 opcode_P1A:
 $058d: [ b8 37 ] MOV  R0, #$37
@@ -1244,7 +1251,7 @@ $0593: [ 96 9a ] JNZ  $059a
 $0595: [ f0    ] MOV  A, @R0
 $0596: [ a1    ] MOV  @R1, A
 $0597: [ 39    ] OUTL P1, A
-$0598: [ c4 2f ] JMP  $062f
+$0598: [ c4 2f ] JMP  end_of_instr
 $059a: [ 97    ] CLR  C
 $059b: [ 03 f7 ] ADD  A, #$f7
 $059d: [ f6 09 ] JC   $0509
@@ -1270,7 +1277,7 @@ $05b6: [ 90    ] MOVX @R0, A
 $05b7: [ 23 bf ] MOV  A, #$bf
 $05b9: [ 74 33 ] CALL clear_status_bits
 $05bb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
-$05bd: [ c4 2f ] JMP  $062f
+$05bd: [ c4 2f ] JMP  end_of_instr
 $05bf: [ 97    ] CLR  C
 $05c0: [ 03 f7 ] ADD  A, #$f7
 $05c2: [ f6 e7 ] JC   $05e7
@@ -1290,7 +1297,7 @@ $05d3: [ 74 9b ] CALL $039b
 $05d5: [ 23 bf ] MOV  A, #$bf
 $05d7: [ 74 33 ] CALL clear_status_bits
 $05d9: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
-$05db: [ c4 2f ] JMP  $062f
+$05db: [ c4 2f ] JMP  end_of_instr
 $05dd: [ 97    ] CLR  C
 $05de: [ 03 f7 ] ADD  A, #$f7
 $05e0: [ f6 e7 ] JC   $05e7
@@ -1350,10 +1357,11 @@ $0629: [ 03 e7 ] ADD  A, #$e7        ; add (255 - 24)
 $062b: [ f6 59 ] JC   opcode_INVALID ; jump if > 24
 $062d: [ 84 2f ] JMP  dispatch_opcode
 
+end_of_instr:
 $062f: [ 97    ] CLR  C
-$0630: [ b8 38 ] MOV  R0, #VM_PC     
+$0630: [ b8 38 ] MOV  R0, #VM_PC
 $0632: [ f0    ] MOV  A, @R0         ; Load VM PC
-$0633: [ 03 01 ] ADD  A, #$01        
+$0633: [ 03 01 ] ADD  A, #$01
 $0635: [ a0    ] MOV  @R0, A         ; PC = PC + 1
 $0636: [ ab    ] MOV  R3, A
 $0637: [ f6 5d ] JC   error_f003     ; Jump if PC overflowed
@@ -1361,16 +1369,16 @@ $0639: [ b8 3b ] MOV  R0, #$3b
 $063b: [ f0    ] MOV  A, @R0         ; Load extension status
 $063c: [ f2 41 ] JB7  cp3_installed
 $063e: [ fb    ] MOV  A, R3          ; Restore PC to A
-$063f: [ f2 5d ] JB7  error_f003     ; show error if PC >= 128     
+$063f: [ f2 5d ] JB7  error_f003     ; show error if PC >= 128
 cp3_installed:
 $0641: [ b6 73 ] JF0  single_step_done  ; break if in single-step-mode
 $0643: [ b8 3a ] MOV  R0, #$3a
 $0645: [ f0    ] MOV  A, @R0         ; load status byte
 $0646: [ 32 6f ] JB1  $066f          ; jump if STEP pressed. If not, we're done.
 $0648: [ b8 3a ] MOV  R0, #$3a
-$064a: [ f0    ] MOV  A, @R0         ; ??? load not used?
-$064b: [ 12 61 ] JB0  print_content_of_addr_0
-$064d: [ c4 22 ] JMP  step_handler
+$064a: [ f0    ] MOV  A, @R0         ; Load status byte
+$064b: [ 12 61 ] JB0  print_content_of_addr_0 ; print addr 0 if STP pressed
+$064d: [ c4 22 ] JMP  step_handler   ; Otherwise, move on with the next instr
 
 stop_pressed_2:
 $064f: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
@@ -1394,8 +1402,8 @@ $0661: [ 23 ef ] MOV  A, #$ef     ; mask 1110 1111 ; 'access RAM extension'
 $0663: [ 74 33 ] CALL clear_status_bits
 $0665: [ 8a 20 ] ORL  P2, #$20    ; P2 |= 0010 0000 --> /CE == 1
 $0667: [ 9a ef ] ANL  P2, #$ef    ; P2 &= 1110 1111 --> 8155 /CE == 0
-$0669: [ b9 00 ] MOV  R1, #$00    
-$066b: [ 34 96 ] CALL fetch_and_print_ram 
+$0669: [ b9 00 ] MOV  R1, #$00
+$066b: [ 34 96 ] CALL fetch_and_print_ram
 $066d: [ 44 21 ] JMP  preint_C
 
 
