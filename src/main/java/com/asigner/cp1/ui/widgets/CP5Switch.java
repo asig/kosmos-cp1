@@ -36,9 +36,11 @@ public class CP5Switch extends Composite {
 
     private boolean on = false;
 
+    private boolean pressed = false;
+
     public CP5Switch(Composite parent, int style) {
         super(parent, style);
-        
+
         this.addPaintListener(this::paint);
         this.setBackground(CP1Colors.GREEN);
 
@@ -185,6 +187,13 @@ public class CP5Switch extends Composite {
         g.fill(shape);
 
         g.setTransform(transformations.pollLast()); // _0_0_0_2_1_1
+
+        if (pressed) {
+            // Highlight the knob.
+            shape = new Rectangle2D.Double(276.4285888671875, 508.8622131347656, 33.57143020629883, 38.92856979370117);
+            g.setPaint(new Color(255, 255, 255, 100));
+            g.fill(shape);
+        }
 
         g.setTransform(transformations.pollLast()); // _0_0_0_2
 
