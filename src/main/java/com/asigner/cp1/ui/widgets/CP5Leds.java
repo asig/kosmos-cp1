@@ -6,6 +6,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 public class CP5Leds extends Composite {
+
+    private CP5Led[] leds = new CP5Led[8];
+
     /**
      *
      * Create the composite.
@@ -20,15 +23,11 @@ public class CP5Leds extends Composite {
         setLayout(layout1);
         setBackground(CP1Colors.GREEN);
 
-        CP5Led p5Led1 = new CP5Led(this, SWT.NONE);
-        CP5Led p5Led2 = new CP5Led(this, SWT.NONE);
-        CP5Led p5Led3 = new CP5Led(this, SWT.NONE);
-        p5Led3.setOn(true);
-        CP5Led p5Led4 = new CP5Led(this, SWT.NONE);
-        CP5Led p5Led5 = new CP5Led(this, SWT.NONE);
-        CP5Led p5Led6 = new CP5Led(this, SWT.NONE);
-        CP5Led p5Led7 = new CP5Led(this, SWT.NONE);
-        CP5Led p5Led8 = new CP5Led(this, SWT.NONE);
+        // Note: LSB is on the left-most position
+        for (int i = 0; i < 8; i++) {
+            leds[i] = new CP5Led(this, SWT.NONE);
+            leds[i].setOn(false);
+        }
     }
 
     @Override
@@ -36,4 +35,9 @@ public class CP5Leds extends Composite {
         // Disable the check that prevents subclassing of SWT components
     }
 
+    public void setValue(int value) {
+        for (int i = 0; i < 8; i++) {
+            leds[i].setOn((value & (1 << i)) > 0);
+        }
+    }
 }

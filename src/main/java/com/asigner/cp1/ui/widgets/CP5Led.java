@@ -47,7 +47,10 @@ public class CP5Led extends Composite {
     private boolean on = false;
 
     public void setOn(boolean on) {
-        this.on = on;
+        if (this.on != on) {
+            this.on = on;
+            redraw();
+        }
     }
 
     public CP5Led(Composite parent, int style) {
