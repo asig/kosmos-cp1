@@ -153,7 +153,56 @@ public class KosmosPanelWindow {
         composite.setLayout(gl_composite);
         composite.setBackground(CP1Colors.GREEN);
 
-        Composite cp5Panel = new CP5Panel(composite, SWT.NONE);
+        CP5Panel cp5Panel = new CP5Panel(composite, SWT.NONE);
+        cp5Panel.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        cp5Panel.writeLeds(pid.getPaValue());
+        cpu.getPort(1).write(cp5Panel.readSwitches());
+        cp5Panel.addSwitchesListener(() -> {
+            cpu.getPort(1).write(cp5Panel.readSwitches());
+        });
+        cpu.getPort(1).addListener(new DataPort.Listener() {
+            private boolean inValueChanged = false;
+
+            @Override
+            public void valueChanged(int oldValue, int newValue) {
+                if (inValueChanged) {
+                    // Called by our own write. Bail out.
+                    return;
+                }
+
+                // CPU wrote to the port to prepare the pins for input. Write switch settings
+                inValueChanged = true;
+                cpu.getPort(1).write(cp5Panel.readSwitches());
+                inValueChanged = false;
+            }
+        });
+        pid.addListener(new Intel8155.StateListener() {
+            @Override
+            public void commandRegisterWritten() {
+            }
+
+            @Override
+            public void portWritten(Port port, int value) {
+                if (port == Port.B) {
+                    cp5Panel.writeLeds(value);
+                }
+            }
+
+            @Override
+            public void memoryWritten() {
+            }
+
+            @Override
+            public void pinsChanged() {
+            }
+
+            @Override
+            public void resetExecuted() {
+            }
+        });
+
+        Label spacer1 = new Label(composite, SWT.NONE);
+        spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
 
         Composite composite_1 = new Composite(composite, SWT.NONE);
         composite_1.setBackground(CP1Colors.GREEN);
@@ -176,11 +225,8 @@ public class KosmosPanelWindow {
         kosmosLogo.setLayoutData(gd_kosmosLogo);
         p1Display.display("C12127");
 
-        Label lblNewLabel = new Label(composite, SWT.NONE);
-        GridData gd_lblNewLabel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-        gd_lblNewLabel.heightHint = 50;
-        lblNewLabel.setLayoutData(gd_lblNewLabel);
-        lblNewLabel.setText("");
+        Label spacer2 = new Label(composite, SWT.NONE);
+        spacer2.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
 
         kosmosControlPanel = new KosmosControlPanel(composite, SWT.NONE);
     }

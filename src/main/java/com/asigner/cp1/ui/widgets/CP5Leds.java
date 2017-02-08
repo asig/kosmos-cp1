@@ -36,8 +36,10 @@ public class CP5Leds extends Composite {
     }
 
     public void setValue(int value) {
-        for (int i = 0; i < 8; i++) {
-            leds[i].setOn((value & (1 << i)) > 0);
-        }
+        this.getDisplay().asyncExec(() -> {
+            for (int i = 0; i < 8; i++) {
+                leds[i].setOn((value & (1 << i)) > 0);
+            }});
+
     }
 }

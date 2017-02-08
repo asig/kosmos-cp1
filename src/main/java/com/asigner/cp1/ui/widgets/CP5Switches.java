@@ -1,12 +1,22 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
+import com.google.common.collect.Lists;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import java.util.List;
+
 public class CP5Switches extends Composite {
+
+    public interface Listener {
+        void switchesChanged();
+    }
+
+    private List<Listener> listeners = Lists.newLinkedList();
 
     private final CP5Switch[] switches = new CP5Switch[8];
 
@@ -36,11 +46,19 @@ public class CP5Switches extends Composite {
         // Note that LSB is on the left-most side
         for (int i = 0; i < 8; i++) {
             CP5Switch swtch = new CP5Switch(this, SWT.NONE);
-            GridData gd = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-            gd.heightHint = 60;
-            swtch.setLayoutData(gd);
+            swtch.setLayoutData(GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.CENTER).hint(-1, 60).create());
+            swtch.addListener(() -> {
+                listeners.forEach(Listener::switchesChanged);
+            });
+            switches[i] = swtch;
+
         }
     }
+
+    public void addListener(Listener listener) {
+        this.listeners.add(listener);
+    }
+
 
     @Override
     protected void checkSubclass() {

@@ -20,6 +20,10 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
+import com.google.common.collect.Lists;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
@@ -31,10 +35,16 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 
 public class CP5Switch extends Composite {
 
+    interface Listener {
+        void switchFlipped();
+    }
+
     private boolean on = false;
+    private List<Listener> listeners = Lists.newLinkedList();
 
     private boolean pressed = false;
 
@@ -45,8 +55,32 @@ public class CP5Switch extends Composite {
         this.setBackground(CP1Colors.GREEN);
 
         setSize(computeSize(-1, 40, true));
+        
+        this.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseDoubleClick(MouseEvent mouseEvent) {
+            }
+
+            @Override
+            public void mouseDown(MouseEvent mouseEvent) {
+                pressed = true;
+                redraw();
+            }
+
+            @Override
+            public void mouseUp(MouseEvent mouseEvent) {
+                pressed = false;
+                on = !on;
+                listeners.forEach(Listener::switchFlipped);
+                redraw();
+            }
+        });
     }
 
+    public void addListener(Listener listener) {
+        this.listeners.add(listener);
+    }
+    
     public boolean isOn() {
         return on;
     }
