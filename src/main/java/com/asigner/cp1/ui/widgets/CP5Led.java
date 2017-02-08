@@ -33,12 +33,16 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 
 import static java.awt.Color.WHITE;
 import static java.awt.MultipleGradientPaint.ColorSpaceType.SRGB;
 import static java.awt.MultipleGradientPaint.CycleMethod.NO_CYCLE;
 
 public class CP5Led extends Composite {
+
+    private BufferedImage imgOn;
+    private BufferedImage imgOff;
 
     private boolean on = false;
 
@@ -58,6 +62,7 @@ public class CP5Led extends Composite {
     @Override
     public void setSize(int width, int height) {
         super.setSize(width, height);
+        renderToImages();
     }
 
     @Override
@@ -67,14 +72,25 @@ public class CP5Led extends Composite {
 
     private void paint(PaintEvent paintEvent) {
         SWTGraphics2D g2d = new SWTGraphics2D(paintEvent.gc);
-        paint(g2d);
+        g2d.drawImage(on ? imgOn : imgOff,  0, 0, null);
     }
 
     @Override
     protected void checkSubclass() {
     }
 
-    public void paint(Graphics2D g) {
+    private void renderToImages() {
+        Point size = getSize();
+        imgOn = new BufferedImage(size.x, size.y, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = imgOn.createGraphics();
+        paint(g2d, true);
+
+        imgOff = new BufferedImage(size.x, size.y, BufferedImage.TYPE_INT_ARGB);
+        g2d = imgOff.createGraphics();
+        paint(g2d, false);
+    }
+
+    public void paint(Graphics2D g, boolean on) {
         Shape shape = null;
 
         float origAlpha = 1.0f;
@@ -88,9 +104,12 @@ public class CP5Led extends Composite {
 
         java.util.LinkedList<AffineTransform> transformations = new java.util.LinkedList<AffineTransform>();
 
+        g.setPaint(CP1Colors.awt(CP1Colors.GREEN));
+        g.fillRect(0, 0, getSize().x, getSize().y);
+
         double scale = (double)getSize().y/(double)getOrigHeight();
         g.scale(scale, scale);
-        
+
         //
         transformations.offer(g.getTransform());
         g.transform(new AffineTransform(1.0666667f, 0, 0, 1.0666667f, 0, 0));

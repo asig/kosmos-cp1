@@ -33,4 +33,8 @@ public class CP1Colors {
     public static final Color SEGMENT_BG = SWTResources.getColor(new RGB(32, 0, 0));
 
     public static final Color SWITCH_BG = SWTResources.getColor(new RGB(13,16,14));
+
+    public static java.awt.Color awt(Color col) {
+        return new java.awt.Color(col.getRed(), col.getGreen(), col.getBlue());
+    }
 }
