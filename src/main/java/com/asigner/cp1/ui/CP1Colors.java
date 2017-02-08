@@ -31,4 +31,6 @@ public class CP1Colors {
     public static final Color SEGMENT_ON = SWTResources.getColor(new RGB(255, 0, 0));
     public static final Color SEGMENT_OFF = SWTResources.getColor(new RGB(64, 0, 0));
     public static final Color SEGMENT_BG = SWTResources.getColor(new RGB(32, 0, 0));
+
+    public static final Color SWITCH_BG = SWTResources.getColor(new RGB(13,16,14));
 }

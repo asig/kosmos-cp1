@@ -34,6 +34,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
 import com.asigner.cp1.ui.widgets.CP1Display;
+import com.asigner.cp1.ui.widgets.CP5Panel;
+
 import org.eclipse.swt.widgets.Label;
 import com.asigner.cp1.ui.widgets.KosmosLogoComposite;
 
@@ -132,6 +134,7 @@ public class KosmosPanelWindow {
 
     /**
      * Create contents of the window.
+     * @wbp.parser.entryPoint
      */
     protected void createContents() {
         Display display = Display.getDefault();
@@ -149,6 +152,8 @@ public class KosmosPanelWindow {
         gl_composite.marginLeft = 50;
         composite.setLayout(gl_composite);
         composite.setBackground(CP1Colors.GREEN);
+
+        Composite cp5Panel = new CP5Panel(composite, SWT.NONE);
 
         Composite composite_1 = new Composite(composite, SWT.NONE);
         composite_1.setBackground(CP1Colors.GREEN);
