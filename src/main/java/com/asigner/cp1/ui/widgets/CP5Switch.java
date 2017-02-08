@@ -47,6 +47,10 @@ public class CP5Switch extends Composite {
         setSize(computeSize(-1, 40, true));
     }
 
+    public boolean isOn() {
+        return on;
+    }
+
     @Override
     public Point computeSize(final int wHint, final int hHint, final boolean changed) {
         if (wHint > 0) {
@@ -106,18 +110,6 @@ public class CP5Switch extends Composite {
         if (on) {
             //
             transformations.offer(g.getTransform());
-            g.transform(new AffineTransform(1.0666667f, 0, 0, 1.0666667f, 2.034505E-6f, 0));
-
-            // _0
-            transformations.offer(g.getTransform());
-            g.transform(new AffineTransform(1, 0, 0, 1, -346.15808f, -473.96936f));
-
-            // _0_0
-            transformations.offer(g.getTransform());
-            g.transform(new AffineTransform(1, 0, 0, 1, -223.2804f, 423.3723f));
-        } else {
-            //
-            transformations.offer(g.getTransform());
             g.transform(new AffineTransform(1.0666667f, 0, 0, 1.0666667f, 0, -4.0690106E-6f));
 
             // _0
@@ -127,6 +119,18 @@ public class CP5Switch extends Composite {
             // _0_0
             transformations.offer(g.getTransform());
             g.transform(new AffineTransform(1, 0, 0, -1, -683.9947f, 655.6378f));
+        } else {
+            //
+            transformations.offer(g.getTransform());
+            g.transform(new AffineTransform(1.0666667f, 0, 0, 1.0666667f, 2.034505E-6f, 0));
+
+            // _0
+            transformations.offer(g.getTransform());
+            g.transform(new AffineTransform(1, 0, 0, 1, -346.15808f, -473.96936f));
+
+            // _0_0
+            transformations.offer(g.getTransform());
+            g.transform(new AffineTransform(1, 0, 0, 1, -223.2804f, 423.3723f));
         }
 
         // _0_0_0
