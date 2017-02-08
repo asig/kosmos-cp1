@@ -50,7 +50,6 @@ public class CP1Button extends Composite {
     private static final boolean isMac = OS.isMac();
 
     private boolean pressed = false;
-    private boolean mousePressed = false;
     private boolean mouseOverControl = false;
     private List<KeyListener> keyListeners = new LinkedList<>();
 
@@ -95,7 +94,6 @@ public class CP1Button extends Composite {
 
             @Override
             public void mouseDown(MouseEvent mouseEvent) {
-                mousePressed = true;
                 pressed = true;
                 keyListeners.forEach(l -> l.keyPressed(CP1Button.this));
                 redraw();
@@ -107,7 +105,6 @@ public class CP1Button extends Composite {
                     keyListeners.forEach(l -> l.keyReleased(CP1Button.this));
                 }
                 pressed = false;
-                mousePressed = false;
                 redraw();
             }
         });
