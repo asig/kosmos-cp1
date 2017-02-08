@@ -33,6 +33,7 @@
 ;      bit 0: STP pressed
 ;0x3b: memory size
 ;0x3c - 0x3e: buffer for atoi
+;0x3f: Last byte written to 8049 port 1
 
     .equ VM_PC, $38
 
@@ -839,25 +840,33 @@ $039f: [ 18    ] INC  R0
 $03a0: [ a0    ] MOV  @R0, A
 $03a1: [ 83    ] RET
 
-?????????????????????????????
------------------------------
-$03a2: [ aa    ] MOV  R2, A
-$03a3: [ 97    ] CLR  C
-$03a4: [ a7    ] CPL  C
-$03a5: [ 27    ] CLR  A
-$03a6: [ f7    ] RLC  A
-$03a7: [ ea a6 ] DJNZ R2, $03a6
-$03a9: [ aa    ] MOV  R2, A
-$03aa: [ f0    ] MOV  A, @R0
-$03ab: [ c6 b1 ] JZ   $03b1
-$03ad: [ fa    ] MOV  A, R2
-$03ae: [ 41    ] ORL  A, @R1
-$03af: [ a1    ] MOV  @R1, A
+; Sets or clears bit in a byte
+------------------------------
+; Inputs:
+; - A: the bit to set (1 .. 8)
+; - R0: address of operation byte
+; - R1: address of the byte where to set it
+set_or_clear_bit:
+$03a2: [ aa    ] MOV  R2, A           ; Save bit
+$03a3: [ 97    ] CLR  C               ;
+$03a4: [ a7    ] CPL  C               ; Set carry
+$03a5: [ 27    ] CLR  A               ; Clear A
+set_bit_rot:
+$03a6: [ f7    ] RLC  A               ; Shift bit in
+$03a7: [ ea a6 ] DJNZ R2, set_bit_rot ; Continue shifting if necessary
+$03a9: [ aa    ] MOV  R2, A           ; Move bit mask to R2
+$03aa: [ f0    ] MOV  A, @R0          ; load operation
+$03ab: [ c6 b1 ] JZ   clear_bits      ; clear bits if 0
+$03ad: [ fa    ] MOV  A, R2           ; Move mask to A
+$03ae: [ 41    ] ORL  A, @R1          ; OR with target byte
+store_result:
+$03af: [ a1    ] MOV  @R1, A          ; Store in target byte
 $03b0: [ 83    ] RET
-$03b1: [ fa    ] MOV  A, R2
-$03b2: [ 37    ] CPL  A
-$03b3: [ 51    ] ANL  A, @R1
-$03b4: [ 64 af ] JMP  $03af
+clear_bits:
+$03b1: [ fa    ] MOV  A, R2           ; Move mask to A
+$03b2: [ 37    ] CPL  A               ; negate mask
+$03b3: [ 51    ] ANL  A, @R1          ; AND with target byte
+$03b4: [ 64 af ] JMP  store_result
 ```
 
 ### Delay for n millis
@@ -1074,39 +1083,41 @@ $04a4: [ 84 8f ] JMP  $048f
 opcode_NEG:
 $04a6: [ b8 36 ] MOV  R0, #$36
 $04a8: [ f0    ] MOV  A, @R0
-$04a9: [ 96 bd ] JNZ  $04bd
+$04a9: [ 96 bd ] JNZ  error_f005
 $04ab: [ 97    ] CLR  C
 $04ac: [ 18    ] INC  R0
 $04ad: [ f0    ] MOV  A, @R0
 $04ae: [ 03 fe ] ADD  A, #$fe
-$04b0: [ f6 bd ] JC   $04bd
+$04b0: [ f6 bd ] JC   error_f005
 $04b2: [ f0    ] MOV  A, @R0
 $04b3: [ c6 b9 ] JZ   $04b9
 $04b5: [ b0 00 ] MOV  @R0, #$00
 $04b7: [ c4 2f ] JMP  end_of_instr
 $04b9: [ b0 01 ] MOV  @R0, #$01
 $04bb: [ c4 2f ] JMP  end_of_instr
+
+error_f005:
 $04bd: [ bc 05 ] MOV  R4, #$05
 $04bf: [ c4 fd ] JMP  show_error     ; F-005
 
 opcode_UND:
 $04c1: [ b8 36 ] MOV  R0, #$36
 $04c3: [ f0    ] MOV  A, @R0
-$04c4: [ 96 bd ] JNZ  $04bd
+$04c4: [ 96 bd ] JNZ  error_f005
 $04c6: [ 97    ] CLR  C
 $04c7: [ 18    ] INC  R0
 $04c8: [ f0    ] MOV  A, @R0
 $04c9: [ 03 fe ] ADD  A, #$fe
-$04cb: [ f6 bd ] JC   $04bd
+$04cb: [ f6 bd ] JC   error_f005
 $04cd: [ 74 5b ] CALL $035b
 $04cf: [ b6 5d ] JF0  $045d
 $04d1: [ 81    ] MOVX A, @R1
-$04d2: [ 96 bd ] JNZ  $04bd
+$04d2: [ 96 bd ] JNZ  error_f005
 $04d4: [ 97    ] CLR  C
 $04d5: [ 19    ] INC  R1
 $04d6: [ 81    ] MOVX A, @R1
 $04d7: [ 03 fe ] ADD  A, #$fe
-$04d9: [ f6 bd ] JC   $04bd
+$04d9: [ f6 bd ] JC   error_f005
 $04db: [ b8 37 ] MOV  R0, #$37
 $04dd: [ f0    ] MOV  A, @R0
 $04de: [ c6 bb ] JZ   $04bb
@@ -1128,7 +1139,7 @@ $04f1: [ a4 05 ] JMP  error_f006
 opcode_ADD:
 $04f3: [ 74 65 ] CALL $0365
 $04f5: [ b6 5d ] JF0  $045d
-$04f7: [ 96 bd ] JNZ  $04bd
+$04f7: [ 96 bd ] JNZ  error_f005
 $04f9: [ 76 ef ] JF1  $04ef
 $04fb: [ 97    ] CLR  C
 $04fc: [ 81    ] MOVX A, @R1
@@ -1141,7 +1152,9 @@ $0503: [ c4 5d ] JMP  $065d
 error_f006:
 $0505: [ bc 06 ] MOV  R4, #$06
 $0507: [ c4 fd ] JMP  show_error     ; F-006
-$0509: [ 84 bd ] JMP  $04bd
+
+error_f005_trampoline:
+$0509: [ 84 bd ] JMP  error_f005
 
 opcode_SUB:
 $050b: [ a5    ] CLR  F1
@@ -1172,7 +1185,7 @@ opcode_VGL:
 $052b: [ f4 e1 ] CALL $07e1
 $052d: [ 74 65 ] CALL $0365
 $052f: [ b6 03 ] JF0  $0503
-$0531: [ 96 09 ] JNZ  $0509
+$0531: [ 96 09 ] JNZ  error_f005_trampoline
 $0533: [ 81    ] MOVX A, @R1
 $0534: [ d0    ] XRL  A, @R0
 $0535: [ c6 3a ] JZ   $053a
@@ -1185,7 +1198,7 @@ opcode_VKL:
 $053e: [ f4 e1 ] CALL $07e1
 $0540: [ 74 65 ] CALL $0365
 $0542: [ b6 03 ] JF0  $0503
-$0544: [ 96 09 ] JNZ  $0509
+$0544: [ 96 09 ] JNZ  error_f005_trampoline
 $0546: [ 81    ] MOVX A, @R1
 $0547: [ c6 37 ] JZ   $0537
 $0549: [ 37    ] CPL  A
@@ -1243,21 +1256,24 @@ $0589: [ 74 9b ] CALL $039b
 $058b: [ c4 2f ] JMP  end_of_instr
 
 opcode_P1A:
-$058d: [ b8 37 ] MOV  R0, #$37
-$058f: [ 81    ] MOVX A, @R1
-$0590: [ aa    ] MOV  R2, A
-$0591: [ b9 3f ] MOV  R1, #$3f
-$0593: [ 96 9a ] JNZ  $059a
-$0595: [ f0    ] MOV  A, @R0
-$0596: [ a1    ] MOV  @R1, A
-$0597: [ 39    ] OUTL P1, A
+$058d: [ b8 37 ] MOV  R0, #$37      ; load address of Accu LSB
+$058f: [ 81    ] MOVX A, @R1        ; load operand
+$0590: [ aa    ] MOV  R2, A         ; copy operand to R2
+$0591: [ b9 3f ] MOV  R1, #$3f      ; load address of "last byte to port 1"
+$0593: [ 96 9a ] JNZ  p1a_single_pin; Single pin out?
+$0595: [ f0    ] MOV  A, @R0        ; load Accu LSB
+$0596: [ a1    ] MOV  @R1, A        ; store last byte written to port 1
+write_to_p1:
+$0597: [ 39    ] OUTL P1, A         ; write byte to port 1
 $0598: [ c4 2f ] JMP  end_of_instr
+
+p1a_single_pin
 $059a: [ 97    ] CLR  C
-$059b: [ 03 f7 ] ADD  A, #$f7
-$059d: [ f6 09 ] JC   $0509
-$059f: [ fa    ] MOV  A, R2
-$05a0: [ 74 a2 ] CALL $03a2
-$05a2: [ a4 97 ] JMP  $0597
+$059b: [ 03 f7 ] ADD  A, #$f7          ; A = (A + 247) % 255 ==  A = A - 8
+$059d: [ f6 09 ] JC   error_f005_trampoline; jump if A > 8
+$059f: [ fa    ] MOV  A, R2            ; move copied operand back to A
+$05a0: [ 74 a2 ] CALL set_or_clear_bit ; OR pin number into "last byte p1"; R0 contains address of a 0 byte (accu LSB)
+$05a2: [ a4 97 ] JMP  write_to_p1
 
 opcode_P2A:
 $05a4: [ 81    ] MOVX A, @R1
@@ -1307,7 +1323,7 @@ $05e5: [ a4 d3 ] JMP  $05d3
 $05e7: [ 23 bf ] MOV  A, #$bf
 $05e9: [ 74 33 ] CALL clear_status_bits
 $05eb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
-$05ed: [ 84 bd ] JMP  $04bd
+$05ed: [ 84 bd ] JMP  error_f005
 
 opcode_P4A:
 $05ef: [ 81    ] MOVX A, @R1
