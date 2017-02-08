@@ -17,11 +17,23 @@ virtual machine, but is a cycle-exact emulation of the underlying hardware
 experience, and can also run the demo programs described in the manual,
 "9 RUN" and "8 RUN".
 
-## What is currently emulated?
-The current version emulates the base unit, as well as the "CP3" memory
-extension. I'm planning to also add support for the "CP2" cassette interface.
+### What is currently emulated?
+The current version emulates the following components:
+- CP1 base unit
+- CP3 memory extension
+- CP5 universal input/output interface
 
-## Further reading
+The CP2 cassette interface is not emulated yet, but memory can be read from and
+written to files.
+
+### Additional features
+For your convenience, the emulator comes with an integrated assembler for
+CP1's assembly language. If you ever wrote assembly code (and I bet you did
+if you're interested in this emulator :-) ) you will have no problems
+understanding the syntax. Also, a lot of the sample programs from the manuals
+are included.
+
+### Further reading
 You can find scans of all the manuals at http://www.retrozone.ch/cp1/
 
 ## Building and running
