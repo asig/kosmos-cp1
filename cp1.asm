@@ -810,8 +810,9 @@ $0381: [ 83    ] RET
 $0382: [ 77    ] RR   A
 $0383: [ 64 79 ] JMP  $0379
 
-?????????????????????????????
------------------------------
+; Turn internal 8155 to IO mode, disable CP3 8155
+; -----------------------------------------------
+enable_internal_io:
 $0385: [ 23 40 ] MOV  A, #$40    ; mask 0100 0000 ; 'enable IO'
 $0387: [ 74 2e ] CALL set_status_bits
 $0389: [ 23 ef ] MOV  A, #$ef    ; mask 1110 1111 ; 'access RAM extension'
@@ -1276,16 +1277,16 @@ $05a0: [ 74 a2 ] CALL set_or_clear_bit ; OR pin number into "last byte p1"; R0 c
 $05a2: [ a4 97 ] JMP  write_to_p1
 
 opcode_P2A:
-$05a4: [ 81    ] MOVX A, @R1
-$05a5: [ aa    ] MOV  R2, A
-$05a6: [ 74 85 ] CALL $0385
-$05a8: [ b9 40 ] MOV  R1, #$40
+$05a4: [ 81    ] MOVX A, @R1        ; load operand...
+$05a5: [ aa    ] MOV  R2, A         ; ... and store it in R2
+$05a6: [ 74 85 ] CALL enable_internal_io  ; enable IO on internal 8155
+$05a8: [ b9 40 ] MOV  R1, #$40      ; load addres of "last byte to p2"
 $05aa: [ bc 02 ] MOV  R4, #$02
-$05ac: [ b8 37 ] MOV  R0, #$37
-$05ae: [ fa    ] MOV  A, R2
-$05af: [ 96 bf ] JNZ  $05bf
-$05b1: [ f0    ] MOV  A, @R0
-$05b2: [ a1    ] MOV  @R1, A
+$05ac: [ b8 37 ] MOV  R0, #$37      ; Load address of Accu LSB
+$05ae: [ fa    ] MOV  A, R2         ; load instr operand
+$05af: [ 96 bf ] JNZ  p2a_single_pin; jump to single pin if != 0
+$05b1: [ f0    ] MOV  A, @R0        ; load Accu LSB
+$05b2: [ a1    ] MOV  @R1, A        ; store last byte written to port 2
 $05b3: [ 2c    ] XCH  A, R4
 $05b4: [ a8    ] MOV  R0, A
 $05b5: [ 2c    ] XCH  A, R4
@@ -1294,6 +1295,7 @@ $05b7: [ 23 bf ] MOV  A, #$bf
 $05b9: [ 74 33 ] CALL clear_status_bits
 $05bb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05bd: [ c4 2f ] JMP  end_of_instr
+p2a_single_pin:
 $05bf: [ 97    ] CLR  C
 $05c0: [ 03 f7 ] ADD  A, #$f7
 $05c2: [ f6 e7 ] JC   $05e7
