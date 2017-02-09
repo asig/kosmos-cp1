@@ -56,6 +56,8 @@ public class ExecutorThread extends Thread {
     private final Intel8049 cpu;
     private final Intel8155 pid;
     private final Intel8155 pidExtension;
+    private final PerformanceMeasurer performanceMeasurer = new PerformanceMeasurer();
+
     private boolean isRunning = false;
     private boolean breakOnMovx = false;
 
@@ -95,13 +97,11 @@ public class ExecutorThread extends Thread {
 
     @Override
     public void run() {
-        PerformanceMeasurer performanceMeasurer = new PerformanceMeasurer();
         for(;;) {
             Command command = fetchCommand();
             if (command == null) {
                 // can only happen if we're in state "running";
                 int executed = executeInstr();
-
                 performanceMeasurer.register(executed);
                 if (performanceMeasurer.isUpdateDue()) {
                     double performance = performanceMeasurer.getPerformance();
@@ -110,28 +110,16 @@ public class ExecutorThread extends Thread {
             } else {
                 switch(command) {
                     case SINGLE_STEP:
-                        if (isRunning) {
-                            stopExecution();
-                            listeners.forEach(ExecutionListener::executionStopped);
-                        }
-                        executeInstr();
+                        singleStep();
                         break;
                     case START:
                         startExecution();
-                        performanceMeasurer.reset();
-                        listeners.forEach(ExecutionListener::executionStarted);
                         break;
                     case STOP:
                         stopExecution();
-                        listeners.forEach(ExecutionListener::executionStopped);
                         break;
                     case RESET:
-                        stopExecution();
-                        // TODO(asigner): Reset should be done by setting the reset line.
-                        cpu.reset();
-                        pid.reset();
-                        pidExtension.reset();
-                        listeners.forEach(ExecutionListener::resetExecuted);
+                        reset();
                         break;
                     case QUIT:
                         return;
@@ -143,12 +131,33 @@ public class ExecutorThread extends Thread {
         }
     }
 
-    private void stopExecution() {
-        isRunning = false;
+    private void singleStep() {
+        stopExecution();
+        executeInstr();
     }
 
     private void startExecution() {
-        isRunning = true;
+        if (!isRunning) {
+            isRunning = true;
+            performanceMeasurer.reset();
+            listeners.forEach(ExecutionListener::executionStarted);
+        }
+    }
+
+    private void stopExecution() {
+        if (isRunning) {
+            isRunning = false;
+            listeners.forEach(ExecutionListener::executionStopped);
+        }
+    }
+
+    private void reset() {
+        stopExecution();
+        // TODO(asigner): Reset should be done by setting the reset line.
+        cpu.reset();
+        pid.reset();
+        pidExtension.reset();
+        listeners.forEach(ExecutionListener::resetExecuted);
     }
 
     private Command fetchCommand() {
