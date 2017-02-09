@@ -25,6 +25,7 @@ import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.ui.actions.AssemblerAction;
 import com.asigner.cp1.ui.actions.LoadAction;
+import com.asigner.cp1.ui.actions.QuitAction;
 import com.asigner.cp1.ui.actions.SaveAction;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.ui.widgets.CP1Display;
@@ -56,6 +57,7 @@ public class KosmosPanelWindow {
     private LoadAction loadAction;
     private SaveAction saveAction;
     private AssemblerAction assemblerAction;
+    private QuitAction quitAction;
 
     private Intel8049 cpu;
     private Intel8155 pid;
@@ -160,6 +162,7 @@ public class KosmosPanelWindow {
     }
 
     private void createActions() {
+        quitAction = new QuitAction();
         loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
         saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
         assemblerAction = new AssemblerAction(shell, pid, pidExtension, executorThread);
@@ -260,15 +263,22 @@ public class KosmosPanelWindow {
     private Menu createMenuBar() {
         Menu menu = new Menu(shell, SWT.BAR);
 
+        Menu fileMenu = new Menu(menu);
+        new ActionMenuItem(fileMenu, SWT.NONE, quitAction);
+
+        MenuItem fileItem = new MenuItem(menu, SWT.CASCADE);
+        fileItem.setText("&File");
+        fileItem.setMenu(fileMenu);
+
         Menu stateMenu = new Menu(menu);
         new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
         new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
         new MenuItem(stateMenu, SWT.SEPARATOR);
         new ActionMenuItem(stateMenu, SWT.NONE, assemblerAction);
 
-        MenuItem fileItem = new MenuItem(menu, SWT.CASCADE);
-        fileItem.setText("&State");
-        fileItem.setMenu(stateMenu);
+        MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
+        stateItem.setText("&State");
+        stateItem.setMenu(stateMenu);
 
         return menu;
     }

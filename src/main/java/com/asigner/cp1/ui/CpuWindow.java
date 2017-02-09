@@ -28,6 +28,7 @@ import com.asigner.cp1.ui.actions.AboutAction;
 import com.asigner.cp1.ui.actions.AssemblerAction;
 import com.asigner.cp1.ui.actions.BreakOnMovxAction;
 import com.asigner.cp1.ui.actions.LoadAction;
+import com.asigner.cp1.ui.actions.QuitAction;
 import com.asigner.cp1.ui.actions.ResetAction;
 import com.asigner.cp1.ui.actions.RunAction;
 import com.asigner.cp1.ui.actions.SaveAction;
@@ -71,6 +72,8 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
     private SaveAction saveAction;
     private AssemblerAction assemblerAction;
     private AboutAction aboutAction;
+    private QuitAction quitAction;
+
 
     private Shell shell;
     private Intel8049 cpu;
@@ -108,6 +111,7 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
         assemblerAction = new AssemblerAction(shell, pid, pidExtension, executorThread);
         aboutAction = new AboutAction();
+        quitAction = new QuitAction();
 
         resetAction.setDependentActions(singleStepAction, runAction, stopAction);
         runAction.setDependentActions(singleStepAction, stopAction);
@@ -136,22 +140,26 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
 
         Menu fileMenu = new Menu(menu);
         new ActionMenuItem(fileMenu, SWT.NONE, save8049DisassemblyAction);
-
-        Menu stateMenu = new Menu(menu);
-        new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
-        new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
         new MenuItem(fileMenu, SWT.SEPARATOR);
-        new ActionMenuItem(stateMenu, SWT.NONE, assemblerAction);
-
-        Menu helpMenu = new Menu(menu);
-        new ActionMenuItem(helpMenu, SWT.NONE, aboutAction);
+        new ActionMenuItem(fileMenu, SWT.NONE, quitAction);
 
         MenuItem fileItem = new MenuItem(menu, SWT.CASCADE);
         fileItem.setText("&File");
         fileItem.setMenu(fileMenu);
+
+        Menu stateMenu = new Menu(menu);
+        new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
+        new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
+        new MenuItem(stateMenu, SWT.SEPARATOR);
+        new ActionMenuItem(stateMenu, SWT.NONE, assemblerAction);
+
         MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
         stateItem.setText("&State");
         stateItem.setMenu(stateMenu);
+
+        Menu helpMenu = new Menu(menu);
+        new ActionMenuItem(helpMenu, SWT.NONE, aboutAction);
+
         MenuItem helpItem = new MenuItem(menu, SWT.CASCADE);
         helpItem.setText("Help");
         helpItem.setMenu(helpMenu);
@@ -365,7 +373,6 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
      */
     private static void wbpEntryPoint() {
         try {
-            Ram ram = new Ram(256);
             Rom rom = new Rom(new FileInputStream("CP1.bin"));
             DataPort bus = new DataPort("BUS");
             DataPort p1 = new DataPort("P1");
