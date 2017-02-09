@@ -22,7 +22,6 @@ package com.asigner.cp1.ui;
 import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
-import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.emulation.Rom;
 import org.eclipse.swt.widgets.Display;
 
@@ -78,7 +77,7 @@ public class Main {
             cpu.reset();
 
             CpuWindow cpuWindow = new CpuWindow(cpu, pid, pidExtension, executorThread);
-            KosmosPanelWindow panelWindow = new KosmosPanelWindow(cpu, pid, executorThread);
+            KosmosPanelWindow panelWindow = new KosmosPanelWindow(cpu, pid, pidExtension, executorThread);
 
             cpuWindow.open();
             panelWindow.open();
