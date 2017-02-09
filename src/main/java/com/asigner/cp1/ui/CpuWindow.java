@@ -136,11 +136,12 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
 
         Menu fileMenu = new Menu(menu);
         new ActionMenuItem(fileMenu, SWT.NONE, save8049DisassemblyAction);
+
+        Menu stateMenu = new Menu(menu);
+        new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
+        new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
         new MenuItem(fileMenu, SWT.SEPARATOR);
-        new ActionMenuItem(fileMenu, SWT.NONE, loadAction);
-        new ActionMenuItem(fileMenu, SWT.NONE, saveAction);
-        new MenuItem(fileMenu, SWT.SEPARATOR);
-        new ActionMenuItem(fileMenu, SWT.NONE, assemblerAction);
+        new ActionMenuItem(stateMenu, SWT.NONE, assemblerAction);
 
         Menu helpMenu = new Menu(menu);
         new ActionMenuItem(helpMenu, SWT.NONE, aboutAction);
@@ -148,6 +149,9 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         MenuItem fileItem = new MenuItem(menu, SWT.CASCADE);
         fileItem.setText("&File");
         fileItem.setMenu(fileMenu);
+        MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
+        stateItem.setText("&State");
+        stateItem.setMenu(stateMenu);
         MenuItem helpItem = new MenuItem(menu, SWT.CASCADE);
         helpItem.setText("Help");
         helpItem.setMenu(helpMenu);
