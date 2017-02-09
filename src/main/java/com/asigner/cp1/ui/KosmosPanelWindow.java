@@ -23,21 +23,26 @@ import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.InputPin;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import com.asigner.cp1.ui.widgets.KosmosControlPanel;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.GridData;
+import com.asigner.cp1.ui.actions.AssemblerAction;
+import com.asigner.cp1.ui.actions.LoadAction;
+import com.asigner.cp1.ui.actions.SaveAction;
+import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.ui.widgets.CP1Display;
 import com.asigner.cp1.ui.widgets.CP5Panel;
-
-import org.eclipse.swt.widgets.Label;
+import com.asigner.cp1.ui.widgets.KosmosControlPanel;
 import com.asigner.cp1.ui.widgets.KosmosLogoComposite;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,15 +53,24 @@ public class KosmosPanelWindow {
 
     private static final String WINDOW_TITLE = "Kosmos CP1";
 
-    private final Intel8049 cpu;
-    private final Intel8155 pid;
+    private LoadAction loadAction;
+    private SaveAction saveAction;
+    private AssemblerAction assemblerAction;
+
+    private Intel8049 cpu;
+    private Intel8155 pid;
+    private Intel8155 pidExtension;
+    private ExecutorThread executorThread;
 
     private Shell shell;
     private KosmosControlPanel kosmosControlPanel;
 
-    public KosmosPanelWindow(Intel8049 cpu, Intel8155 pid, ExecutorThread executorThread) {
+
+    public KosmosPanelWindow(Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) {
         this.cpu = cpu;
         this.pid = pid;
+        this.pidExtension = pidExtension;
+        this.executorThread = executorThread;
 
         // Hook up the 8049;s PROG to the Panel. CP1's ROM uses MOVD A, P4 to
         // read the keyboard state from the lower nibble of P2. MOVD will
@@ -118,11 +132,16 @@ public class KosmosPanelWindow {
         }
 
     }
+
     /**
      * Open the window.
      */
     public void open() {
-        createContents();
+        createShell();
+        createActions();
+        createContent();
+
+        shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
         shell.pack();
@@ -132,18 +151,25 @@ public class KosmosPanelWindow {
         return shell.isDisposed();
     }
 
-    /**
-     * Create contents of the window.
-     * @wbp.parser.entryPoint
-     */
-    protected void createContents() {
-        Display display = Display.getDefault();
-        shell = new Shell(display, SWT.SHELL_TRIM | SWT.CENTER);
+    private void createShell() {
+        shell = new Shell((Display)null, SWT.SHELL_TRIM | SWT.CENTER);
         updateWindowTitle("stopped");
         shell.setLayout(new FillLayout(SWT.HORIZONTAL));
         Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
         shell.setImage(icon);
+    }
 
+    private void createActions() {
+        loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
+        saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
+        assemblerAction = new AssemblerAction(shell, pid, pidExtension, executorThread);
+    }
+
+    /**
+     * Create contents of the window.
+     * @wbp.parser.entryPoint
+     */
+    private void createContent() {
         Composite composite = new Composite(shell, SWT.NONE);
         GridLayout gl_composite = new GridLayout(1, false);
         gl_composite.marginTop = 50;
@@ -200,7 +226,7 @@ public class KosmosPanelWindow {
             public void resetExecuted() {
             }
         });
-
+        
         Label spacer1 = new Label(composite, SWT.NONE);
         spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
 
@@ -213,12 +239,12 @@ public class KosmosPanelWindow {
         gl_composite_1.marginWidth = 0;
         gl_composite_1.marginHeight = 0;
         composite_1.setLayout(gl_composite_1);
-        
+
         CP1Display p1Display = new CP1Display(composite_1, SWT.NONE);
         p1Display.setPid(pid);
         GridData gd_p1Display = GridDataFactory.swtDefaults().hint(-1, 100).create();
         p1Display.setLayoutData(gd_p1Display);
-        
+
         KosmosLogoComposite kosmosLogo = new KosmosLogoComposite(composite_1, SWT.NONE);
         GridData gd_kosmosLogo = new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1);
         gd_kosmosLogo.heightHint = 100;
@@ -229,5 +255,21 @@ public class KosmosPanelWindow {
         spacer2.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
 
         kosmosControlPanel = new KosmosControlPanel(composite, SWT.NONE);
+    }
+
+    private Menu createMenuBar() {
+        Menu menu = new Menu(shell, SWT.BAR);
+
+        Menu stateMenu = new Menu(menu);
+        new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
+        new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
+        new MenuItem(stateMenu, SWT.SEPARATOR);
+        new ActionMenuItem(stateMenu, SWT.NONE, assemblerAction);
+
+        MenuItem fileItem = new MenuItem(menu, SWT.CASCADE);
+        fileItem.setText("&State");
+        fileItem.setMenu(stateMenu);
+
+        return menu;
     }
 }
