@@ -165,7 +165,7 @@ public class KosmosPanelWindow {
         quitAction = new QuitAction();
         loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
         saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
-        assemblerAction = new AssemblerAction(shell, pid, pidExtension, executorThread);
+        assemblerAction = new AssemblerAction(pid, pidExtension, executorThread);
     }
 
     /**

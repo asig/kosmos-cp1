@@ -7,6 +7,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -21,7 +22,7 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-public class AssemblerDialog extends Dialog {
+public class AssemblerWindow {
 
     public static class SampleCode {
         private final String name;
@@ -53,13 +54,7 @@ public class AssemblerDialog extends Dialog {
     private ResultListener resultListener;
     private List<SampleCode> sampleListings = Lists.newArrayList();
 
-    /**
-     * Create the dialog.
-     * @param parent
-     */
-    public AssemblerDialog(Shell parent) {
-        super(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.SHELL_TRIM);
-        setText("Assembler");
+    public AssemblerWindow() {
     }
 
     public void setSampleListings(List<SampleCode> sampleListings) {
@@ -78,21 +73,22 @@ public class AssemblerDialog extends Dialog {
         createContents();
         shell.open();
         shell.layout();
-        Display display = getParent().getDisplay();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
+//        Display display = shell.getDisplay();
+//        while (!shell.isDisposed()) {
+//            if (!display.readAndDispatch()) {
+//                display.sleep();
+//            }
+//        }
     }
 
     /**
      * Create contents of the dialog.
      */
     private void createContents() {
-        shell = new Shell(getParent(), getStyle());
+        Display display = Display.getDefault();
+        shell = new Shell(display, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.SHELL_TRIM);
+        shell.setText("Assembler");
         shell.setSize(552, 592);
-        shell.setText(getText());
         shell.setLayout(new GridLayout(2, false));
 
         Label lblNewLabel_2 = new Label(shell, SWT.NONE);

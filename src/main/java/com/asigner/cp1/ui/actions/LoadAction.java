@@ -20,8 +20,6 @@
 package com.asigner.cp1.ui.actions;
 
 import com.asigner.cp1.emulation.Intel8155;
-import com.asigner.cp1.emulation.Ram;
-import com.asigner.cp1.ui.AssemblerDialog;
 import com.asigner.cp1.ui.ExecutorThread;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
@@ -30,7 +28,6 @@ import org.eclipse.swt.widgets.Shell;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class LoadAction extends Action {

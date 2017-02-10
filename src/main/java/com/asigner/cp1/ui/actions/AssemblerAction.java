@@ -21,12 +21,11 @@ package com.asigner.cp1.ui.actions;
 
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Ram;
-import com.asigner.cp1.ui.AssemblerDialog;
+import com.asigner.cp1.ui.AssemblerWindow;
 import com.asigner.cp1.ui.ExecutorThread;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jface.action.Action;
-import org.eclipse.swt.widgets.Shell;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,15 +33,13 @@ import java.util.List;
 
 public class AssemblerAction extends Action {
 
-    private final Shell shell;
     private final Intel8155 pid;
     private final Intel8155 pidExtension;
     private final ExecutorThread executor;
-    private final List<AssemblerDialog.SampleCode> sampleListings;
+    private final List<AssemblerWindow.SampleCode> sampleListings;
 
-    public AssemblerAction(Shell shell, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executor) {
+    public AssemblerAction(Intel8155 pid, Intel8155 pidExtension, ExecutorThread executor) {
         super("Assembler");
-        this.shell = shell;
         this.pid = pid;
         this.pidExtension = pidExtension;
         this.executor = executor;
@@ -54,7 +51,7 @@ public class AssemblerAction extends Action {
                 try {
                     List<String> text = IOUtils.readLines(is, "UTF-8");
                     String name = text.get(0).substring(1).trim();
-                    sampleListings.add(new AssemblerDialog.SampleCode(name, text));
+                    sampleListings.add(new AssemblerWindow.SampleCode(name, text));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -65,9 +62,10 @@ public class AssemblerAction extends Action {
 
     @Override
     public void run() {
-        AssemblerDialog dlg = new AssemblerDialog(shell);
-        dlg.setSampleListings(sampleListings);
-        dlg.setResultListener(code -> {
+        this.setEnabled(false);
+        AssemblerWindow assembler = new AssemblerWindow();
+        assembler.setSampleListings(sampleListings);
+        assembler.setResultListener(code -> {
             boolean running = executor.isRunning();
             if (running) {
                 executor.postCommand(ExecutorThread.Command.STOP);
@@ -86,6 +84,6 @@ public class AssemblerAction extends Action {
                 executor.postCommand(ExecutorThread.Command.START);
             }
         });
-        dlg.open();
+        assembler.open();
     }
 }

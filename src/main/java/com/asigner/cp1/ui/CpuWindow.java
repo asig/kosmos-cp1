@@ -109,7 +109,7 @@ public class CpuWindow implements ExecutorThread.ExecutionListener, Intel8049.St
         save8049DisassemblyAction = new Save8049DisassemblyAction(cpu);
         loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
         saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
-        assemblerAction = new AssemblerAction(shell, pid, pidExtension, executorThread);
+        assemblerAction = new AssemblerAction(pid, pidExtension, executorThread);
         aboutAction = new AboutAction();
         quitAction = new QuitAction();
 
