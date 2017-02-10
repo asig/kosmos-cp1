@@ -48,11 +48,13 @@ import org.eclipse.swt.widgets.Shell;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class KosmosPanelWindow {
+public class KosmosPanelWindow extends Window {
 
     private static final Logger logger = Logger.getLogger(KosmosPanelWindow.class.getName());
 
     private static final String WINDOW_TITLE = "Kosmos CP1";
+
+    private Shell shell;
 
     private LoadAction loadAction;
     private SaveAction saveAction;
@@ -64,11 +66,11 @@ public class KosmosPanelWindow {
     private Intel8155 pidExtension;
     private ExecutorThread executorThread;
 
-    private Shell shell;
     private KosmosControlPanel kosmosControlPanel;
 
+    public KosmosPanelWindow(WindowManager windowManager, Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) {
+        super(windowManager);
 
-    public KosmosPanelWindow(Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) {
         this.cpu = cpu;
         this.pid = pid;
         this.pidExtension = pidExtension;
@@ -147,6 +149,15 @@ public class KosmosPanelWindow {
         shell.open();
         shell.layout();
         shell.pack();
+        getWindowManager().windowOpened(this);
+    }
+
+    @Override
+    public void addListener(Listener listener) {
+        if (shell == null) {
+
+        }
+        shell.addDisposeListener(disposeEvent -> listener.windowClosed());
     }
 
     public boolean isDisposed() {
@@ -159,6 +170,7 @@ public class KosmosPanelWindow {
         shell.setLayout(new FillLayout(SWT.HORIZONTAL));
         Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
         shell.setImage(icon);
+        shell.addDisposeListener(disposeEvent -> getWindowManager().windowClosed(this));
     }
 
     private void createActions() {
@@ -229,7 +241,7 @@ public class KosmosPanelWindow {
             public void resetExecuted() {
             }
         });
-        
+
         Label spacer1 = new Label(composite, SWT.NONE);
         spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
 

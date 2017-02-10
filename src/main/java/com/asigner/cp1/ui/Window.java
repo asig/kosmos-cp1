@@ -17,29 +17,33 @@
  * along with kosmos-cp1.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.asigner.cp1.ui.actions;
+package com.asigner.cp1.ui;
 
-import com.asigner.cp1.emulation.Intel8155;
-import com.asigner.cp1.ui.ExecutorThread;
-import org.eclipse.jface.action.Action;
+import com.google.common.collect.Lists;
 
-public class AssemblerAction extends Action {
+import java.util.List;
 
-    private final Intel8155 pid;
-    private final Intel8155 pidExtension;
-    private final ExecutorThread executor;
+public abstract class Window {
 
-    public AssemblerAction(Intel8155 pid, Intel8155 pidExtension, ExecutorThread executor) {
-        super("Assembler");
-        this.pid = pid;
-        this.pidExtension = pidExtension;
-        this.executor = executor;
-
+    interface Listener {
+        void windowOpened();
+        void windowClosed();
     }
 
+    private final List<Listener> listeners = Lists.newLinkedList();
+    private final WindowManager windowManager;
 
-    @Override
-    public void run() {
-        this.setEnabled(false);
+    public Window(WindowManager windowManager) {
+        this.windowManager = windowManager;
     }
+
+    public void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    public WindowManager getWindowManager() {
+        return windowManager;
+    }
+
+    abstract public void open();
 }

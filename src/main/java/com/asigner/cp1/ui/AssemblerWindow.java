@@ -1,28 +1,31 @@
 package com.asigner.cp1.ui;
 
 import com.asigner.cp1.assembler.Assembler;
+import com.asigner.cp1.emulation.Intel8155;
+import com.asigner.cp1.emulation.Ram;
 import com.google.common.collect.Lists;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-public class AssemblerWindow {
+public class AssemblerWindow extends Window {
 
     public static class SampleCode {
         private final String name;
@@ -42,27 +45,36 @@ public class AssemblerWindow {
         }
     }
 
-    public interface ResultListener {
-        void codeAssembled(byte[] code);
-    }
+    private final Intel8155 pid;
+    private final Intel8155 pidExtension;
+    private final ExecutorThread executor;
+    private final List<SampleCode> sampleListings;
 
     private Shell shell;
 
     private StyledText src;
     private Text results;
 
-    private ResultListener resultListener;
-    private List<SampleCode> sampleListings = Lists.newArrayList();
 
-    public AssemblerWindow() {
-    }
+    public AssemblerWindow(WindowManager windowManager, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executor) {
+        super(windowManager);
+        this.pid = pid;
+        this.pidExtension = pidExtension;
+        this.executor = executor;
 
-    public void setSampleListings(List<SampleCode> sampleListings) {
-        this.sampleListings = sampleListings;
-    }
-
-    public void setResultListener(ResultListener resultListener) {
-        this.resultListener = resultListener;
+        this.sampleListings = Lists.newArrayListWithCapacity(100);
+        for (int i = 0; i < 100; i++) {
+            InputStream is = this.getClass().getResourceAsStream(String.format("/com/asigner/cp1/listings/listing%d.asm", i));
+            if (is != null) {
+                try {
+                    List<String> text = IOUtils.readLines(is, "UTF-8");
+                    String name = text.get(0).substring(1).trim();
+                    sampleListings.add(new AssemblerWindow.SampleCode(name, text));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
@@ -73,12 +85,7 @@ public class AssemblerWindow {
         createContents();
         shell.open();
         shell.layout();
-//        Display display = shell.getDisplay();
-//        while (!shell.isDisposed()) {
-//            if (!display.readAndDispatch()) {
-//                display.sleep();
-//            }
-//        }
+        getWindowManager().windowOpened(this);
     }
 
     /**
@@ -90,6 +97,7 @@ public class AssemblerWindow {
         shell.setText("Assembler");
         shell.setSize(552, 592);
         shell.setLayout(new GridLayout(2, false));
+        shell.addDisposeListener(disposeEvent -> getWindowManager().windowClosed(this));
 
         Label lblNewLabel_2 = new Label(shell, SWT.NONE);
         lblNewLabel_2.setText("Sample Listings:");
@@ -147,8 +155,23 @@ public class AssemblerWindow {
         List<String> errors = assembler.getErrors();
         if (errors.size() == 0) {
             results.setText("Assembly succeeded.");
-            if (resultListener != null) {
-                resultListener.codeAssembled(assembler.getCode());
+            byte[] code = assembler.getCode();
+            boolean running = executor.isRunning();
+            if (running) {
+                executor.postCommand(ExecutorThread.Command.STOP);
+            }
+            Ram ram = pid.getRam();
+            for (int i = 0; i < 256; i++) {
+                ram.write(i, code[i]);
+            }
+            if (code.length > 256) {
+                ram = pidExtension.getRam();
+                for (int i = 0; i < 256; i++) {
+                    ram.write(i, code[256 + i]);
+                }
+            }
+            if (running) {
+                executor.postCommand(ExecutorThread.Command.START);
             }
         } else {
             results.setText(errors.stream().collect(joining("\n")));

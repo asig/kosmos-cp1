@@ -76,15 +76,20 @@ public class Main {
             // Now, reset the CPU
             cpu.reset();
 
-            CpuWindow cpuWindow = new CpuWindow(cpu, pid, pidExtension, executorThread);
-            KosmosPanelWindow panelWindow = new KosmosPanelWindow(cpu, pid, pidExtension, executorThread);
+            WindowManager windowManager = new WindowManager();
+            CpuWindow cpuWindow = new CpuWindow(windowManager, cpu, pid, pidExtension, executorThread);
+            KosmosPanelWindow panelWindow = new KosmosPanelWindow(windowManager, cpu, pid, pidExtension, executorThread);
+            AssemblerWindow assemblerWindow = new AssemblerWindow(windowManager, pid, pidExtension, executorThread);
+            windowManager.addWindow(cpuWindow);
+            windowManager.addWindow(panelWindow);
+            windowManager.addWindow(assemblerWindow);
 
             cpuWindow.open();
             panelWindow.open();
             executorThread.start();
 
             Display display = Display.getDefault();
-            while (!cpuWindow.isDisposed() || !panelWindow.isDisposed()) {
+            while (windowManager.getOpenCount() > 0) {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }

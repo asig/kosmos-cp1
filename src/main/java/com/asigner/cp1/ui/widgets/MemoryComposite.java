@@ -23,6 +23,8 @@ import com.asigner.cp1.ui.OS;
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
@@ -84,6 +86,15 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
                     InlineEdit edit = new InlineEdit(MemoryComposite.this, SWT.NONE);
                     edit.init(getByteRect(bytePos, 2), String.format("%02x", ram.read(bytePos)), 0, 255, i -> ram.write(bytePos,i));
                     edit.setFont(font);
+                }
+            }
+        });
+
+        this.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent disposeEvent) {
+                if (ram != null) {
+                    ram.removeListener(MemoryComposite.this);
                 }
             }
         });

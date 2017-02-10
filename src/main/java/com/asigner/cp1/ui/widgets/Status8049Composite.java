@@ -45,12 +45,12 @@ public class Status8049Composite extends Group {
     private CLabel lblA;
     private CLabel lblT;
     private CLabel lblPC;
-    
+
     private BitsetWidget busWidget;
     private BitsetWidget p1Widget;
     private BitsetWidget p2Widget;
     private MemoryComposite memoryComposite;
-    
+
     private Intel8049 cpu;
 
     private int psw = 0;
@@ -70,7 +70,7 @@ public class Status8049Composite extends Group {
      */
     public Status8049Composite(Composite parent, int style) {
         super(parent, style);
-       
+
         setLayout(new GridLayout(3, false));
 
         Composite cmp = new Composite(this, SWT.NONE);
@@ -179,30 +179,30 @@ public class Status8049Composite extends Group {
         lblPC.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
         lblPC.setText("$000");
         addInlineEdit(lblPC, 0,2047, val -> cpu.setPC(val));;
-        
+
         //////
-        
+
         Label lblBus = new Label(cmp, SWT.LEFT);
         lblBus.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblBus.setText("Bus");
-        
+
         busWidget = new BitsetWidget(cmp, 8, SWT.NONE);
         busWidget.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 5, 1));
 
         Label lblP1 = new Label(cmp, SWT.LEFT);
         lblP1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblP1.setText("Port 1");
-        
+
         p1Widget = new BitsetWidget(cmp, 8, SWT.NONE);
         p1Widget.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 5, 1));
 
         Label lblP2 = new Label(cmp, SWT.LEFT);
         lblP2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
         lblP2.setText("Port 2");
-        
+
         p2Widget = new BitsetWidget(cmp, 8, SWT.NONE);
         p2Widget.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 5, 1));
-        
+
         Composite cmp2 = new Composite(this, SWT.NONE);
         cmp2.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false, 1, 1));
         cmp2.setLayout(new GridLayout(1, false));
@@ -235,7 +235,7 @@ public class Status8049Composite extends Group {
     }
 
     public void updateState() {
-        if (cpu == null) {
+        if (cpu == null || isDisposed()) {
             return;
         }
 
@@ -280,7 +280,7 @@ public class Status8049Composite extends Group {
             this.f1 = f1;
             lblF1.setText(Integer.toString(f1));
         }
-        
+
         int bus = cpu.getPort(0).read();
         if (this.bus != bus) {
         	this.bus = bus;
@@ -298,6 +298,8 @@ public class Status8049Composite extends Group {
         	this.p2 = p2;
         	this.p2Widget.setValue(p2);
         }
+
+        redraw();
     }
 
     @Override

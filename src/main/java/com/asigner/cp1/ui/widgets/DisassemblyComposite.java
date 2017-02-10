@@ -152,16 +152,18 @@ public class DisassemblyComposite extends Composite {
     }
 
     public void selectAddress(int address) {
-        this.selectedAddress = address;
-        this.selectedLine = pcToLine[address];
-        // make sure the selected line is visible
-        if (selectedLine < lineOfs) {
-            lineOfs = selectedLine;
-        } else if (selectedLine >= lineOfs + getVisibleLineCount()) {
-            lineOfs = selectedLine - getVisibleLineCount()/2; // set it in the middle of the screen
+        if (!isDisposed()) {
+            this.selectedAddress = address;
+            this.selectedLine = pcToLine[address];
+            // make sure the selected line is visible
+            if (selectedLine < lineOfs) {
+                lineOfs = selectedLine;
+            } else if (selectedLine >= lineOfs + getVisibleLineCount()) {
+                lineOfs = selectedLine - getVisibleLineCount() / 2; // set it in the middle of the screen
+            }
+            getVerticalBar().setSelection(lineOfs);
+            redraw();
         }
-        getVerticalBar().setSelection(lineOfs);
-        redraw();
     }
 
     public void setRom(Rom rom) {

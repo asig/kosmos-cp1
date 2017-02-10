@@ -24,10 +24,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 
 public class Status8155Composite extends Group  {
     private CLabel lblPaMode;
@@ -186,6 +185,10 @@ public class Status8155Composite extends Group  {
     }
 
     public void updateState() {
+        if (isDisposed()) {
+            return;
+        }
+
         lblPaMode.setText(pid.getPaMode().toString());
         lblPaVal.setText(String.format("$%02x", pid.getPaValue()));
         bitsetPaVal.setValue(pid.getPaValue());
