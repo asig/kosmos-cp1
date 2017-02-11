@@ -19,7 +19,7 @@
 
 package com.asigner.cp1.emulation;
 
-import com.asigner.cp1.ui.Main;
+import com.asigner.cp1.ui.KosmosCP1;
 
 public class SpeedTest {
 
@@ -29,7 +29,7 @@ public class SpeedTest {
      */
     public static void main(String[] args) {
         try {
-            Rom rom = new Rom(Main.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
+            Rom rom = new Rom(KosmosCP1.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
             DataPort bus = new DataPort("BUS");
             DataPort p1 = new DataPort("P1");
             DataPort p2 = new DataPort("P2");

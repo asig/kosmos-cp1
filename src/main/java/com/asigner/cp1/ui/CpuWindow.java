@@ -24,7 +24,6 @@ import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.emulation.Rom;
 import com.asigner.cp1.ui.actions.AboutAction;
-import com.asigner.cp1.ui.actions.AssemblerAction;
 import com.asigner.cp1.ui.actions.BreakOnMovxAction;
 import com.asigner.cp1.ui.actions.LoadAction;
 import com.asigner.cp1.ui.actions.QuitAction;
@@ -42,6 +41,8 @@ import com.asigner.cp1.ui.widgets.DisassemblyComposite;
 import com.asigner.cp1.ui.widgets.Status8049Composite;
 import com.asigner.cp1.ui.widgets.Status8155Composite;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -58,7 +59,9 @@ import org.eclipse.swt.widgets.ToolItem;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class CpuWindow extends Window implements ExecutorThread.ExecutionListener, Intel8049.StateListener, Intel8155.StateListener {
+public class CpuWindow extends Window {
+
+    public static final String NAME = "CPU";
 
     private RunAction runAction;
     private StopAction stopAction;
@@ -69,7 +72,6 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
     private Save8049DisassemblyAction save8049DisassemblyAction;
     private LoadAction loadAction;
     private SaveAction saveAction;
-    private AssemblerAction assemblerAction;
     private AboutAction aboutAction;
     private QuitAction quitAction;
 
@@ -86,18 +88,127 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
     private Status8155Composite status8155Extension;
     private DisassemblyComposite disassembly;
 
+    private ExecutorThread.ExecutionListener executionListener;
+    private Intel8049.StateListener cpuStateListener;
+    private Intel8155.StateListener pidStateListener;
+    private DataPort.Listener portListener;
+
     public CpuWindow(WindowManager windowManager, Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) throws IOException {
-        super(windowManager);
+        super(windowManager, NAME);
         this.cpu = cpu;
         this.pid = pid;
         this.pidExtension = pidExtension;
         this.executorThread = executorThread;
 
-        cpu.addListener(this);
+        cpuStateListener = new Intel8049.StateListener() {
+            @Override
+            public void instructionExecuted() {
+                if (!isTraceExecution()) {
+                    return;
+                }
+                updateView();
+                if (!isDisposed()) {
+                    shell.getDisplay().asyncExec(() -> {
+                        status8049.updateState();
+                    });
+                }
+                update8155States();
+            }
 
-        executorThread.addListener(this);
+            @Override
+            public void resetExecuted() {
+                CpuWindow.this.resetExecuted();
+            }
+
+            @Override
+            public void stateChanged(Intel8049.State newState) {
+                if (!isDisposed()) {
+                    if (isTraceExecution()) {
+                        if (disassembly.getSelectedAddress() != cpu.getPC()) {
+                            updateView();
+                        }
+                        shell.getDisplay().asyncExec(status8049::updateState);
+                    }
+                }
+            }
+        };
+
+        // TODO(asigner): Should we split this into two listeners for the two 8155?
+        pidStateListener = new Intel8155.StateListener() {
+            @Override
+            public void commandRegisterWritten() {
+                update8155States();
+            }
+
+            @Override
+            public void portWritten(Port port, int value) {
+                update8155States();
+            }
+
+            @Override
+            public void memoryWritten() {
+                update8155States();
+            }
+
+            @Override
+            public void pinsChanged() {
+                update8155States();
+            }
+
+            @Override
+            public void resetExecuted() {
+                CpuWindow.this.resetExecuted();
+
+            }
+        };
+
+        executionListener = new ExecutorThread.ExecutionListener() {
+            @Override
+            public void executionStarted() {
+                shell.getDisplay().asyncExec(() -> {
+                    singleStepAction.setEnabled(false);
+                    stopAction.setEnabled(true);
+                    runAction.setEnabled(false);
+                });
+            }
+
+            @Override
+            public void executionStopped() {
+                if (!isDisposed()) {
+                    updateView();
+                    shell.getDisplay().asyncExec(() -> {
+                        singleStepAction.setEnabled(true);
+                        stopAction.setEnabled(false);
+                        runAction.setEnabled(true);
+                        status8049.updateState();
+                        update8155States();
+                    });
+                }
+            }
+
+
+            @Override
+            public void performanceUpdate(double performance) {
+
+            }
+
+            @Override
+            public void resetExecuted() {
+                CpuWindow.this.resetExecuted();
+            }
+
+            @Override
+            public void breakpointHit(int addr) {
+                if (!isDisposed()) {
+                    shell.getDisplay().asyncExec(() -> {
+                        status8049.updateState();
+                    });
+                    update8155States();
+                    updateView();
+                }
+            }
+        };
     }
-
 
     private void createActions() {
         resetAction = new ResetAction(executorThread);
@@ -109,7 +220,6 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
         save8049DisassemblyAction = new Save8049DisassemblyAction(cpu);
         loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
         saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
-        assemblerAction = new AssemblerAction(pid, pidExtension, executorThread);
         aboutAction = new AboutAction();
         quitAction = new QuitAction();
 
@@ -126,10 +236,35 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
         createActions();
         createContents();
 
+        addListeners();
+        shell.addDisposeListener(disposeEvent -> {
+            removeListeners();
+        });
+
         shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
-        getWindowManager().windowOpened(this);
+        fireWindowOpened();
+    }
+
+    private void addListeners() {
+        cpu.addListener(cpuStateListener);
+        pid.addListener(pidStateListener);
+        pidExtension.addListener(pidStateListener);
+        executorThread.addListener(executionListener);
+        cpu.getPort(0).addListener(portListener);
+        cpu.getPort(1).addListener(portListener);
+        cpu.getPort(2).addListener(portListener);
+    }
+
+    private void removeListeners() {
+        cpu.removeListener(cpuStateListener);
+        pid.removeListener(pidStateListener);
+        pidExtension.removeListener(pidStateListener);
+        executorThread.removeListener(executionListener);
+        cpu.getPort(0).removeListener(portListener);
+        cpu.getPort(1).removeListener(portListener);
+        cpu.getPort(2).removeListener(portListener);
     }
 
     public boolean isDisposed() {
@@ -151,12 +286,12 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
         Menu stateMenu = new Menu(menu);
         new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
         new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
-        new MenuItem(stateMenu, SWT.SEPARATOR);
-        new ActionMenuItem(stateMenu, SWT.NONE, assemblerAction);
 
         MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
         stateItem.setText("&State");
         stateItem.setMenu(stateMenu);
+
+        addWindowMenu(menu);
 
         Menu helpMenu = new Menu(menu);
         new ActionMenuItem(helpMenu, SWT.NONE, aboutAction);
@@ -175,7 +310,7 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
         shell.setLayout(new GridLayout(1, false));
         Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
         shell.setImage(icon);
-        shell.addDisposeListener(disposeEvent -> getWindowManager().windowClosed(this));
+        shell.addDisposeListener(disposeEvent -> fireWindowClosed());
     }
 
     /**
@@ -215,16 +350,13 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
         status8049.setText("8049 (Main unit)");
         status8049.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
         status8049.setCpu(cpu);
-        DataPort.Listener portListener = (oldValue, newValue) -> {
+        portListener = (oldValue, newValue) -> {
             if (isTraceExecution()) {
                 if (!isDisposed()) {
-                    shell.getDisplay().syncExec(() -> status8049.updateState());
+                    shell.getDisplay().asyncExec(() -> status8049.updateState());
                 }
             }
         };
-        cpu.getPort(0).addListener(portListener);
-        cpu.getPort(1).addListener(portListener);
-        cpu.getPort(2).addListener(portListener);
 
         status8155 = new Status8155Composite(composite, SWT.NONE);
         status8155.setText("8155 (Main unit)");
@@ -256,72 +388,6 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
         }
     }
 
-    @Override
-    public void executionStarted() {
-        shell.getDisplay().syncExec(new Runnable() {
-            @Override
-            public void run() {
-                singleStepAction.setEnabled(false);
-                stopAction.setEnabled(true);
-                runAction.setEnabled(false);
-            }});
-    }
-
-    @Override
-    public void executionStopped() {
-        if (!isDisposed()) {
-            updateView();
-            shell.getDisplay().syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    singleStepAction.setEnabled(true);
-                    stopAction.setEnabled(false);
-                    runAction.setEnabled(true);
-                    status8049.updateState();
-                    update8155States();
-                }
-            });
-        }
-    }
-
-    @Override
-    public void performanceUpdate(double performance) {
-    }
-
-    @Override
-    public void instructionExecuted() {
-        if (!isTraceExecution()) {
-            return;
-        }
-        updateView();
-        if (!isDisposed()) {
-            shell.getDisplay().asyncExec(() -> {
-                status8049.updateState();
-            });
-        }
-        update8155States();
-
-    }
-
-    @Override
-    public void commandRegisterWritten() {
-        update8155States();
-    }
-
-    @Override
-    public void portWritten(Port port, int value) {
-        update8155States();
-    }
-
-    @Override
-    public void memoryWritten() {
-        update8155States();
-    }
-
-    @Override
-    public void pinsChanged() {
-        update8155States();
-    }
 
     private void update8155States() {
         if (!isDisposed()) {
@@ -335,50 +401,24 @@ public class CpuWindow extends Window implements ExecutorThread.ExecutionListene
         }
     }
 
-    @Override
     public void resetExecuted() {
         if (!isDisposed()) {
-            shell.getDisplay().syncExec(new Runnable() {
-                @Override
-                public void run() {
-                    singleStepAction.setEnabled(true);
-                    stopAction.setEnabled(false);
-                    runAction.setEnabled(true);
-                }
+            shell.getDisplay().syncExec(() -> {
+                singleStepAction.setEnabled(true);
+                stopAction.setEnabled(false);
+                runAction.setEnabled(true);
             });
             updateView();
             shell.getDisplay().asyncExec(() -> {
                 status8049.updateState();
-                status8049.redraw();
             });
             update8155States();
-        }
-    }
-
-    @Override
-    public void stateChanged(Intel8049.State newState) {
-        if (!isDisposed()) {
-            if (isTraceExecution()) {
-                if (disassembly.getSelectedAddress() != cpu.getPC()) {
-                    updateView();
-                }
-                shell.getDisplay().asyncExec(status8049::updateState);
-            }
-        }
-    }
-
-    @Override
-    public void breakpointHit(int addr) {
-        if (!isDisposed()) {
-            shell.getDisplay().syncExec(() -> status8049.updateState());
-            update8155States();
-            updateView();
         }
     }
 
     public void updateView() {
         if (!isDisposed()) {
-            shell.getDisplay().syncExec(() -> disassembly.selectAddress(cpu.getPC()));
+            shell.getDisplay().asyncExec(() -> disassembly.selectAddress(cpu.getPC()));
         }
     }
 

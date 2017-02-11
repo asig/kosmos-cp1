@@ -29,11 +29,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.LogManager;
 
-public class Main {
+public class KosmosCP1 {
 
     static {
         final LogManager logManager = LogManager.getLogManager();
-        try (InputStream is = Main.class.getResourceAsStream("/logging.properties")) {
+        try (InputStream is = KosmosCP1.class.getResourceAsStream("/logging.properties")) {
             logManager.readConfiguration(is);
         } catch (IOException e) {
             System.err.println("Can't configure logger");
@@ -48,7 +48,7 @@ public class Main {
      */
     public static void main(String[] args) {
         try {
-            Rom rom = new Rom(Main.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
+            Rom rom = new Rom(KosmosCP1.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
             DataPort bus = new DataPort("BUS");
             DataPort p1 = new DataPort("P1");
             DataPort p2 = new DataPort("P2");

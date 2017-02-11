@@ -19,31 +19,70 @@
 
 package com.asigner.cp1.ui;
 
+import com.asigner.cp1.ui.actions.WindowAction;
+import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.google.common.collect.Lists;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 
 import java.util.List;
 
 public abstract class Window {
 
-    interface Listener {
-        void windowOpened();
-        void windowClosed();
+    public interface Listener {
+        void windowOpened(Window window);
+        void windowClosed(Window window);
     }
 
     private final List<Listener> listeners = Lists.newLinkedList();
     private final WindowManager windowManager;
+    private final String name;
+    private boolean isOpen;
 
-    public Window(WindowManager windowManager) {
+    public Window(WindowManager windowManager, String name) {
         this.windowManager = windowManager;
+        this.name = name;
+        this.isOpen = false;
     }
 
-    public void addListener(Listener listener) {
+    public void addWindowListener(Listener listener) {
         listeners.add(listener);
     }
 
-    public WindowManager getWindowManager() {
-        return windowManager;
+    public void removeWindowListener(Listener listener) {
+        listeners.remove(listener);
+    }
+
+    protected void fireWindowOpened() {
+        isOpen = true;
+        listeners.forEach(l -> l.windowOpened(this));
+    }
+
+    protected void fireWindowClosed() {
+        isOpen = false;
+        listeners.forEach(l -> l.windowClosed(this));
+    }
+
+    public String getName() {
+        return name;
     }
 
     abstract public void open();
+
+    public boolean isOpen() {
+        return isOpen;
+    }
+
+    protected void addWindowMenu(Menu parent) {
+        Menu windowMenu = new Menu(parent);
+        for (Window window : windowManager.getWindows()) {
+            new ActionMenuItem(windowMenu, SWT.NONE, new WindowAction(window));
+        }
+        
+        MenuItem windowsItem = new MenuItem(parent, SWT.CASCADE);
+        windowsItem.setText("Windows");
+        windowsItem.setMenu(windowMenu);
+
+    }
 }

@@ -23,7 +23,6 @@ import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.InputPin;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
-import com.asigner.cp1.ui.actions.AssemblerAction;
 import com.asigner.cp1.ui.actions.LoadAction;
 import com.asigner.cp1.ui.actions.QuitAction;
 import com.asigner.cp1.ui.actions.SaveAction;
@@ -52,13 +51,14 @@ public class KosmosPanelWindow extends Window {
 
     private static final Logger logger = Logger.getLogger(KosmosPanelWindow.class.getName());
 
+    public static final String NAME = "Panel";
+    
     private static final String WINDOW_TITLE = "Kosmos CP1";
 
     private Shell shell;
 
     private LoadAction loadAction;
     private SaveAction saveAction;
-    private AssemblerAction assemblerAction;
     private QuitAction quitAction;
 
     private Intel8049 cpu;
@@ -67,9 +67,14 @@ public class KosmosPanelWindow extends Window {
     private ExecutorThread executorThread;
 
     private KosmosControlPanel kosmosControlPanel;
+    private CP5Panel cp5Panel;
+
+    private ExecutorThread.ExecutionListener executionListener;
+    private DataPort.Listener port1Listener;
+    private Intel8155.StateListener pidListener;
 
     public KosmosPanelWindow(WindowManager windowManager, Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) {
-        super(windowManager);
+        super(windowManager, NAME);
 
         this.cpu = cpu;
         this.pid = pid;
@@ -83,7 +88,7 @@ public class KosmosPanelWindow extends Window {
         // send its data to the port.
         cpu.pinPROG.connectTo(new InputPin("PROG", this::pinProgWritten));
 
-        executorThread.addListener(new ExecutorThread.ExecutionListener() {
+        executionListener = new ExecutorThread.ExecutionListener() {
             @Override
             public void executionStarted() {
                 shell.getDisplay().syncExec(() -> updateWindowTitle("running"));
@@ -107,7 +112,48 @@ public class KosmosPanelWindow extends Window {
             public void performanceUpdate(double performance) {
                 shell.getDisplay().syncExec(() -> updateWindowTitle(String.format("%d%%", (int)(performance*100+.5))));
             }
-        });
+        };
+        port1Listener = new DataPort.Listener() {
+            private boolean inValueChanged = false;
+
+            @Override
+            public void valueChanged(int oldValue, int newValue) {
+                if (inValueChanged) {
+                    // Called by our own write. Bail out.
+                    return;
+                }
+
+                // CPU wrote to the port to prepare the pins for input. Write switch settings
+                inValueChanged = true;
+                cpu.getPort(1).write(cp5Panel.readSwitches());
+                inValueChanged = false;
+            }
+        };
+        pidListener = new Intel8155.StateListener() {
+            @Override
+            public void commandRegisterWritten() {
+            }
+
+            @Override
+            public void portWritten(Port port, int value) {
+                if (port == Port.B) {
+                    cp5Panel.writeLeds(value);
+                }
+            }
+
+            @Override
+            public void memoryWritten() {
+            }
+
+            @Override
+            public void pinsChanged() {
+            }
+
+            @Override
+            public void resetExecuted() {
+            }
+        };
+
     }
 
     private void updateWindowTitle(String status) {
@@ -145,21 +191,22 @@ public class KosmosPanelWindow extends Window {
         createActions();
         createContent();
 
+        executorThread.addListener(executionListener);
+        cpu.getPort(1).addListener(port1Listener);
+        pid.addListener(pidListener);
+        shell.addDisposeListener(ev -> {
+            executorThread.removeListener(executionListener);
+            cpu.getPort(1).removeListener(port1Listener);
+            pid.removeListener(pidListener);
+        });
+        
         shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
         shell.pack();
-        getWindowManager().windowOpened(this);
+        fireWindowOpened();
     }
-
-    @Override
-    public void addListener(Listener listener) {
-        if (shell == null) {
-
-        }
-        shell.addDisposeListener(disposeEvent -> listener.windowClosed());
-    }
-
+    
     public boolean isDisposed() {
         return shell.isDisposed();
     }
@@ -170,14 +217,13 @@ public class KosmosPanelWindow extends Window {
         shell.setLayout(new FillLayout(SWT.HORIZONTAL));
         Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
         shell.setImage(icon);
-        shell.addDisposeListener(disposeEvent -> getWindowManager().windowClosed(this));
+        shell.addDisposeListener(disposeEvent -> fireWindowClosed());
     }
 
     private void createActions() {
         quitAction = new QuitAction();
         loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
         saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
-        assemblerAction = new AssemblerAction(pid, pidExtension, executorThread);
     }
 
     /**
@@ -194,52 +240,12 @@ public class KosmosPanelWindow extends Window {
         composite.setLayout(gl_composite);
         composite.setBackground(CP1Colors.GREEN);
 
-        CP5Panel cp5Panel = new CP5Panel(composite, SWT.NONE);
+        cp5Panel = new CP5Panel(composite, SWT.NONE);
         cp5Panel.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
         cp5Panel.writeLeds(pid.getPaValue());
         cpu.getPort(1).write(cp5Panel.readSwitches());
         cp5Panel.addSwitchesListener(() -> {
             cpu.getPort(1).write(cp5Panel.readSwitches());
-        });
-        cpu.getPort(1).addListener(new DataPort.Listener() {
-            private boolean inValueChanged = false;
-
-            @Override
-            public void valueChanged(int oldValue, int newValue) {
-                if (inValueChanged) {
-                    // Called by our own write. Bail out.
-                    return;
-                }
-
-                // CPU wrote to the port to prepare the pins for input. Write switch settings
-                inValueChanged = true;
-                cpu.getPort(1).write(cp5Panel.readSwitches());
-                inValueChanged = false;
-            }
-        });
-        pid.addListener(new Intel8155.StateListener() {
-            @Override
-            public void commandRegisterWritten() {
-            }
-
-            @Override
-            public void portWritten(Port port, int value) {
-                if (port == Port.B) {
-                    cp5Panel.writeLeds(value);
-                }
-            }
-
-            @Override
-            public void memoryWritten() {
-            }
-
-            @Override
-            public void pinsChanged() {
-            }
-
-            @Override
-            public void resetExecuted() {
-            }
         });
 
         Label spacer1 = new Label(composite, SWT.NONE);
@@ -285,12 +291,12 @@ public class KosmosPanelWindow extends Window {
         Menu stateMenu = new Menu(menu);
         new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
         new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
-        new MenuItem(stateMenu, SWT.SEPARATOR);
-        new ActionMenuItem(stateMenu, SWT.NONE, assemblerAction);
 
         MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
         stateItem.setText("&State");
         stateItem.setMenu(stateMenu);
+
+        addWindowMenu(menu);
 
         return menu;
     }

@@ -20,22 +20,16 @@
 package com.asigner.cp1.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import java.util.List;
+import java.util.Map;
 
 public class WindowManager {
 
     private final List<Window> windows = Lists.newArrayList();
 
     private int openCount;
-
-    void windowClosed(Window window) {
-        openCount--;
-    }
-
-    void windowOpened(Window window) {
-        openCount++;
-    }
 
     public WindowManager() {
         openCount = 0;
@@ -47,8 +41,23 @@ public class WindowManager {
 
     public void addWindow(Window window) {
         windows.add(window);
+        window.addWindowListener(new Window.Listener() {
+            @Override
+            public void windowOpened(Window window) {
+                openCount++;
+            }
+
+            @Override
+            public void windowClosed(Window window) {
+                openCount--;
+            }
+        });
     }
 
+    public List<Window> getWindows() {
+        return windows;
+    }
+    
     public void openAll() {
         for (Window w : windows) {
             w.open();

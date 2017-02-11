@@ -27,6 +27,8 @@ import static java.util.stream.Collectors.joining;
 
 public class AssemblerWindow extends Window {
 
+    public static final String NAME = "Assembler";
+
     public static class SampleCode {
         private final String name;
         private final List<String> code;
@@ -57,7 +59,7 @@ public class AssemblerWindow extends Window {
 
 
     public AssemblerWindow(WindowManager windowManager, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executor) {
-        super(windowManager);
+        super(windowManager, NAME);
         this.pid = pid;
         this.pidExtension = pidExtension;
         this.executor = executor;
@@ -85,7 +87,7 @@ public class AssemblerWindow extends Window {
         createContents();
         shell.open();
         shell.layout();
-        getWindowManager().windowOpened(this);
+        fireWindowOpened();
     }
 
     /**
@@ -97,7 +99,7 @@ public class AssemblerWindow extends Window {
         shell.setText("Assembler");
         shell.setSize(552, 592);
         shell.setLayout(new GridLayout(2, false));
-        shell.addDisposeListener(disposeEvent -> getWindowManager().windowClosed(this));
+        shell.addDisposeListener(disposeEvent -> fireWindowClosed());
 
         Label lblNewLabel_2 = new Label(shell, SWT.NONE);
         lblNewLabel_2.setText("Sample Listings:");

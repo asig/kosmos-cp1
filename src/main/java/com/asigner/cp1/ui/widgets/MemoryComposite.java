@@ -40,7 +40,7 @@ import org.eclipse.swt.widgets.Display;
 import com.asigner.cp1.emulation.MemoryModifiedListener;
 import com.asigner.cp1.emulation.Ram;
 
-public class MemoryComposite extends Composite implements MemoryModifiedListener {
+public class MemoryComposite extends Composite {
 
     private static final int BYTES_PER_LINE = 16;
 
@@ -59,6 +59,8 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     private final int totalLineHeight;
 
     private boolean traceExecution;
+
+    private MemoryModifiedListener memoryModifiedListener;
 
     /**
      * Create the composite.
@@ -90,16 +92,43 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
             }
         });
 
-        this.addDisposeListener(new DisposeListener() {
+        memoryModifiedListener = new MemoryModifiedListener() {
             @Override
-            public void widgetDisposed(DisposeEvent disposeEvent) {
-                if (ram != null) {
-                    ram.removeListener(MemoryComposite.this);
+            public void memoryWritten(final int addr, int value) {
+                if (!isTraceExecution()) {
+                    return;
                 }
+                if (addr != lastWritten) {
+                    lastWritten = addr;
+                }
+                getDisplay().asyncExec(MemoryComposite.this::redraw);
+            }
+
+            @Override
+            public void memoryCleared() {
+                if (!isTraceExecution()) {
+                    return;
+                }
+                if (lastWritten != -1) {
+                    lastWritten = -1;
+                }
+                getDisplay().asyncExec(MemoryComposite.this::redraw);
+            }
+        };
+
+        this.addDisposeListener(disposeEvent -> {
+            if (ram != null) {
+                ram.removeListener(memoryModifiedListener);
             }
         });
     }
 
+    public void redraw() {
+        if (!isDisposed()) {
+            super.redraw();
+        }
+    }
+    
     public boolean isTraceExecution() {
         return traceExecution;
     }
@@ -110,11 +139,11 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
 
     public void setRam(Ram ram) {
         if (this.ram != null) {
-            this.ram.removeListener(this);
+            this.ram.removeListener(memoryModifiedListener);
         }
         this.ram = ram;
         if (this.ram != null) {
-            this.ram.addListener(this);
+            this.ram.addListener(memoryModifiedListener);
         }
         setSize(computeSize(SWT.DEFAULT, SWT.DEFAULT, true));
     }
@@ -196,28 +225,6 @@ public class MemoryComposite extends Composite implements MemoryModifiedListener
     @Override
     protected void checkSubclass() {
         // Disable the check that prevents subclassing of SWT components
-    }
-
-    @Override
-    public void memoryWritten(final int addr, int value) {
-        if (!isTraceExecution()) {
-            return;
-        }
-        if (addr != lastWritten) {
-            lastWritten = addr;
-        }
-        getDisplay().syncExec(this::redraw);
-    }
-
-    @Override
-    public void memoryCleared() {
-        if (!isTraceExecution()) {
-            return;
-        }
-        if (lastWritten != -1) {
-            lastWritten = -1;
-        }
-        getDisplay().syncExec(this::redraw);
     }
 
 }
