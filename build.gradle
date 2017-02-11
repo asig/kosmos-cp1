@@ -37,7 +37,7 @@ plugins {
     id 'edu.sc.seis.launch4j' version '1.6.2'
 }
 
-mainClassName = "com.asigner.cp1.ui.Main"
+mainClassName = "com.asigner.cp1.ui.KosmosCP1"
 
 apply from: "repositories.gradle"
 
