@@ -15,6 +15,12 @@ for pos = 0 to 7:
    write segment mask to 8155's port A. 1 --> segment is lit
    read lower nibble of 8049's port 2
 
+Cassette interface
+==================
+Used frequencies:
+- 1 kHz == 5V
+- 2 kHz == 0V
+
 Endianness
 ==========
 The VM stores values big endian.
