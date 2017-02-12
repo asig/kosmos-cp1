@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Menu;
@@ -37,6 +38,9 @@ public class ActionMenuItem extends MenuItem {
             this.setImage(imageDescriptor.createImage());
         }
         this.setText(action.getText());
+        if ( (style & SWT.CHECK) > 0 ) {
+            this.setSelection(action.isChecked());
+        }
         this.setEnabled(action.isEnabled());
         this.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -48,6 +52,8 @@ public class ActionMenuItem extends MenuItem {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (Action.ENABLED.equals(evt.getProperty())) {
                     setEnabled((Boolean)evt.getNewValue());
+                } else if (Action.CHECKED.equals(evt.getProperty())) {
+                    setSelection((Boolean)evt.getNewValue());
                 }
             }});
     }
