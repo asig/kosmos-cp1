@@ -172,8 +172,8 @@ $009b: [ d3 03 ] XRL  A, #$03     ; is it 3 digits?
 $009d: [ 96 c9 ] JNZ  $00c9       ; jump if not
 $009f: [ b8 27 ] MOV  R0, #$27    ; Load address of 1st decoded digit
 $00a1: [ 74 38 ] CALL $0338
-$00a3: [ b8 3a ] MOV  R0, #$3a
-$00a5: [ f0    ] MOV  A, @R0
+$00a3: [ b8 3a ] MOV  R0, #$3a    ; Load status byte...
+$00a5: [ f0    ] MOV  A, @R0      ; ... to A
 $00a6: [ 52 b9 ] JB2  $00b9
 $00a8: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $00aa: [ b0 73 ] MOV  @R0, #$73   ; ... to 'P'
@@ -244,20 +244,20 @@ $010a: [ 04 86 ] JMP  wait_key
 $010c: [ fe    ] MOV  A, R6
 $010d: [ d3 05 ] XRL  A, #$05
 $010f: [ 96 44 ] JNZ  $0144
-$0111: [ b8 3a ] MOV  R0, #$3a
-$0113: [ f0    ] MOV  A, @R0
-$0114: [ 72 4a ] JB3  $014a
+$0111: [ b8 3a ] MOV  R0, #$3a    ; load status byte...
+$0113: [ f0    ] MOV  A, @R0      ; ... to A
+$0114: [ 72 4a ] JB3  error_f004  ;
 $0116: [ b8 27 ] MOV  R0, #$27
 $0118: [ ba 01 ] MOV  R2, #$01
 $011a: [ 34 4e ] CALL $014e
 $011c: [ 97    ] CLR  C
 $011d: [ a9    ] MOV  R1, A
 $011e: [ 03 e7 ] ADD  A, #$e7
-$0120: [ f6 4a ] JC   $014a
+$0120: [ f6 4a ] JC   error_f004
 $0122: [ b8 29 ] MOV  R0, #$29
 $0124: [ ba 02 ] MOV  R2, #$02
 $0126: [ 34 4e ] CALL $014e
-$0128: [ b6 4a ] JF0  $014a
+$0128: [ b6 4a ] JF0  error_f004
 $012a: [ ac    ] MOV  R4, A
 $012b: [ f9    ] MOV  A, R1
 $012c: [ aa    ] MOV  R2, A
@@ -280,6 +280,8 @@ $0142: [ 24 04 ] JMP  $0104
 $0144: [ 04 c9 ] JMP  $00c9
 $0146: [ 23 fb ] MOV  A, #$fb
 $0148: [ 74 33 ] CALL clear_status_bits
+
+error_f004:
 $014a: [ bc 04 ] MOV  R4, #$04
 $014c: [ c4 fd ] JMP  show_error     ; F-004
 
@@ -421,10 +423,10 @@ $01bd: [ 1e    ] INC  R6          ; increment digits entered.
 $01be: [ 83    ] RET
 
 
-stop_pressed:
+cas_stop_pressed:
 $01bf: [ 85    ] CLR  F0
 $01c0: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
-$01c2: [ 24 f1 ] JMP  $01f1
+$01c2: [ 24 f1 ] JMP  save_done
 
 cas_handler:
 $01c4: [ 34 79 ] CALL clear_display
@@ -437,29 +439,30 @@ $01d0: [ bc 3c ] MOV  R4, #$3c      ; Loop max 60 times
 $01d2: [ bb fa ] MOV  R3, #$fa      ; Delay for...
 $01d4: [ 74 b6 ] CALL delay_millis  ; ... 250 millis
 $01d6: [ f0    ] MOV  A, @R0        ; check content of #$3a
-$01d7: [ 12 bf ] JB0  stop_pressed  ; if bit 0 is set
+$01d7: [ 12 bf ] JB0  cas_stop_pressed  ; if bit 0 is set
 $01d9: [ ec d2 ] DJNZ R4, $01d2     ; wait for max. 15 secs
-$01db: [ 27    ] CLR  A
-$01dc: [ 74 0a ] CALL compute_effective_address
-$01de: [ 74 bd ] CALL $03bd
-$01e0: [ b6 bf ] JF0  $01bf
-$01e2: [ b8 3b ] MOV  R0, #$3b
-$01e4: [ f0    ] MOV  A, @R0
-$01e5: [ f2 e9 ] JB7  $01e9
-$01e7: [ 24 f1 ] JMP  $01f1
-$01e9: [ 23 ff ] MOV  A, #$ff
-$01eb: [ 74 0a ] CALL compute_effective_address
-$01ed: [ 74 bd ] CALL $03bd
-$01ef: [ b6 fd ] JF0  $01fd
+$01db: [ 27    ] CLR  A             ; Address 0
+$01dc: [ 74 0a ] CALL compute_effective_address; Compute effective address to select RAM chip (internal 8155)
+$01de: [ 74 bd ] CALL save_memory
+$01e0: [ b6 bf ] JF0  cas_stop_pressed
+$01e2: [ b8 3b ] MOV  R0, #$3b      ; Load memory size...
+$01e4: [ f0    ] MOV  A, @R0        ; ... to A
+$01e5: [ f2 e9 ] JB7  $01e9         ; if >128, save 2nd half as well
+$01e7: [ 24 f1 ] JMP  save_done     ;
+$01e9: [ 23 ff ] MOV  A, #$ff       ; Load address > 128
+$01eb: [ 74 0a ] CALL compute_effective_address; Compute effective address to select RAM chip (CP3's 8155)
+$01ed: [ 74 bd ] CALL save_memory
+$01ef: [ b6 fd ] JF0  cas_stop_pressed_trampoline
 
-
+save_done:
 $01f1: [ 99 7f ] ANL  P1, #$7f
 $01f3: [ 34 79 ] CALL clear_display
 $01f5: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $01f7: [ b0 63 ] MOV  @R0, #$63   ; ... to 'ᵒ'
 $01f9: [ be 00 ] MOV  R6, #$00
 $01fb: [ 04 86 ] JMP  wait_key
-$01fd: [ 24 bf ] JMP  $01bf
+cas_stop_pressed_trampoline
+$01fd: [ 24 bf ] JMP  cas_stop_pressed
 
 out_handler:
 $01ff: [ 23 f7 ] MOV  A, #$f7 ; 1111 0111 -> A
@@ -470,8 +473,8 @@ $0206: [ d3 03 ] XRL  A, #$03      ; is it 3?
 $0208: [ 96 40 ] JNZ  not_3_digits ; go to not_3_digits if not
 $020a: [ b8 27 ] MOV  R0, #$27
 $020c: [ 74 38 ] CALL $0338
-$020e: [ b8 3a ] MOV  R0, #$3a
-$0210: [ f0    ] MOV  A, @R0
+$020e: [ b8 3a ] MOV  R0, #$3a     ; load status byte ...
+$0210: [ f0    ] MOV  A, @R0       ; ... to A
 $0211: [ 52 3a ] JB2  $023a
 $0213: [ b8 27 ] MOV  R0, #$27
 $0215: [ ba 02 ] MOV  R2, #$02
@@ -574,7 +577,7 @@ $029a: [ fe    ] MOV  A, R6
 $029b: [ a0    ] MOV  @R0, A        ; remember key press for next interrupt
 $029c: [ fe    ] MOV  A, R6         ; compare pressed key...
 $029d: [ d3 0f ] XRL  A, #$0f       ; ... with "STP".
-$029f: [ c6 c2 ] JZ   stop_pressed; ; jump if equal
+$029f: [ c6 c2 ] JZ   timer_stop_pressed; ; jump if equal
 $02a1: [ fe    ] MOV  A, R6         ; compare pressed key...
 $02a2: [ d3 0e ] XRL  A, #$0e       ; ... with "STEP".
 $02a4: [ c6 c8 ] JZ   step_pressed  ; jump if equal
@@ -585,8 +588,8 @@ $02a7: [ e7    ] RL   A             ; rotate to next position
 $02a8: [ ad    ] MOV  R5, A         ; Update mask
 $02a9: [ c9    ] DEC  R1            ; Move to previous Video RAM pos
 $02aa: [ cc    ] DEC  R4            ; Move to previous 'key pressed state' position
-$02ab: [ b8 3a ] MOV  R0, #$3a      ;
-$02ad: [ f0    ] MOV  A, @R0        ; Load status byte
+$02ab: [ b8 3a ] MOV  R0, #$3a      ; Load status byte...
+$02ad: [ f0    ] MOV  A, @R0        ; ... to A
 $02ae: [ 92 ce ] JB4  enable_ram_extension
 $02b0: [ d2 d4 ] JB6  enable_io
 $02b2: [ 9a 7f ] ANL  P2, #$7f ; otherwise, disable IO: P2 &= 0111 1111 --> IO == 0
@@ -606,7 +609,7 @@ $02bd: [ a8    ] MOV  R0, A
 $02be: [ b0 00 ] MOV  @R0, #$00 ; clear "last keypress state"
 $02c0: [ 44 a6 ] JMP  move_to_next_row
 
-stop_pressed:
+timer_stop_pressed:
 $02c2: [ 23 01 ] MOV  A, #$01  ; mask 0000 0001: 'STP pressed'
 $02c4: [ 74 2e ] CALL set_status_bits
 $02c6: [ 44 a6 ] JMP  move_to_next_row
@@ -881,42 +884,49 @@ $03ba: [ eb b6 ] DJNZ R3, $03b6  ; cycles: R3 * 201 * 2
 $03bc: [ 83    ] RET             ; cycles: R3 * 201 * 2 + 1
 
 
-
-?????????????????  ; Probably "load from/save to tape" subroutine...
------------------
+; Save one block of RAM (256 bytes) to tape
+;------------------------------------------
+; Correct 8155 needs to be selected already.
+; Note that RAM is not written sequentially! First, Address 0 is stored, then 254 ... 1 decending!
+save_memory:
 $03bd: [ b9 00 ] MOV  R1, #$00     ; Load start address of RAM
-$03bf: [ b8 3a ] MOV  R0, #$3a     ;
-$03c1: [ f0    ] MOV  A, @R0       ; load #$3a
-$03c2: [ 12 eb ] JB0  $03eb        ; jump if stop is pressed.
+byteloop:
+$03bf: [ b8 3a ] MOV  R0, #$3a     ; Load status byte...
+$03c1: [ f0    ] MOV  A, @R0       ; ... to A
+$03c2: [ 12 eb ] JB0  stop_pressed_3; jump if stop is pressed.
 $03c4: [ 97    ] CLR  C
 $03c5: [ b8 08 ] MOV  R0, #$08     ; 8 bits to send
 $03c7: [ 81    ] MOVX A, @R1       ; Read a byte from RAM
+bitloop:
 $03c8: [ 67    ] RRC  A            ; LSB -> Carry
 $03c9: [ e6 dd ] JNC  write_0      ; jump if 0 bit
-$03cb: [ 99 7f ] ANL  P1, #$7f     ; P1 &= 01111111 -> clear cass data
+$03cb: [ 99 7f ] ANL  P1, #$7f     ; P1 &= 01111111 -> clear CassData
 $03cd: [ bb 1e ] MOV  R3, #$1e     ; 30 millis
 $03cf: [ 74 b6 ] CALL delay_millis
-$03d1: [ 89 80 ] ORL  P1, #$80     ; P1 |= 10000000 -> set cass data
+$03d1: [ 89 80 ] ORL  P1, #$80     ; P1 |= 10000000 -> set CassData
 $03d3: [ bb 3c ] MOV  R3, #$3c     ; 60 millis
 $03d5: [ 74 b6 ] CALL delay_millis
-$03d7: [ e8 c8 ] DJNZ R0, $03c8    ; next bit
-$03d9: [ e9 bf ] DJNZ R1, $03bf    ; next byte
+save_cont:
+$03d7: [ e8 c8 ] DJNZ R0, bitloop  ; next bit
+$03d9: [ e9 bf ] DJNZ R1, byteloop ; next byte
+save_end:
 $03db: [ 97    ] CLR  C
 $03dc: [ 83    ] RET
 write_0:
-$03dd: [ 99 7f ] ANL  P1, #$7f     ; P1 &= 01111111 -> clear cass data
+$03dd: [ 99 7f ] ANL  P1, #$7f     ; P1 &= 01111111 -> clear CassData
 $03df: [ bb 3c ] MOV  R3, #$3c     ; 60 millis
 $03e1: [ 74 b6 ] CALL delay_millis
-$03e3: [ 89 80 ] ORL  P1, #$80     ; P1 |= 10000000 -> set cass data
+$03e3: [ 89 80 ] ORL  P1, #$80     ; P1 |= 10000000 -> set CassData
 $03e5: [ bb 1e ] MOV  R3, #$1e     ; 30 millis
 $03e7: [ 74 b6 ] CALL delay_millis
-$03e9: [ 64 d7 ] JMP  $03d7        ; back to main loop
+$03e9: [ 64 d7 ] JMP  save_cont    ; back to main loop
 
+stop_pressed_3:
 $03eb: [ 85    ] CLR  F0
-$03ec: [ 95    ] CPL  F0
+$03ec: [ 95    ] CPL  F0           ; Set F0 to mark that we were stopped
 $03ed: [ 23 fe ] MOV  A, #$fe      ; mask 1110 1111 ; 'access RAM extension'
 $03ef: [ 74 33 ] CALL clear_status_bits
-$03f1: [ 64 db ] JMP  $03db
+$03f1: [ 64 db ] JMP  save_end
 
 
 clear_access_ram_extension_status_bit:
@@ -1552,14 +1562,15 @@ $0710: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $0712: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0714: [ b0 1c ] MOV  @R0, #$1c   ; .. to 'CAL' symbol
 $0716: [ 27    ] CLR  A
-$0717: [ 74 0a ] CALL compute_effective_address
-$0719: [ 99 bf ] ANL  P1, #$bf
-$071b: [ 89 80 ] ORL  P1, #$80
-$071d: [ b8 3a ] MOV  R0, #$3a
-$071f: [ f0    ] MOV  A, @R0
-$0720: [ 12 78 ] JB0  $0778
-$0722: [ 09    ] IN   A, P1
-$0723: [ f2 1d ] JB7  $071d
+$0717: [ 74 0a ] CALL compute_effective_address ; Compute effective addres of 0 to enable main 8155
+$0719: [ 99 bf ] ANL  P1, #$bf    ; P1 &= 1011 1111: clear CassWR
+$071b: [ 89 80 ] ORL  P1, #$80    ; P1 |= 1000 0000: set CassData
+wait_cas:
+$071d: [ b8 3a ] MOV  R0, #$3a    ; Load status byte...
+$071f: [ f0    ] MOV  A, @R0      ; .. to A
+$0720: [ 12 78 ] JB0  cal_stop_pressed; jump if STP pressed
+$0722: [ 09    ] IN   A, P1       ; Read port 1
+$0723: [ f2 1d ] JB7  wait_cas    ; Wait while CassData is not low
 $0725: [ 27    ] CLR  A
 $0726: [ a9    ] MOV  R1, A
 $0727: [ ad    ] MOV  R5, A
@@ -1594,7 +1605,7 @@ $0756: [ d3 08 ] XRL  A, #$08
 $0758: [ 96 4f ] JNZ  $074f
 $075a: [ b8 3a ] MOV  R0, #$3a
 $075c: [ f0    ] MOV  A, @R0      ; Load status byte
-$075d: [ 12 78 ] JB0  cal_stopped ; jump if bit set
+$075d: [ 12 78 ] JB0  cal_stop_pressed ; jump if STP pressed
 $075f: [ b8 08 ] MOV  R0, #$08
 $0761: [ f9    ] MOV  A, R1
 $0762: [ 96 4f ] JNZ  $074f
@@ -1612,7 +1623,7 @@ $0771: [ f9    ] MOV  A, R1
 $0772: [ c6 1d ] JZ   $071d
 $0774: [ bc 07 ] MOV  R4, #$07    ; F-007
 $0776: [ c4 fd ] JMP  show_error
-cal_stopped:
+cal_stop_pressed:
 $0778: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $077a: [ e4 64 ] JMP  cal_done
 
