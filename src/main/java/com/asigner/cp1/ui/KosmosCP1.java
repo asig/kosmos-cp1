@@ -87,6 +87,7 @@ public class KosmosCP1 {
             cpuWindow.open();
             panelWindow.open();
             executorThread.start();
+            executorThread.postCommand(ExecutorThread.Command.START);
 
             Display display = Display.getDefault();
             while (windowManager.getOpenCount() > 0) {
