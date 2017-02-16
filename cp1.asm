@@ -36,7 +36,10 @@
 ;      bit 0: STP pressed
 ;0x3b: memory size
 ;0x3c - 0x3e: buffer for atoi
-;0x3f: Last byte written to 8049 port 1
+;0x3f: Last byte written to port 1
+;0x40: Last byte written to port 2
+;0x41: Last byte written to port 4
+;0x42: Last byte written to port 5
 
     .equ VM_PC, $38
 
@@ -143,16 +146,17 @@ $0070: [ b8 3b ] MOV  R0, #$3b   ; Load address of "memory size"
 $0072: [ c6 94 ] JZ   cp3_present
 $0074: [ b0 7f ] MOV  @R0, #$7f  ; 127 words of memory
 init_cont:
-$0076: [ bb 04 ] MOV  R3, #$04
-$0078: [ b8 3f ] MOV  R0, #$3f
-$007a: [ 23 ff ] MOV  A, #$ff
-$007c: [ a0    ] MOV  @R0, A
-$007d: [ 18    ] INC  R0
-$007e: [ eb 7c ] DJNZ R3, $007c
-$0080: [ 9a 4f ] ANL  P2, #$4f     ; P2 &= 0100 1111 --> 8155 /CE == 0, /CE == 0, IO == 0
-$0082: [ 74 28 ] CALL $0328
-$0084: [ 25    ] EN   TCNTI
-$0085: [ 55    ] STRT T
+$0076: [ bb 04 ] MOV  R3, #$04   ; 4 ports in total
+$0078: [ b8 3f ] MOV  R0, #$3f   ; load address of "last byte written to port 1"
+$007a: [ 23 ff ] MOV  A, #$ff    ; set all bits
+portloop:
+$007c: [ a0    ] MOV  @R0, A     ; store it in "last byte written to port 1"
+$007d: [ 18    ] INC  R0         ; move to next port byte
+$007e: [ eb 7c ] DJNZ R3, portloop ; and continue while there are still ports left.
+$0080: [ 9a 4f ] ANL  P2, #$4f     ; P2 &= 0100 1111 --> 8155 /CE == 0, /CE == 0, IO == 0: Enable both 8155 in Memory mode
+$0082: [ 74 28 ] CALL clear_ram
+$0084: [ 25    ] EN   TCNTI        ; enable Timer/Counter interrupts
+$0085: [ 55    ] STRT T            ; and start the timer
 
 wait_key:
 $0086: [ b8 1e ] MOV  R0, #$1e    ; Wait for key press: 0x1e is R6', used in interrupt
@@ -214,7 +218,7 @@ $00cd: [ 34 79 ] CALL clear_display
 $00cf: [ 04 d9 ] JMP  $00d9
 
 digit_handler:
-$00d1: [ fe    ] MOV  A, R6
+$00d1: [ fe    ] MOV  A, R6          ;
 $00d2: [ c6 cd ] JZ   $00cd
 $00d4: [ 97    ] CLR  C
 $00d5: [ 03 fb ] ADD  A, #$fb
@@ -738,12 +742,14 @@ $0323: [ 9a df ] ANL  P2, #$df   ; P2 &= 1101 1111 --> /CE == 0
 $0325: [ fb    ] MOV  A, R3
 $0326: [ 64 16 ] JMP  cea_end
 
-?????????????????????????????
------------------------------
-$0328: [ 27    ] CLR  A
-$0329: [ a9    ] MOV  R1, A
-$032a: [ 91    ] MOVX @R1, A
-$032b: [ e9 2a ] DJNZ R1, $032a
+; Clear 256 bytes of external RAM (both main and CP3)
+; ----------------------------------------------------
+clear_ram:
+$0328: [ 27    ] CLR  A          ; clear A
+$0329: [ a9    ] MOV  R1, A      ; Use it as counter
+cr_l:
+$032a: [ 91    ] MOVX @R1, A     ; clear memory
+$032b: [ e9 2a ] DJNZ R1, cr_l   ; continue until we're done.
 $032d: [ 83    ] RET
 
 ; Set bits in the status byte
