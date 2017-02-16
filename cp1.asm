@@ -843,16 +843,24 @@ $0377: [ 18    ] INC  R0          ; move to Accu LSB
 cata_end:
 $0378: [ 83    ] RET
 
-?????????????????????????????
------------------------------
-$0379: [ ec 82 ] DJNZ R4, $0382
-$037b: [ 12 7f ] JB0  $037f
-$037d: [ 27    ] CLR  A
+; Check single bit and set Accu
+; -----------------------------
+; Inputs:
+; - A: Value to check for the bit
+; - R4: Pin number (1 .. 8)
+; Outputs:
+; - A: 0 if bit was not set, 1 if it was set
+check_bit:
+$0379: [ ec 82 ] DJNZ R4, cb_rot ; bit at pos 0 yet? jump to rotate if not
+$037b: [ 12 7f ] JB0  cb_bit_set
+$037d: [ 27    ] CLR  A          ; bit not set -> clear A
 $037e: [ 83    ] RET
-$037f: [ 23 01 ] MOV  A, #$01
+cb_bit_set
+$037f: [ 23 01 ] MOV  A, #$01    ; Store 1 in A
 $0381: [ 83    ] RET
-$0382: [ 77    ] RR   A
-$0383: [ 64 79 ] JMP  $0379
+cb_rot:
+$0382: [ 77    ] RR   A          ; rotate to right
+$0383: [ 64 79 ] JMP  check_bit  ; jump to check if bit is at correct pos
 
 ; Turn internal 8155 to IO mode, disable CP3 8155
 ; -----------------------------------------------
@@ -1306,23 +1314,24 @@ $0570: [ 74 9b ] CALL save_to_accu          ; and save it in the accu
 $0572: [ c4 2f ] JMP  inc_pc
 
 single_pin:
-$0574: [ ac    ] MOV  R4, A
+$0574: [ ac    ] MOV  R4, A          ; Save pin number in R4
 $0575: [ 97    ] CLR  C
-$0576: [ 03 f7 ] ADD  A, #$f7
-$0578: [ f6 09 ] JC   error_f005_trampoline
-$057a: [ fc    ] MOV  A, R4
-$057b: [ aa    ] MOV  R2, A
-$057c: [ 97    ] CLR  C
-$057d: [ a7    ] CPL  C
-$057e: [ 27    ] CLR  A
-$057f: [ f7    ] RLC  A
-$0580: [ ea 7f ] DJNZ R2, $057f
-$0582: [ b9 3f ] MOV  R1, #$3f
-$0584: [ 41    ] ORL  A, @R1
-$0585: [ 39    ] OUTL P1, A
-$0586: [ 09    ] IN   A, P1
-$0587: [ 74 79 ] CALL $0379
-$0589: [ 74 9b ] CALL $039b
+$0576: [ 03 f7 ] ADD  A, #$f7        ; Add 247 (== -8 in 1s complement)
+$0578: [ f6 09 ] JC   error_f005_trampoline ; jump if pin is > 8
+$057a: [ fc    ] MOV  A, R4          ; Restore pin number
+$057b: [ aa    ] MOV  R2, A          ; save it in R2
+$057c: [ 97    ] CLR  C              ;
+$057d: [ a7    ] CPL  C              ; set Carry
+$057e: [ 27    ] CLR  A              ; clear A
+single_pin_shift:
+$057f: [ f7    ] RLC  A              ; Shift A to compute bit mask
+$0580: [ ea 7f ] DJNZ R2, $057f      ; Continue shifting if necessary
+$0582: [ b9 3f ] MOV  R1, #$3f       ; load address of "last byte written to port 1"
+$0584: [ 41    ] ORL  A, @R1         ; OR the selected pin into it
+$0585: [ 39    ] OUTL P1, A          ; Write to port to prepare it for reading (see section 2.1.4 on page 2-5 in 8040.pdf)
+$0586: [ 09    ] IN   A, P1          ; read port into A
+$0587: [ 74 79 ] CALL check_bit      ; Set A according to whether bit is set
+$0589: [ 74 9b ] CALL save_to_accu   ; and store it in VM's Accu
 $058b: [ c4 2f ] JMP  inc_pc
 
 opcode_P1A:
@@ -1380,7 +1389,7 @@ $05cd: [ b8 02 ] MOV  R0, #$02
 $05cf: [ fc    ] MOV  A, R4
 $05d0: [ 96 dd ] JNZ  $05dd
 $05d2: [ 80    ] MOVX A, @R0
-$05d3: [ 74 9b ] CALL $039b
+$05d3: [ 74 9b ] CALL save_to_accu
 $05d5: [ 23 bf ] MOV  A, #$bf
 $05d7: [ 74 33 ] CALL clear_status_bits
 $05d9: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
@@ -1389,7 +1398,7 @@ $05dd: [ 97    ] CLR  C
 $05de: [ 03 f7 ] ADD  A, #$f7
 $05e0: [ f6 e7 ] JC   $05e7
 $05e2: [ 80    ] MOVX A, @R0
-$05e3: [ 74 79 ] CALL $0379
+$05e3: [ 74 79 ] CALL check_bit   ; set A according to whether bit is set
 $05e5: [ a4 d3 ] JMP  $05d3
 $05e7: [ 23 bf ] MOV  A, #$bf
 $05e9: [ 74 33 ] CALL clear_status_bits
@@ -1462,7 +1471,7 @@ cp3_installed:
 $0641: [ b6 73 ] JF0  single_step_done  ; break if in single-step-mode
 $0643: [ b8 3a ] MOV  R0, #$3a
 $0645: [ f0    ] MOV  A, @R0         ; load status byte
-$0646: [ 32 6f ] JB1  $066f          ; jump if STEP pressed. If not, we're done.
+$0646: [ 32 6f ] JB1  pc_handler_trampoline ; jump if STEP pressed. If not, we're done.
 $0648: [ b8 3a ] MOV  R0, #$3a
 $064a: [ f0    ] MOV  A, @R0         ; Load status byte
 $064b: [ 12 61 ] JB0  print_content_of_addr_0 ; print addr 0 if STP pressed
@@ -1494,8 +1503,10 @@ $0669: [ b9 00 ] MOV  R1, #$00
 $066b: [ 34 96 ] CALL fetch_and_print_ram
 $066d: [ 44 21 ] JMP  print_C
 
-
+pc_handler_trampoline:
 $066f: [ 04 98 ] JMP  pc_handler
+
+; ??????? NEVER REACHED??/
 $0671: [ 04 86 ] JMP  wait_key
 
 single_step_done:
