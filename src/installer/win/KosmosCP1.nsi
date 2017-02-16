@@ -19,6 +19,7 @@
 !define PRODUCT_EXE "KosmosCP1.exe"
 !define PRODUCT_DIR "KosmosCP1"
 !define PRODUCT_NAME "Kosmos CP1"
+!define PRODUCT_FILENAME "KosmosCP1"
 !define PRODUCT_VERSION "0.0.1"
 !define PRODUCT_PUBLISHER "Andreas Signer"
 !define PRODUCT_WEB_SITE "http://www.retrozone.ch/cp1"
@@ -62,7 +63,7 @@
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "../../../build/installers/${PRODUCT_NAME}-${PRODUCT_VERSION}-Setup.exe"
+OutFile "../../../build/installers/${PRODUCT_FILENAME}-${PRODUCT_VERSION}-Setup.exe"
 InstallDir "$PROGRAMFILES\${PRODUCT_DIR}"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show

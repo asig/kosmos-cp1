@@ -204,11 +204,11 @@ shadowJar {
 launch4j {
     // Stupid launch4j gradle plugin ignores copyConfigurable when building the XML file,
     // so we need to fall back to fat jar.
-    outfile = 'ProgrammableFun.exe'
+    outfile = 'KosmosCP1.exe'
     mainClassName = project.mainClassName
     copyConfigurable = project.tasks.shadowJarWin.outputs.files
     jar = "lib/${project.tasks.shadowJarWin.archiveName}"
-    icon = '../../resources/turtle.ico' // Icon is relative to build/launch4j
+    icon = '../../src/main/resources/com/asigner/cp1/ui/icon.ico' // Icon is relative to build/launch4j
 }
 
 createExe {
@@ -220,10 +220,10 @@ createExe {
 //
 
 task makePackageWin(type: Exec) {
-    dependsOn createExe // This this for whatever reason not work...
+    dependsOn createExe // This does for whatever reason not work...
     file("$rootDir/build/installers").mkdirs()
     workingDir 'src/installer/win'
-    commandLine 'makensis', 'KosmosCP1Sim.nsi'
+    commandLine 'makensis', 'KosmosCP1.nsi'
 }
 
 task stagePackageDeb(type: Copy) {
