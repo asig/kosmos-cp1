@@ -1,0 +1,17 @@
+Source: kosmos-cp1
+Section: unknown
+Priority: optional
+Maintainer: Andreas Signer <asigner@gmail.com>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.6
+Homepage: http://www.retrozone.ch/cp1
+
+Package: kosmos-cp1
+Architecture: amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A cycle-exact emulator of the famous
+ Kosmos CP1 experimental computer kit from the 1980s.
+ Comes with a 8049 disassembler and debuggers, a CP1
+ assemblers, tons of example listings, as well as a
+ fancy UI. Supports Kosmos extensions CP3 (memory
+ extension) and CP5 (universal I/O-interface).

@@ -1,0 +1,4 @@
+icon.png                          /usr/share/kosmos-cp1/
+KosmosCP1.desktop                 /usr/share/applications/
+kosmos-cp1                        /usr/bin/
+../../../build/stage/linux/jars/* /usr/share/kosmos-cp1/jars/
