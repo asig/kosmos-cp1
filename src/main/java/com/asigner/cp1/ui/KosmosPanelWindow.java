@@ -23,6 +23,8 @@ import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.InputPin;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
+import com.asigner.cp1.ui.actions.Cp3ExtensionAction;
+import com.asigner.cp1.ui.actions.Cp5ExtensionAction;
 import com.asigner.cp1.ui.actions.LoadAction;
 import com.asigner.cp1.ui.actions.SaveAction;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
@@ -51,7 +53,7 @@ public class KosmosPanelWindow extends Window {
     private static final Logger logger = Logger.getLogger(KosmosPanelWindow.class.getName());
 
     public static final String NAME = "Panel";
-
+    
     private static final String WINDOW_TITLE = "Kosmos CP1";
 
     private Shell shell;
@@ -197,12 +199,17 @@ public class KosmosPanelWindow extends Window {
             cpu.getPort(1).removeListener(port1Listener);
             pid.removeListener(pidListener);
         });
-
+        
         shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
         shell.pack();
         fireWindowOpened();
+    }
+
+    @Override
+    protected Shell getShell() {
+        return shell;
     }
 
     public boolean isDisposed() {
