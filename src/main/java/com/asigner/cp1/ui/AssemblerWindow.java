@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -85,6 +86,8 @@ public class AssemblerWindow extends Window {
      */
     public void open() {
         createContents();
+
+        shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
         fireWindowOpened();
@@ -180,4 +183,11 @@ public class AssemblerWindow extends Window {
         }
     }
 
+    private Menu createMenuBar() {
+        Menu menu = new Menu(shell, SWT.BAR);
+        createFileMenu(menu);
+        createWindowMenu(menu);
+        createHelpMenu(menu);
+        return menu;
+    }
 }

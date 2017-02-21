@@ -23,11 +23,8 @@ import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.InputPin;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
-import com.asigner.cp1.ui.actions.AboutAction;
 import com.asigner.cp1.ui.actions.LoadAction;
-import com.asigner.cp1.ui.actions.QuitAction;
 import com.asigner.cp1.ui.actions.SaveAction;
-import com.asigner.cp1.ui.platform.CocoaUiEnhancer;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.ui.widgets.CP1Display;
 import com.asigner.cp1.ui.widgets.CP5Panel;
@@ -42,7 +39,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -50,23 +46,18 @@ import org.eclipse.swt.widgets.Shell;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.oracle.tools.packager.StandardBundlerParam.APP_NAME;
-
 public class KosmosPanelWindow extends Window {
 
     private static final Logger logger = Logger.getLogger(KosmosPanelWindow.class.getName());
 
     public static final String NAME = "Panel";
-    
+
     private static final String WINDOW_TITLE = "Kosmos CP1";
 
     private Shell shell;
 
     private LoadAction loadAction;
     private SaveAction saveAction;
-    private QuitAction quitAction;
-    private AboutAction aboutAction;
-//    private PreferencesAction preferencesAction;
 
     private Intel8049 cpu;
     private Intel8155 pid;
@@ -206,14 +197,14 @@ public class KosmosPanelWindow extends Window {
             cpu.getPort(1).removeListener(port1Listener);
             pid.removeListener(pidListener);
         });
-        
+
         shell.setMenuBar(createMenuBar());
         shell.open();
         shell.layout();
         shell.pack();
         fireWindowOpened();
     }
-    
+
     public boolean isDisposed() {
         return shell.isDisposed();
     }
@@ -228,10 +219,8 @@ public class KosmosPanelWindow extends Window {
     }
 
     private void createActions() {
-        quitAction = new QuitAction();
         loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
         saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
-        aboutAction = new AboutAction();
     }
 
     /**
@@ -289,7 +278,7 @@ public class KosmosPanelWindow extends Window {
     private Menu createMenuBar() {
         Menu menu = new Menu(shell, SWT.BAR);
 
-        createFileMenu(menu, aboutAction, null, quitAction);
+        createFileMenu(menu);
 
         Menu stateMenu = new Menu(menu);
         new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
@@ -299,9 +288,9 @@ public class KosmosPanelWindow extends Window {
         stateItem.setText("&State");
         stateItem.setMenu(stateMenu);
 
-        addWindowMenu(menu);
+        createWindowMenu(menu);
+        createHelpMenu(menu);
 
         return menu;
-
     }
 }

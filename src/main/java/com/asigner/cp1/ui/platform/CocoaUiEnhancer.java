@@ -19,15 +19,14 @@
 
 package com.asigner.cp1.ui.platform;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.internal.C;
 import org.eclipse.swt.internal.Callback;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Listener;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Provide a hook to connecting the Preferences, About and Quit menu items of the Mac OS X
@@ -53,13 +52,15 @@ public class CocoaUiEnhancer {
     // private static final int kHideApplicationMenuItem = 6;
     private static final int kQuitMenuItem = 10;
 
-    static long sel_toolbarButtonClicked_;
-    static long sel_preferencesMenuItemSelected_;
-    static long sel_aboutMenuItemSelected_;
+    private long sel_toolbarButtonClicked_;
+    private long sel_preferencesMenuItemSelected_;
+    private long sel_aboutMenuItemSelected_;
 
-    static Callback proc3Args;
+    private Callback proc3Args;
 
     final private String appName;
+
+    private boolean isEnhanced = false;
 
     /**
      * Construct a new CocoaUIEnhancer.
@@ -79,15 +80,24 @@ public class CocoaUiEnhancer {
      *
      * @param display
      *            The Display to use.
-     * @param quitListener
-     *            The listener to invoke when the Quit menu is invoked.
+     * @param quitAction
+     *            The action to run when the Quit menu is invoked.
      * @param aboutAction
      *            The action to run when the About menu is invoked.
      * @param preferencesAction
      *            The action to run when the Preferences menu is invoked.
      */
-    public void hookApplicationMenu( Display display, final IAction quitAction, final IAction aboutAction,
-                                     final IAction preferencesAction ) {
+    public void hookApplicationMenu(
+            Display display,
+            final IAction quitAction,
+            final IAction aboutAction,
+            final IAction preferencesAction
+    ) {
+        if (isEnhanced) {
+            return;
+        }
+        isEnhanced = true;
+
         // This is our callbackObject whose 'actionProc' method will be called when the About or
         // Preferences menuItem is invoked.
         //

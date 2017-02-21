@@ -41,8 +41,6 @@ import com.asigner.cp1.ui.widgets.DisassemblyComposite;
 import com.asigner.cp1.ui.widgets.Status8049Composite;
 import com.asigner.cp1.ui.widgets.Status8155Composite;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -274,31 +272,13 @@ public class CpuWindow extends Window {
     protected Menu createMenuBar() {
         Menu menu = new Menu(shell, SWT.BAR);
 
-        Menu fileMenu = new Menu(menu);
-        new ActionMenuItem(fileMenu, SWT.NONE, save8049DisassemblyAction);
-        new MenuItem(fileMenu, SWT.SEPARATOR);
-        new ActionMenuItem(fileMenu, SWT.NONE, quitAction);
+        createFileMenu(
+                menu,
+                (m) -> new MenuItem(m, SWT.SEPARATOR),
+                (m) -> new ActionMenuItem(m, SWT.NONE, save8049DisassemblyAction));
 
-        MenuItem fileItem = new MenuItem(menu, SWT.CASCADE);
-        fileItem.setText("&File");
-        fileItem.setMenu(fileMenu);
-
-        Menu stateMenu = new Menu(menu);
-        new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
-        new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
-
-        MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
-        stateItem.setText("&State");
-        stateItem.setMenu(stateMenu);
-
-        addWindowMenu(menu);
-
-        Menu helpMenu = new Menu(menu);
-        new ActionMenuItem(helpMenu, SWT.NONE, aboutAction);
-
-        MenuItem helpItem = new MenuItem(menu, SWT.CASCADE);
-        helpItem.setText("Help");
-        helpItem.setMenu(helpMenu);
+        createWindowMenu(menu);
+        createHelpMenu(menu);
 
         return menu;
     }

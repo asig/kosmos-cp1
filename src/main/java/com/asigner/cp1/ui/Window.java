@@ -19,21 +19,30 @@
 
 package com.asigner.cp1.ui;
 
+import com.asigner.cp1.ui.actions.AboutAction;
+import com.asigner.cp1.ui.actions.PreferencesAction;
+import com.asigner.cp1.ui.actions.QuitAction;
 import com.asigner.cp1.ui.actions.WindowAction;
 import com.asigner.cp1.ui.platform.CocoaUiEnhancer;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.google.common.collect.Lists;
-import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class Window {
 
     private static final String APP_NAME = "Kosmos CP1";
+    private static final CocoaUiEnhancer enhancer = new CocoaUiEnhancer(APP_NAME);
+
+    // Shared actions
+    private static QuitAction quitAction = new QuitAction();
+    private static PreferencesAction preferencesAction = new PreferencesAction();
+    private static AboutAction aboutAction = new AboutAction();
 
     public interface Listener {
         void windowOpened(Window window);
@@ -79,37 +88,63 @@ public abstract class Window {
         return isOpen;
     }
 
-    protected Menu createFileMenu(Menu parent, Action aboutAction, Action preferencesAction, Action quitAction) {
+    protected Menu createFileMenu(Menu parent, Function<Menu, MenuItem>... menuCreators) {
         Display display = parent.getDisplay();
 
+        Menu fileMenu = null;
         if (!OS.isMac()) {
-            Menu fileMenu = new Menu(parent);
-            MenuItem fileItem = new MenuItem(parent, SWT.CASCADE);
-            fileItem.setText("&File");
-            fileItem.setMenu(fileMenu);
-
-            new ActionMenuItem(fileMenu, SWT.PUSH, quitAction);
+            fileMenu = createMenuInternal(parent, "&File", menuCreators);
+            new MenuItem(fileMenu, SWT.SEPARATOR);
             new ActionMenuItem(fileMenu, SWT.PUSH, preferencesAction);
-
-            return fileMenu;
+            new MenuItem(fileMenu, SWT.SEPARATOR);
+            new ActionMenuItem(fileMenu, SWT.PUSH, quitAction);
         } else {
-            CocoaUiEnhancer enhancer = new CocoaUiEnhancer(APP_NAME);
             enhancer.hookApplicationMenu( display, quitAction, aboutAction, preferencesAction);
-
-            return null;
+            if (menuCreators.length > 0) {
+                fileMenu = createMenuInternal(parent, "&File", menuCreators);
+            }
         }
+        return fileMenu;
     }
 
+    protected Menu createHelpMenu(Menu parent, Function<Menu, MenuItem>... menuCreators) {
+        Display display = parent.getDisplay();
 
-    protected void addWindowMenu(Menu parent) {
+        Menu helpMenu = null;
+        if (!OS.isMac()) {
+            helpMenu = createMenuInternal(parent, "Help", menuCreators);
+            new MenuItem(helpMenu, SWT.SEPARATOR);
+            new ActionMenuItem(helpMenu, SWT.PUSH, aboutAction);
+        } else {
+            enhancer.hookApplicationMenu( display, quitAction, aboutAction, preferencesAction);
+            if (menuCreators.length > 0) {
+                helpMenu = createMenuInternal(parent, "Help", menuCreators);
+            }
+        }
+        return helpMenu;
+    }
+
+    private Menu createMenuInternal(Menu parent, String text, Function<Menu, MenuItem>... menuCreators) {
+        Menu menu = new Menu(parent);
+        MenuItem item = new MenuItem(parent, SWT.CASCADE);
+        item.setText(text);
+        item.setMenu(menu);
+        for (Function<Menu, MenuItem> creator : menuCreators) {
+            creator.apply(menu);
+        }
+        return menu;
+    }
+
+    protected Menu createWindowMenu(Menu parent) {
         Menu windowMenu = new Menu(parent);
         for (Window window : windowManager.getWindows()) {
             new ActionMenuItem(windowMenu, SWT.NONE, new WindowAction(window));
         }
-        
+
         MenuItem windowsItem = new MenuItem(parent, SWT.CASCADE);
         windowsItem.setText("Windows");
         windowsItem.setMenu(windowMenu);
 
+        return windowMenu;
     }
 }
