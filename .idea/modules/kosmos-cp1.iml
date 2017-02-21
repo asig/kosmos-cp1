@@ -115,7 +115,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< Updated upstream
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.core.filesystem_1.6.0.v20160503-1608.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -126,9 +125,6 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar!/" />
-=======
-          <root url="jar://$MODULE_DIR$/../../lib/org.eclipse/platform-minimal/4.6.1/jars/org.eclipse.core.databinding.observable_1.6.0.v20160511-1747.jar!/" />
->>>>>>> Stashed changes
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -164,11 +160,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< Updated upstream
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.core.variables_3.3.0.v20160419-1720.jar!/" />
-=======
-          <root url="jar://$MODULE_DIR$/../../lib/org.eclipse/platform-minimal/4.6.1/jars/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar!/" />
->>>>>>> Stashed changes
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -177,11 +169,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< Updated upstream
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar!/" />
-=======
-          <root url="jar://$MODULE_DIR$/../../lib/org.eclipse/platform-minimal/4.6.1/jars/org.eclipse.core.variables_3.3.0.v20160419-1720.jar!/" />
->>>>>>> Stashed changes
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -190,11 +178,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< Updated upstream
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.jface.databinding_1.8.0.v20160420-2231.jar!/" />
-=======
-          <root url="jar://$MODULE_DIR$/../../lib/org.eclipse/platform-minimal/4.6.1/jars/org.eclipse.jface.databinding_1.8.0.v20160420-2231.jar!/" />
->>>>>>> Stashed changes
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -203,11 +187,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< Updated upstream
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.jface.text_3.11.1.v20160819-1517.jar!/" />
-=======
-          <root url="jar://$MODULE_DIR$/../../lib/org.eclipse/platform-minimal/4.6.1/jars/org.eclipse.core.databinding_1.6.0.v20160412-0910.jar!/" />
->>>>>>> Stashed changes
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -216,11 +196,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< Updated upstream
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.jface_3.12.0.v20160518-1929.jar!/" />
-=======
-          <root url="jar://$MODULE_DIR$/../../lib/org.eclipse/platform-minimal/4.6.1/jars/org.eclipse.core.filebuffers_3.6.0.v20160503-1849.jar!/" />
->>>>>>> Stashed changes
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -229,7 +205,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-<<<<<<< Updated upstream
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.swt.gtk.linux.x86_64_3.105.1.v20160907-0248.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -240,9 +215,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.text_3.6.0.v20160503-1849.jar!/" />
-=======
-          <root url="jar://$MODULE_DIR$/../../lib/org.eclipse/platform-minimal/4.6.1/jars/org.eclipse.swt.cocoa.macosx.x86_64_3.105.1.v20160907-0248.jar!/" />
->>>>>>> Stashed changes
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../build/output/lib/commons-io-2.5.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
