@@ -20,15 +20,20 @@
 package com.asigner.cp1.ui;
 
 import com.asigner.cp1.ui.actions.WindowAction;
+import com.asigner.cp1.ui.platform.CocoaUiEnhancer;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.google.common.collect.Lists;
+import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
 import java.util.List;
 
 public abstract class Window {
+
+    private static final String APP_NAME = "Kosmos CP1";
 
     public interface Listener {
         void windowOpened(Window window);
@@ -73,6 +78,30 @@ public abstract class Window {
     public boolean isOpen() {
         return isOpen;
     }
+
+    protected Menu createFileMenu(Menu parent, Action aboutAction, Action preferencesAction, Action quitAction) {
+        Display display = parent.getDisplay();
+
+        boolean isMac = OS.isMac();
+
+        if (!isMac) {
+            Menu fileMenu = new Menu(parent);
+            MenuItem fileItem = new MenuItem(parent, SWT.CASCADE);
+            fileItem.setText("&File");
+            fileItem.setMenu(fileMenu);
+
+            new ActionMenuItem(fileMenu, SWT.PUSH, quitAction);
+            new ActionMenuItem(fileMenu, SWT.PUSH, preferencesAction);
+
+            return fileMenu;
+        } else {
+            CocoaUiEnhancer enhancer = new CocoaUiEnhancer(APP_NAME);
+            enhancer.hookApplicationMenu( display, quitAction, aboutAction, preferencesAction);
+
+            return null;
+        }
+    }
+
 
     protected void addWindowMenu(Menu parent) {
         Menu windowMenu = new Menu(parent);
