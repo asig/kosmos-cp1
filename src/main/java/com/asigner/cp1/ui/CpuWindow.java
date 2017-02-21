@@ -106,7 +106,7 @@ public class CpuWindow extends Window {
                 }
                 updateView();
                 if (!isDisposed()) {
-                    shell.getDisplay().asyncExec(() -> {
+                    shell.getDisplay().syncExec(() -> {
                         status8049.updateState();
                     });
                 }
@@ -125,7 +125,7 @@ public class CpuWindow extends Window {
                         if (disassembly.getSelectedAddress() != cpu.getPC()) {
                             updateView();
                         }
-                        shell.getDisplay().asyncExec(status8049::updateState);
+                        shell.getDisplay().syncExec(status8049::updateState);
                     }
                 }
             }
@@ -163,7 +163,7 @@ public class CpuWindow extends Window {
         executionListener = new ExecutorThread.ExecutionListener() {
             @Override
             public void executionStarted() {
-                shell.getDisplay().asyncExec(() -> {
+                shell.getDisplay().syncExec(() -> {
                     singleStepAction.setEnabled(false);
                     stopAction.setEnabled(true);
                     runAction.setEnabled(false);
@@ -174,7 +174,7 @@ public class CpuWindow extends Window {
             public void executionStopped() {
                 if (!isDisposed()) {
                     updateView();
-                    shell.getDisplay().asyncExec(() -> {
+                    shell.getDisplay().syncExec(() -> {
                         singleStepAction.setEnabled(true);
                         stopAction.setEnabled(false);
                         runAction.setEnabled(true);
@@ -198,7 +198,7 @@ public class CpuWindow extends Window {
             @Override
             public void breakpointHit(int addr) {
                 if (!isDisposed()) {
-                    shell.getDisplay().asyncExec(() -> {
+                    shell.getDisplay().syncExec(() -> {
                         status8049.updateState();
                     });
                     update8155States();
@@ -243,6 +243,11 @@ public class CpuWindow extends Window {
         shell.open();
         shell.layout();
         fireWindowOpened();
+    }
+    
+    @Override
+    protected Shell getShell() {
+        return shell;
     }
 
     private void addListeners() {
@@ -333,7 +338,7 @@ public class CpuWindow extends Window {
         portListener = (oldValue, newValue) -> {
             if (isTraceExecution()) {
                 if (!isDisposed()) {
-                    shell.getDisplay().asyncExec(() -> status8049.updateState());
+                    shell.getDisplay().syncExec(() -> status8049.updateState());
                 }
             }
         };
@@ -374,7 +379,7 @@ public class CpuWindow extends Window {
             if (!isTraceExecution()) {
                 return;
             }
-            shell.getDisplay().asyncExec(() -> {
+            shell.getDisplay().syncExec(() -> {
                 status8155.updateState();
                 status8155Extension.updateState();
             });
@@ -389,7 +394,7 @@ public class CpuWindow extends Window {
                 runAction.setEnabled(true);
             });
             updateView();
-            shell.getDisplay().asyncExec(() -> {
+            shell.getDisplay().syncExec(() -> {
                 status8049.updateState();
             });
             update8155States();
@@ -398,7 +403,7 @@ public class CpuWindow extends Window {
 
     public void updateView() {
         if (!isDisposed()) {
-            shell.getDisplay().asyncExec(() -> disassembly.selectAddress(cpu.getPC()));
+            shell.getDisplay().syncExec(() -> disassembly.selectAddress(cpu.getPC()));
         }
     }
 

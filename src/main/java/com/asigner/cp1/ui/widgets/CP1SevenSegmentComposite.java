@@ -96,7 +96,9 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
             if (hasDot) {
                 this.segs.add(7);
             }
-            redraw();
+            if (!isDisposed()) {
+                redraw();
+            }
         }
     }
 
