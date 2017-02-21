@@ -82,9 +82,7 @@ public abstract class Window {
     protected Menu createFileMenu(Menu parent, Action aboutAction, Action preferencesAction, Action quitAction) {
         Display display = parent.getDisplay();
 
-        boolean isMac = OS.isMac();
-
-        if (!isMac) {
+        if (!OS.isMac()) {
             Menu fileMenu = new Menu(parent);
             MenuItem fileItem = new MenuItem(parent, SWT.CASCADE);
             fileItem.setText("&File");
