@@ -89,8 +89,6 @@ public abstract class Window {
     }
 
     protected Menu createFileMenu(Menu parent, Function<Menu, MenuItem>... menuCreators) {
-        Display display = parent.getDisplay();
-
         Menu fileMenu = null;
         if (!OS.isMac()) {
             fileMenu = createMenuInternal(parent, "&File", menuCreators);
@@ -99,6 +97,7 @@ public abstract class Window {
             new MenuItem(fileMenu, SWT.SEPARATOR);
             new ActionMenuItem(fileMenu, SWT.PUSH, quitAction);
         } else {
+            Display display = parent.getDisplay();
             enhancer.hookApplicationMenu( display, quitAction, aboutAction, preferencesAction);
             if (menuCreators.length > 0) {
                 fileMenu = createMenuInternal(parent, "&File", menuCreators);
@@ -108,14 +107,13 @@ public abstract class Window {
     }
 
     protected Menu createHelpMenu(Menu parent, Function<Menu, MenuItem>... menuCreators) {
-        Display display = parent.getDisplay();
-
         Menu helpMenu = null;
         if (!OS.isMac()) {
             helpMenu = createMenuInternal(parent, "Help", menuCreators);
             new MenuItem(helpMenu, SWT.SEPARATOR);
             new ActionMenuItem(helpMenu, SWT.PUSH, aboutAction);
         } else {
+            Display display = parent.getDisplay();
             enhancer.hookApplicationMenu( display, quitAction, aboutAction, preferencesAction);
             if (menuCreators.length > 0) {
                 helpMenu = createMenuInternal(parent, "Help", menuCreators);
