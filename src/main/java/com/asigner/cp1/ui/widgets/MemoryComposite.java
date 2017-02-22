@@ -101,7 +101,7 @@ public class MemoryComposite extends Composite {
                 if (addr != lastWritten) {
                     lastWritten = addr;
                 }
-                getDisplay().asyncExec(MemoryComposite.this::redraw);
+                getDisplay().syncExec(MemoryComposite.this::redraw);
             }
 
             @Override
@@ -112,7 +112,7 @@ public class MemoryComposite extends Composite {
                 if (lastWritten != -1) {
                     lastWritten = -1;
                 }
-                getDisplay().asyncExec(MemoryComposite.this::redraw);
+                getDisplay().syncExec(MemoryComposite.this::redraw);
             }
         };
 
@@ -204,7 +204,7 @@ public class MemoryComposite extends Composite {
                         gc.drawText(String.format(" %02x", ram.read(pos)), curX, i * totalLineHeight);
                         curX += 3 * avgCharWidth + adjustment;
                     } else {
-                        gc.drawText(String.format(" ", ram.read(pos)), curX, i * totalLineHeight);
+                        gc.drawText(" ", curX, i * totalLineHeight);
                         curX += avgCharWidth;
                         gc.setBackground(BG_SEL);
                         gc.setForeground(FG_SEL);

@@ -35,22 +35,22 @@ public class WindowAction extends Action {
     public WindowAction(Window window) {
         super(window.getName());
         this.window = window;
-        setEnabled(!window.isOpen());
-        window.addWindowListener(new Window.Listener() {
-            // For some reason, the menu item is still in disposed state when this is called.
-            // In this case, we just create a timer that enables the action after some delay.
-            // I have *NO* clue how to do this properly...
-
-            @Override
-            public void windowOpened(Window window) {
-                setEnabledDelayed(false);
-            }
-
-            @Override
-            public void windowClosed(Window window) {
-                setEnabledDelayed(true);
-            }
-        });
+//        setEnabled(!window.isOpen());
+//        window.addWindowListener(new Window.Listener() {
+//            // For some reason, the menu item is still in disposed state when this is called.
+//            // In this case, we just create a timer that enables the action after some delay.
+//            // I have *NO* clue how to do this properly...
+//
+//            @Override
+//            public void windowOpened(Window window) {
+//                setEnabledDelayed(false);
+//            }
+//
+//            @Override
+//            public void windowClosed(Window window) {
+//                setEnabledDelayed(true);
+//            }
+//        });
     }
 
     private void setEnabledDelayed(boolean enabled) {
@@ -60,7 +60,7 @@ public class WindowAction extends Action {
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    Display.getDefault().asyncExec(() ->  setEnabled(enabled));
+                    Display.getDefault().syncExec(() ->  setEnabled(enabled));
                 }
             }, 200);
         }
@@ -68,7 +68,10 @@ public class WindowAction extends Action {
 
     @Override
     public void run() {
-        window.open();
+        if (!window.isOpen()) {
+            window.open();
+        }
+        window.moveToFront();
     }
 
 }

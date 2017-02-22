@@ -30,6 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
 
 import java.util.List;
 import java.util.function.Function;
@@ -88,6 +89,12 @@ public abstract class Window {
         return isOpen;
     }
 
+    protected abstract Shell getShell();
+
+    public void moveToFront() {
+        getShell().forceActive();
+    }
+
     protected Menu createFileMenu(Menu parent, Function<Menu, MenuItem>... menuCreators) {
         Menu fileMenu = null;
         if (!OS.isMac()) {
@@ -122,6 +129,14 @@ public abstract class Window {
         return helpMenu;
     }
 
+    protected Menu createWindowMenu(Menu parent) {
+        Menu windowMenu = createMenuInternal(parent, "Windows");
+        for (Window window : windowManager.getWindows()) {
+            new ActionMenuItem(windowMenu, SWT.NONE, new WindowAction(window));
+        }
+        return windowMenu;
+    }
+
     private Menu createMenuInternal(Menu parent, String text, Function<Menu, MenuItem>... menuCreators) {
         Menu menu = new Menu(parent);
         MenuItem item = new MenuItem(parent, SWT.CASCADE);
@@ -131,18 +146,5 @@ public abstract class Window {
             creator.apply(menu);
         }
         return menu;
-    }
-
-    protected Menu createWindowMenu(Menu parent) {
-        Menu windowMenu = new Menu(parent);
-        for (Window window : windowManager.getWindows()) {
-            new ActionMenuItem(windowMenu, SWT.NONE, new WindowAction(window));
-        }
-
-        MenuItem windowsItem = new MenuItem(parent, SWT.CASCADE);
-        windowsItem.setText("Windows");
-        windowsItem.setMenu(windowMenu);
-
-        return windowMenu;
     }
 }

@@ -93,6 +93,11 @@ public class AssemblerWindow extends Window {
         fireWindowOpened();
     }
 
+    @Override
+    protected Shell getShell() {
+        return shell;
+    }
+
     /**
      * Create contents of the dialog.
      */
