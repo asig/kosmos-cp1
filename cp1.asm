@@ -40,6 +40,8 @@
 ;0x40: Last byte written to port 2
 ;0x41: Last byte written to port 4
 ;0x42: Last byte written to port 5
+;0x43: ???
+;0x44: last key pressed
 
     .equ VM_PC, $38
 
@@ -69,33 +71,41 @@ $0007: [ 44 5c ] JMP  timer   ; Timer/Counter entry point
 $0009: [ 00    ] NOP
 
 ; JMPP Jump-Table for key presses
-$000a: [ 86    ] .DB $86 ; ??? this is pointing to the wait_key function
-$000b: [ d1    ] .DB $D1 ; key '0'
-$000c: [ d1    ] .DB $D1 ; key '1'
-$000d: [ d1    ] .DB $D1 ; key '2'
-$000e: [ d1    ] .DB $D1 ; key '3'
-$000f: [ d1    ] .DB $D1 ; key '4'
-$0010: [ d1    ] .DB $D1 ; key '5'
-$0011: [ d1    ] .DB $D1 ; key '6'
-$0012: [ d1    ] .DB $D1 ; key '7'
-$0013: [ d1    ] .DB $D1 ; key '8'
-$0014: [ d1    ] .DB $D1 ; key '9'
-$0015: [ 21    ] .DB $21 ; key 'OUT'
-$0016: [ eb    ] .DB $eb ; key 'INP'
-$0017: [ 23    ] .DB $23 ; key 'CAL'
-$0018: [ 25    ] .DB $25 ; key 'STEP'
-$0019: [ 86    ] .DB $86 ; key 'STP'
-$001a: [ 1f    ] .DB $1F ; key 'RUN'
-$001b: [ 27    ] .DB $27 ; key 'CAS'
-$001c: [ c3    ] .DB $c3 ; key 'CLR'
-$001d: [ 98    ] .DB $98 ; key 'PC'
-$001e: [ bf    ] .DB $BF ; key 'ACC'
+$000a: [ 86    ] .DB <wait_key       ; $86 ; ??? this is pointing to the wait_key function
+$000b: [ d1    ] .DB <digit_handler  ; $D1 ; key '0'
+$000c: [ d1    ] .DB <digit_handler  ; $D1 ; key '1'
+$000d: [ d1    ] .DB <digit_handler  ; $D1 ; key '2'
+$000e: [ d1    ] .DB <digit_handler  ; $D1 ; key '3'
+$000f: [ d1    ] .DB <digit_handler  ; $D1 ; key '4'
+$0010: [ d1    ] .DB <digit_handler  ; $D1 ; key '5'
+$0011: [ d1    ] .DB <digit_handler  ; $D1 ; key '6'
+$0012: [ d1    ] .DB <digit_handler  ; $D1 ; key '7'
+$0013: [ d1    ] .DB <digit_handler  ; $D1 ; key '8'
+$0014: [ d1    ] .DB <digit_handler  ; $D1 ; key '9'
+$0015: [ 21    ] .DB <out_handler_trampoline  ; $21 ; key 'OUT'
+$0016: [ eb    ] .DB <inp_handler    ; $EB ; key 'INP'
+$0017: [ 23    ] .DB <cal_handler_trampoline; $23 ; key 'CAL'
+$0018: [ 25    ] .DB <step_handler_trampoline; $25 ; key 'STEP'
+$0019: [ 86    ] .DB <wait_key ; $86 ; key 'STP'
+$001a: [ 1f    ] .DB <run_handler_trampoline; $1F ; key 'RUN'
+$001b: [ 27    ] .DB <cas_handler_trampoline; $27 ; key 'CAS'
+$001c: [ c3    ] .DB <clr_handler    ; $c3 ; key 'CLR'
+$001d: [ 98    ] .DB <pc_handler ; $98 ; key 'PC'
+$001e: [ bf    ] .DB <acc_handler ; $BF ; key 'ACC'
 
-
+run_handler_trampoline:
 $001f: [ c4 03 ] JMP  run_handler
+
+out_handler_trampoline:
 $0021: [ 24 ff ] JMP  out_handler
+
+cal_handler_trampoline:
 $0023: [ e4 0e ] JMP  cal_handler
+
+step_handler_trampoline:
 $0025: [ c4 22 ] JMP  step_handler
+
+cas_handler_trampoline:
 $0027: [ 24 c4 ] JMP  cas_handler
 
 ; ### Initialization code
@@ -202,7 +212,7 @@ $00bb: [ d4 b4 ] CALL print_pc
 $00bd: [ 04 86 ] JMP  wait_key
 
 acc_handler:
-$00bf: [ d4 ea ] CALL $06ea
+$00bf: [ d4 ea ] CALL print_accu
 $00c1: [ 04 86 ] JMP  wait_key
 
 clr_handler:
@@ -210,29 +220,32 @@ $00c3: [ 34 79 ] CALL clear_display  ; Clear display
 $00c5: [ be 00 ] MOV  R6, #$00       ; Clear entered digits
 $00c7: [ 04 86 ] JMP  wait_key
 
-error_f001
+error_f001:
 $00c9: [ bc 01 ] MOV  R4, #$01
 $00cb: [ c4 fd ] JMP  show_error     ; F-001
 
+first_digit:
 $00cd: [ 34 79 ] CALL clear_display
-$00cf: [ 04 d9 ] JMP  $00d9
+$00cf: [ 04 d9 ] JMP  digit_handler_cont
 
 digit_handler:
-$00d1: [ fe    ] MOV  A, R6          ;
-$00d2: [ c6 cd ] JZ   $00cd
-$00d4: [ 97    ] CLR  C
-$00d5: [ 03 fb ] ADD  A, #$fb
-$00d7: [ f6 c9 ] JC   error_f001
-$00d9: [ fe    ] MOV  A, R6
-$00da: [ 03 27 ] ADD  A, #$27
-$00dc: [ a8    ] MOV  R0, A
-$00dd: [ b9 44 ] MOV  R1, #$44
-$00df: [ f1    ] MOV  A, @R1
-$00e0: [ 07    ] DEC  A
-$00e1: [ a0    ] MOV  @R0, A
-$00e2: [ aa    ] MOV  R2, A
-$00e3: [ 34 aa ] CALL append_digit
-$00e5: [ 04 86 ] JMP  wait_key
+$00d1: [ fe    ] MOV  A, R6          ; load # of inputted keys
+$00d2: [ c6 cd ] JZ   first_digit    ; if it's the first key, clear screen first
+$00d4: [ 97    ] CLR  C              ; clear carry
+$00d5: [ 03 fb ] ADD  A, #$fb        ; add 251 (== -5 % 256) to check if we entered more than 5 digits
+$00d7: [ f6 c9 ] JC   error_f001     ; jump if >5 digits.
+digit_handler_cont:
+$00d9: [ fe    ] MOV  A, R6          ; load # of inputted keys
+$00da: [ 03 27 ] ADD  A, #$27        ; add base address of decoded keys
+$00dc: [ a8    ] MOV  R0, A          ; and load this address
+$00dd: [ b9 44 ] MOV  R1, #$44       ; load address of "last key pressed"
+$00df: [ f1    ] MOV  A, @R1         ; load last key pressed
+$00e0: [ 07    ] DEC  A              ; subtract 1 ('0' is keycode 1, '1' is keycode 2, ... see jump table)
+$00e1: [ a0    ] MOV  @R0, A         ; and store it in the number area
+$00e2: [ aa    ] MOV  R2, A          ; move it to R2 ...
+$00e3: [ 34 aa ] CALL append_digit   ; ... and print it out.
+$00e5: [ 04 86 ] JMP  wait_key       ;
+
 $00e7: [ 24 46 ] JMP  $0146
 $00e9: [ 24 0c ] JMP  $010c
 
@@ -402,7 +415,7 @@ $0197: [ b8 39 ] MOV  R0, #$39    ; Address to store value in is 0x39
 $0199: [ a0    ] MOV  @R0, A      ; Store value
 $019a: [ be 00 ] MOV  R6, #$00    ; print "high byte": start at 0 in display RAM
 $019c: [ 85    ] CLR  F0          ; and set...
-$019d: [ 95    ] CPL  F0          ; ... F0
+$019d: [ 95    ] CPL  F0          ; ... F0: "no hundreds" for print
 $019e: [ 34 83 ] CALL print_value ; print it
 $01a0: [ 19    ] INC  R1          ; read next address
 $01a1: [ 81    ] MOVX A, @R1      ; from external RAM
@@ -1201,7 +1214,7 @@ $04e7: [ b0 00 ] MOV  @R0, #$00
 $04e9: [ c4 2f ] JMP  inc_pc
 
 opcode_ANZ:
-$04eb: [ d4 ea ] CALL $06ea
+$04eb: [ d4 ea ] CALL print_accu
 $04ed: [ c4 2f ] JMP  inc_pc
 
 
@@ -1601,17 +1614,18 @@ $06e6: [ be 00 ] MOV  R6, #$00
 $06e8: [ 04 86 ] JMP  wait_key
 
 
-?????????????????????????? Print ACCU maybe?
---------------------------
+; Print Accumulator
+; -----------------
+; Print the value in the Accumulator
 print_accu:
-$06ea: [ be 00 ] MOV  R6, #$00
-$06ec: [ 85    ] CLR  F0
-$06ed: [ 95    ] CPL  F0
-$06ee: [ b8 36 ] MOV  R0, #$36
-$06f0: [ 34 83 ] CALL print_value
-$06f2: [ b8 37 ] MOV  R0, #$37
-$06f4: [ be 02 ] MOV  R6, #$02
-$06f6: [ 34 83 ] CALL print_value
+$06ea: [ be 00 ] MOV  R6, #$00    ; Load Offset into Video RAM
+$06ec: [ 85    ] CLR  F0          ;
+$06ed: [ 95    ] CPL  F0          ; Set F0: "no hundreds" for print
+$06ee: [ b8 36 ] MOV  R0, #$36    ; Load Accu MSB address
+$06f0: [ 34 83 ] CALL print_value ; and print it
+$06f2: [ b8 37 ] MOV  R0, #$37    ; Load Accu LSB address
+$06f4: [ be 02 ] MOV  R6, #$02    ; Offset into Video RAM
+$06f6: [ 34 83 ] CALL print_value ; and print it
 $06f8: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $06fa: [ b0 77 ] MOV  @R0, #$77   ; ... to 'A'
 $06fc: [ 83    ] RET
