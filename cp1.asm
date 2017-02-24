@@ -114,14 +114,15 @@ $0029: [ b8 1e ] MOV  R0, #$1e
 $002b: [ b0 00 ] MOV  @R0, #$00  ; Set R6' to 0
 $002d: [ b8 20 ] MOV  R0, #$20   ; Clear 0x28 ...
 $002f: [ bb 28 ] MOV  R3, #$28   ;
+init1:
 $0031: [ b0 00 ] MOV  @R0, #$00  ;
 $0033: [ 18    ] INC  R0         ;
-$0034: [ eb 31 ] DJNZ R3, $0031  ; ... bytes of RAM
+$0034: [ eb 31 ] DJNZ R3, init1  ; ... bytes of RAM
 $0036: [ be 00 ] MOV  R6, #$00
 $0038: [ bf 00 ] MOV  R7, #$00
 $003a: [ b8 1a ] MOV  R0, #$1a
 $003c: [ b0 01 ] MOV  @R0, #$01  ; Set R1' to 1
-$003e: [ d4 b4 ] CALL $06b4
+$003e: [ d4 b4 ] CALL print_pc
 $0040: [ 9a cf ] ANL  P2, #$cf   ; P2 &= 1100 1111 --> 8155 /CE == 0, /CE == 0
 $0042: [ 9a bf ] ANL  P2, #$bf   ; P2 &= 1011 1111 --> 8155 /Reset == 0
 $0044: [ 9a ef ] ANL  P2, #$ef   ; P2 &= 1110 1111 --> 8155 /CE == 0: Enable "internal" 8155
@@ -785,17 +786,18 @@ $0335: [ 50    ] ANL  A, @R0
 $0336: [ a0    ] MOV  @R0, A
 $0337: [ 83    ] RET
 
-?????????????????????????????
------------------------------
+; Convert and check address
+; -------------------------
 $0338: [ ba 02 ] MOV  R2, #$02         ; 3 digits to convert
-$033a: [ 34 4e ] CALL digits_to_number
-$033c: [ b6 48 ] JF0  $0348
-$033e: [ f2 41 ] JB7  $0341
+$033a: [ 34 4e ] CALL digits_to_number ; convert to number
+$033c: [ b6 48 ] JF0  $0348            ; overflow?
+$033e: [ f2 41 ] JB7  $0341            ; > 127? check memory size
 $0340: [ 83    ] RET
-$0341: [ b8 3b ] MOV  R0, #$3b
-$0343: [ f0    ] MOV  A, @R0
-$0344: [ f2 40 ] JB7  $0340
-$0346: [ 64 49 ] JMP  $0349
+$0341: [ b8 3b ] MOV  R0, #$3b         ; load address of memory size
+$0343: [ f0    ] MOV  A, @R0           ; load memory size
+$0344: [ f2 40 ] JB7  $0340            ; if > 127, all is fine
+$0346: [ 64 49 ] JMP  $0349            ; otherwise, mark invalid address
+
 $0348: [ 85    ] CLR  F0
 $0349: [ 23 04 ] MOV  A, #$04 ; mask 0000 0100
 $034b: [ 74 2e ] CALL set_status_bits
