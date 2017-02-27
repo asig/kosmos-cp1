@@ -20,6 +20,7 @@
 ;0x26: ?
 ;0x27 - 0x2b: decoded entered digits. most significant digit at 0x27
 
+
 ;0x30 - 0x35: last interrupt's key presses per line
 ;0x36: Accu MSB
 ;0x37: Accu LSB
@@ -31,7 +32,7 @@
 ;      bit 5: result of last comparison
 ;      bit 4: accessed RAM extension
 ;      bit 3: ?
-;      bit 2: ?
+;      bit 2: Address overflow
 ;      bit 1; STEP pressed
 ;      bit 0: STP pressed
 ;0x3b: memory size
@@ -43,7 +44,11 @@
 ;0x43: ???
 ;0x44: last key pressed
 
-    .equ VM_PC, $38
+    .equ ACCU_MSB, $36
+    .equ ACCU_LSB, $37
+    .equ VM_PC,    $38
+    .equ STATUS,   $3a
+    .equ MEM_SIZE, $3b
 
 ; Global Register usage:
 ; ----------------------
@@ -153,7 +158,7 @@ $006b: [ 90    ] MOVX @R0, A     ; Store $5a at $13
 $006c: [ 27    ] CLR  A
 $006d: [ 80    ] MOVX A, @R0     ; Read again from $13
 $006e: [ d3 5a ] XRL  A, #$5a    ; Test if it is what we wrote?
-$0070: [ b8 3b ] MOV  R0, #$3b   ; Load address of "memory size"
+$0070: [ b8 3b ] MOV  R0, #MEM_SIZE   ; Load address of "memory size"
 $0072: [ c6 94 ] JZ   cp3_present
 $0074: [ b0 7f ] MOV  @R0, #$7f  ; 127 words of memory
 init_cont:
@@ -190,10 +195,10 @@ $0099: [ c6 bb ] JZ   zero_digits ; jump if zero
 $009b: [ d3 03 ] XRL  A, #$03     ; is it 3 digits?
 $009d: [ 96 c9 ] JNZ  error_f001  ; error if not
 $009f: [ b8 27 ] MOV  R0, #$27    ; Load address of 1st decoded digit
-$00a1: [ 74 38 ] CALL $0338
-$00a3: [ b8 3a ] MOV  R0, #$3a    ; Load status byte...
+$00a1: [ 74 38 ] CALL convert_and_check_address
+$00a3: [ b8 3a ] MOV  R0, #STATUS    ; Load status byte...
 $00a5: [ f0    ] MOV  A, @R0      ; ... to A
-$00a6: [ 52 b9 ] JB2  clear_bit_2_error_f004_trampoline
+$00a6: [ 52 b9 ] JB2  clear_addr_ovfl_error_f004_trampoline
 $00a8: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $00aa: [ b0 73 ] MOV  @R0, #$73   ; ... to 'P'
 $00ac: [ b8 27 ] MOV  R0, #$27    ; address of 1st decoded digit
@@ -205,8 +210,8 @@ $00b5: [ be 00 ] MOV  R6, #$00    ; reset # of entered digits
 $00b7: [ 04 86 ] JMP  wait_key
 
 
-clear_bit_2_error_f004_trampoline
-$00b9: [ 24 46 ] JMP  clear_bit_2_error_f004
+clear_addr_ovfl_error_f004_trampoline
+$00b9: [ 24 46 ] JMP  clear_addr_ovfl_error_f004
 
 zero_digits:
 $00bb: [ d4 b4 ] CALL print_pc
@@ -247,7 +252,8 @@ $00e2: [ aa    ] MOV  R2, A          ; move it to R2 ...
 $00e3: [ 34 aa ] CALL append_digit   ; ... and print it out.
 $00e5: [ 04 86 ] JMP  wait_key       ;
 
-$00e7: [ 24 46 ] JMP  $0146
+clear_addr_ovfl_error_f004_trampoline2:
+$00e7: [ 24 46 ] JMP  clear_addr_ovfl_error_f004
 $00e9: [ 24 0c ] JMP  $010c
 
 inp_handler:
@@ -257,10 +263,10 @@ $00ee: [ 96 e9 ] JNZ  $00e9
 $00f0: [ 23 f7 ] MOV  A, #$f7           ; 1111 0111
 $00f2: [ 74 33 ] CALL clear_status_bits
 $00f4: [ b8 27 ] MOV  R0, #$27
-$00f6: [ 74 38 ] CALL $0338
-$00f8: [ b8 3a ] MOV  R0, #$3a
+$00f6: [ 74 38 ] CALL convert_and_check_address
+$00f8: [ b8 3a ] MOV  R0, #STATUS
 $00fa: [ f0    ] MOV  A, @R0
-$00fb: [ 52 e7 ] JB2  $00e7
+$00fb: [ 52 e7 ] JB2  clear_addr_ovfl_error_f004_trampoline2
 $00fd: [ b8 27 ] MOV  R0, #$27    ; address of 1st decoded digit
 $00ff: [ ba 02 ] MOV  R2, #$02    ; 3 digits to convert
 $0101: [ 34 4e ] CALL digits_to_number
@@ -269,10 +275,11 @@ $0104: [ be 00 ] MOV  R6, #$00
 $0106: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0108: [ b0 79 ] MOV  @R0, #$79   ; ... to 'E'
 $010a: [ 04 86 ] JMP  wait_key
+
 $010c: [ fe    ] MOV  A, R6
 $010d: [ d3 05 ] XRL  A, #$05
 $010f: [ 96 44 ] JNZ  $0144
-$0111: [ b8 3a ] MOV  R0, #$3a    ; load status byte...
+$0111: [ b8 3a ] MOV  R0, #STATUS    ; load status byte...
 $0113: [ f0    ] MOV  A, @R0      ; ... to A
 $0114: [ 72 4a ] JB3  error_f004  ;
 $0116: [ b8 27 ] MOV  R0, #$27
@@ -296,7 +303,7 @@ $0131: [ 91    ] MOVX @R1, A
 $0132: [ 19    ] INC  R1
 $0133: [ fc    ] MOV  A, R4
 $0134: [ 91    ] MOVX @R1, A
-$0135: [ b8 3b ] MOV  R0, #$3b
+$0135: [ b8 3b ] MOV  R0, #MEM_SIZE
 $0137: [ ff    ] MOV  A, R7
 $0138: [ d0    ] XRL  A, @R0
 $0139: [ c6 3e ] JZ   $013e
@@ -307,7 +314,7 @@ $0140: [ 74 2e ] CALL set_status_bits
 $0142: [ 24 04 ] JMP  $0104
 $0144: [ 04 c9 ] JMP  error_f001
 
-clear_bit_2_error_f004
+clear_addr_ovfl_error_f004
 $0146: [ 23 fb ] MOV  A, #$fb           ; 1111 1011
 $0148: [ 74 33 ] CALL clear_status_bits ; clear bit 2:
 
@@ -466,18 +473,18 @@ $01c6: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $01c8: [ b8 20 ] MOV  R0, #$20      ; Set left-most digit...
 $01ca: [ b0 23 ] MOV  @R0, #$23     ; .. to 'CAS' symbol
 $01cc: [ 89 c0 ] ORL  P1, #$c0      ; P1 |= 1100 0000 --> CassData == 1, CassWR == 1
-$01ce: [ b8 3a ] MOV  R0, #$3a
+$01ce: [ b8 3a ] MOV  R0, #STATUS
 $01d0: [ bc 3c ] MOV  R4, #$3c      ; Loop max 60 times
 $01d2: [ bb fa ] MOV  R3, #$fa      ; Delay for...
 $01d4: [ 74 b6 ] CALL delay_millis  ; ... 250 millis
-$01d6: [ f0    ] MOV  A, @R0        ; check content of #$3a
+$01d6: [ f0    ] MOV  A, @R0        ; check content of #STATUS
 $01d7: [ 12 bf ] JB0  cas_stop_pressed  ; if bit 0 is set
 $01d9: [ ec d2 ] DJNZ R4, $01d2     ; wait for max. 15 secs
 $01db: [ 27    ] CLR  A             ; Address 0
 $01dc: [ 74 0a ] CALL compute_effective_address; Compute effective address to select RAM chip (internal 8155)
 $01de: [ 74 bd ] CALL save_memory
 $01e0: [ b6 bf ] JF0  cas_stop_pressed
-$01e2: [ b8 3b ] MOV  R0, #$3b      ; Load memory size...
+$01e2: [ b8 3b ] MOV  R0, #MEM_SIZE      ; Load memory size...
 $01e4: [ f0    ] MOV  A, @R0        ; ... to A
 $01e5: [ f2 e9 ] JB7  $01e9         ; if >128, save 2nd half as well
 $01e7: [ 24 f1 ] JMP  save_done     ;
@@ -504,8 +511,8 @@ $0204: [ c6 27 ] JZ   no_digits    ; jump if zero
 $0206: [ d3 03 ] XRL  A, #$03      ; is it 3?
 $0208: [ 96 40 ] JNZ  not_3_digits ; go to not_3_digits if not
 $020a: [ b8 27 ] MOV  R0, #$27
-$020c: [ 74 38 ] CALL $0338
-$020e: [ b8 3a ] MOV  R0, #$3a     ; load status byte ...
+$020c: [ 74 38 ] CALL convert_and_check_address
+$020e: [ b8 3a ] MOV  R0, #STATUS     ; load status byte ...
 $0210: [ f0    ] MOV  A, @R0       ; ... to A
 $0211: [ 52 3a ] JB2  $023a
 $0213: [ b8 27 ] MOV  R0, #$27     ; address of 1st decoded digit
@@ -527,7 +534,7 @@ $0228: [ ff    ] MOV  A, R7      ; Move current in/out position to A
 $0229: [ 03 01 ] ADD  A, #$01    ; increment
 $022b: [ af    ] MOV  R7, A      ; and store it in in/out position
 $022c: [ f6 38 ] JC   out_overflow
-$022e: [ b8 3b ] MOV  R0, #$3b   ; load memory size...
+$022e: [ b8 3b ] MOV  R0, #MEM_SIZE   ; load memory size...
 $0230: [ f0    ] MOV  A, @R0     ; ... into A
 $0231: [ f2 1a ] JB7  out_print  ; CP3 available, not need to check range
 $0233: [ ff    ] MOV  A, R7      ; check if in/out position...
@@ -536,7 +543,7 @@ $0236: [ 44 1a ] JMP  out_print  ; otherwise, print it
 out_overflow:
 $0238: [ bf ff ] MOV  R7, #$ff   ; set in/out pos to 255
 out_f004:
-$023a: [ 24 46 ] JMP  clear_bit_2_error_f004
+$023a: [ 24 46 ] JMP  clear_addr_ovfl_error_f004
 out_overflow_low
 $023c: [ bf 7f ] MOV  R7, #$7f   ; set in/out pos to 127
 $023e: [ 44 3a ] JMP  out_f004   ; and report f-004
@@ -585,7 +592,7 @@ $0277: [ f1    ] MOV  A, @R1
 $0278: [ b8 01 ] MOV  R0, #$01
 $027a: [ 90    ] MOVX @R0, A     ; (0x25) -> Port A; Write one character to display
 $027b: [ 8a 0f ] ORL  P2, #$0f   ; P2 |= 0000 1111: Prepare to read from bit 0 - 4
-$027d: [ 0c    ] MOVD A, P4      ; ?????write to lower nibble of port 2, then read from it? why not just read from it?
+$027d: [ 0c    ] MOVD A, P4      ; ????? write to lower nibble of port 2, then read from it? why not just read from it?
 $027e: [ 97    ] CLR  C
 $027f: [ bb 04 ] MOV  R3, #$04   ; Test (keypad) bits read: 4 bits in total
 $0281: [ 67    ] RRC  A          ; shift lowest bit to carry
@@ -624,7 +631,7 @@ $02a7: [ e7    ] RL   A             ; rotate to next position
 $02a8: [ ad    ] MOV  R5, A         ; Update mask
 $02a9: [ c9    ] DEC  R1            ; Move to previous Video RAM pos
 $02aa: [ cc    ] DEC  R4            ; Move to previous 'key pressed state' position
-$02ab: [ b8 3a ] MOV  R0, #$3a      ; Load status byte...
+$02ab: [ b8 3a ] MOV  R0, #STATUS      ; Load status byte...
 $02ad: [ f0    ] MOV  A, @R0        ; ... to A
 $02ae: [ 92 ce ] JB4  enable_ram_extension
 $02b0: [ d2 d4 ] JB6  enable_io
@@ -771,7 +778,7 @@ $032d: [ 83    ] RET
 ; Input:
 ;   - A: mask of bits to set in the status register
 set_status_bits
-$032e: [ b8 3a ] MOV  R0, #$3a
+$032e: [ b8 3a ] MOV  R0, #STATUS
 $0330: [ 40    ] ORL  A, @R0
 $0331: [ a0    ] MOV  @R0, A
 $0332: [ 83    ] RET
@@ -781,27 +788,37 @@ $0332: [ 83    ] RET
 ; Input:
 ;   - A: mask of bits to keep in the status register
 clear_status_bits
-$0333: [ b8 3a ] MOV  R0, #$3a
+$0333: [ b8 3a ] MOV  R0, #STATUS
 $0335: [ 50    ] ANL  A, @R0
 $0336: [ a0    ] MOV  @R0, A
 $0337: [ 83    ] RET
 
 ; Convert and check address
 ; -------------------------
+; Converts the 3 entered digits into a single address
+; and checks that the address is in range.
+; Inputs:
+; - R0: Address of most significant digit
+; Outputs
+; - A: the resulting number
+convert_and_check_address:
 $0338: [ ba 02 ] MOV  R2, #$02         ; 3 digits to convert
 $033a: [ 34 4e ] CALL digits_to_number ; convert to number
-$033c: [ b6 48 ] JF0  $0348            ; overflow?
-$033e: [ f2 41 ] JB7  $0341            ; > 127? check memory size
+$033c: [ b6 48 ] JF0  caca_ovfl        ; overflow?
+$033e: [ f2 41 ] JB7  caca_check_cp3   ; > 127? check memory size
+caca_done:
 $0340: [ 83    ] RET
-$0341: [ b8 3b ] MOV  R0, #$3b         ; load address of memory size
+caca_check_cp3:
+$0341: [ b8 3b ] MOV  R0, #MEM_SIZE         ; load address of memory size
 $0343: [ f0    ] MOV  A, @R0           ; load memory size
-$0344: [ f2 40 ] JB7  $0340            ; if > 127, all is fine
-$0346: [ 64 49 ] JMP  $0349            ; otherwise, mark invalid address
-
+$0344: [ f2 40 ] JB7  caca_done        ; if > 127, all is fine
+$0346: [ 64 49 ] JMP  caca_ovfl2       ; otherwise, mark invalid address
+caca_ovfl:
 $0348: [ 85    ] CLR  F0
-$0349: [ 23 04 ] MOV  A, #$04 ; mask 0000 0100
+caca_ovfl2:
+$0349: [ 23 04 ] MOV  A, #$04 ; mask 0000 0100, "address overflow"
 $034b: [ 74 2e ] CALL set_status_bits
-$034d: [ 64 40 ] JMP  $0340
+$034d: [ 64 40 ] JMP  caca_done
 
 ; Checks whether address in A is valid
 ; ------------------------------------
@@ -815,7 +832,7 @@ $0350: [ f2 53 ] JB7  $0353        ; ca_2
 ca_end:
 $0352: [ 83    ] RET               ; everything < 128 is valid
 ca_2:
-$0353: [ b8 3b ] MOV  R0, #$3b     ; load memory size...
+$0353: [ b8 3b ] MOV  R0, #MEM_SIZE     ; load memory size...
 $0355: [ f0    ] MOV  A, @R0       ; ... to A
 $0356: [ f2 52 ] JB7  ca_end       ; address is valid if CP3 is installed
 $0358: [ 95    ] CPL  F0           ; otherwise, set flag
@@ -857,7 +874,7 @@ $036c: [ 74 0a ] CALL compute_effective_address ; ... and compute address
 $036e: [ 81    ] MOVX A, @R1      ; Load MSB
 $036f: [ 96 78 ] JNZ  cata_end    ; bail out if it's not data (00.xxx)
 $0371: [ 19    ] INC  R1          ; move to LSB
-$0372: [ b8 36 ] MOV  R0, #$36    ; Load Accu MSB address
+$0372: [ b8 36 ] MOV  R0, #ACCU_MSB   ; Load Accu MSB address
 $0374: [ f0    ] MOV  A, @R0      ; Load Accu MSB
 $0375: [ 96 78 ] JNZ  $0378       ; bail out if it's not data (00.xxx)
 $0377: [ 18    ] INC  R0          ; move to Accu LSB
@@ -908,7 +925,7 @@ $039a: [ 83    ] RET
 ; Inputs:
 ; - R0: Value to be stored
 save_to_accu:
-$039b: [ b8 36 ] MOV  R0, #$36
+$039b: [ b8 36 ] MOV  R0, #ACCU_MSB
 $039d: [ b0 00 ] MOV  @R0, #$00
 $039f: [ 18    ] INC  R0
 $03a0: [ a0    ] MOV  @R0, A
@@ -961,7 +978,7 @@ $03bc: [ 83    ] RET             ; cycles: R3 * 201 * 2 + 1
 save_memory:
 $03bd: [ b9 00 ] MOV  R1, #$00     ; Load start address of RAM
 byteloop:
-$03bf: [ b8 3a ] MOV  R0, #$3a     ; Load status byte...
+$03bf: [ b8 3a ] MOV  R0, #STATUS     ; Load status byte...
 $03c1: [ f0    ] MOV  A, @R0       ; ... to A
 $03c2: [ 12 eb ] JB0  stop_pressed_3; jump if stop is pressed.
 $03c4: [ 97    ] CLR  C
@@ -1072,7 +1089,7 @@ $0434: [ 23 01 ] MOV  A, #$01           ; mask: 0000 0001: 'STP pressed'
 $0436: [ 74 33 ] CALL clear_status_bits ; clear ALL but 'STP pressed'
 $0438: [ b8 38 ] MOV  R0, #VM_PC
 $043a: [ f0    ] MOV  A, @R0            ; Load VM PC into A
-$043b: [ b8 3b ] MOV  R0, #$3b
+$043b: [ b8 3b ] MOV  R0, #MEM_SIZE
 $043d: [ d0    ] XRL  A, @R0            ; Compare A with ($3b)
 $043e: [ c6 44 ] JZ   $0444
 $0440: [ 85    ] CLR  F0
@@ -1082,7 +1099,7 @@ $0442: [ c4 2f ] JMP  inc_pc
 $0444: [ c4 73 ] JMP  $0673
 
 opcode_AKO:
-$0446: [ b8 36 ] MOV  R0, #$36          ; load address of Accu MSB
+$0446: [ b8 36 ] MOV  R0, #ACCU_MSB     ; load address of Accu MSB
 $0448: [ b0 00 ] MOV  @R0, #$00         ; write 0 to it
 $044a: [ 18    ] INC  R0                ; move to LSB
 $044b: [ 81    ] MOVX A, @R1            ; load operand
@@ -1092,13 +1109,13 @@ $044d: [ c4 2f ] JMP  inc_pc
 opcode_ABS:
 $044f: [ 74 5b ] CALL check_and_load_effective_address
 $0451: [ b6 5d ] JF0  error_f003_trampoline
-$0453: [ b8 36 ] MOV  R0, #$36
-$0455: [ f0    ] MOV  A, @R0
-$0456: [ 91    ] MOVX @R1, A
-$0457: [ 18    ] INC  R0
-$0458: [ 19    ] INC  R1
-$0459: [ f0    ] MOV  A, @R0
-$045a: [ 91    ] MOVX @R1, A
+$0453: [ b8 36 ] MOV  R0, #ACCU_MSB ; Load Accu MSB...
+$0455: [ f0    ] MOV  A, @R0        ; ... into A
+$0456: [ 91    ] MOVX @R1, A        ; and store it in operand
+$0457: [ 18    ] INC  R0            ; move on to LSB of Accu
+$0458: [ 19    ] INC  R1            ; and Operand
+$0459: [ f0    ] MOV  A, @R0        ; load Accu's LSB
+$045a: [ 91    ] MOVX @R1, A        ; and store it too.
 $045b: [ c4 2f ] JMP  inc_pc
 
 error_f003_trampoline:
@@ -1107,7 +1124,7 @@ $045d: [ c4 5d ] JMP  error_f003
 opcode_LDA:
 $045f: [ 74 5b ] CALL check_and_load_effective_address
 $0461: [ b6 5d ] JF0  error_f003_trampoline
-$0463: [ b8 36 ] MOV  R0, #$36    ; load Accu MSB address
+$0463: [ b8 36 ] MOV  R0, #ACCU_MSB    ; load Accu MSB address
 $0465: [ 81    ] MOVX A, @R1      ; load msb
 $0466: [ a0    ] MOV  @R0, A      ; store it in Accu MSB
 $0467: [ 18    ] INC  R0          ; move to Accu LSB address ...
@@ -1154,7 +1171,7 @@ $0493: [ a0    ] MOV  @R0, A      ; store new address in PC
 $0494: [ c4 39 ] JMP  end_of_instr
 
 opcode_SPB:
-$0496: [ b8 3a ] MOV  R0, #$3a    ; Load address of status byte
+$0496: [ b8 3a ] MOV  R0, #STATUS    ; Load address of status byte
 $0498: [ f0    ] MOV  A, @R0      ; Load status byte
 $0499: [ b2 9d ] JB5  spb_cond_true ; comparison was true -> execute jump
 $049b: [ c4 2f ] JMP  inc_pc      ; comparuson was false, move on with next instr
@@ -1168,18 +1185,19 @@ $04a3: [ 19    ] INC  R1          ; treat loaded address as operand address; mov
 $04a4: [ 84 8f ] JMP  opcode_SPU  ; ... and do a SPU
 
 opcode_NEG:
-$04a6: [ b8 36 ] MOV  R0, #$36
-$04a8: [ f0    ] MOV  A, @R0
-$04a9: [ 96 bd ] JNZ  error_f005
-$04ab: [ 97    ] CLR  C
-$04ac: [ 18    ] INC  R0
-$04ad: [ f0    ] MOV  A, @R0
-$04ae: [ 03 fe ] ADD  A, #$fe
-$04b0: [ f6 bd ] JC   error_f005
-$04b2: [ f0    ] MOV  A, @R0
-$04b3: [ c6 b9 ] JZ   $04b9
-$04b5: [ b0 00 ] MOV  @R0, #$00
+$04a6: [ b8 36 ] MOV  R0, #ACCU_MSB   ; Load Accu's MSB...
+$04a8: [ f0    ] MOV  A, @R0          ; ... into A
+$04a9: [ 96 bd ] JNZ  error_f005      ; Error if Accu does not contain data
+$04ab: [ 97    ] CLR  C               ; Clear Carry
+$04ac: [ 18    ] INC  R0              ; Load Accu's LSB...
+$04ad: [ f0    ] MOV  A, @R0          ; ... into A
+$04ae: [ 03 fe ] ADD  A, #$fe         ; .. add 254 ...
+$04b0: [ f6 bd ] JC   error_f005      ; if it overflows, A was > 1
+$04b2: [ f0    ] MOV  A, @R0          ; Load Accu again
+$04b3: [ c6 b9 ] JZ   $04b9           ; if 0, set it to 1
+$04b5: [ b0 00 ] MOV  @R0, #$00       ; otherwise, set  it to 0
 $04b7: [ c4 2f ] JMP  inc_pc
+neg_was_zero:
 $04b9: [ b0 01 ] MOV  @R0, #$01
 $04bb: [ c4 2f ] JMP  inc_pc
 
@@ -1188,14 +1206,14 @@ $04bd: [ bc 05 ] MOV  R4, #$05
 $04bf: [ c4 fd ] JMP  show_error     ; F-005
 
 opcode_UND:
-$04c1: [ b8 36 ] MOV  R0, #$36
-$04c3: [ f0    ] MOV  A, @R0
-$04c4: [ 96 bd ] JNZ  error_f005
-$04c6: [ 97    ] CLR  C
-$04c7: [ 18    ] INC  R0
-$04c8: [ f0    ] MOV  A, @R0
-$04c9: [ 03 fe ] ADD  A, #$fe
-$04cb: [ f6 bd ] JC   error_f005
+$04c1: [ b8 36 ] MOV  R0, #ACCU_MSB  ; Load Accu's MSB...
+$04c3: [ f0    ] MOV  A, @R0         ; ... into A
+$04c4: [ 96 bd ] JNZ  error_f005     ; Error if Accu does not contain data
+$04c6: [ 97    ] CLR  C              ; Clear Carry
+$04c7: [ 18    ] INC  R0             ; Load Accu's LSB...
+$04c8: [ f0    ] MOV  A, @R0         ; ... into A
+$04c9: [ 03 fe ] ADD  A, #$fe        ; .. add 254 ...
+$04cb: [ f6 bd ] JC   error_f005     ; if it overflows, A was > 1
 $04cd: [ 74 5b ] CALL check_and_load_effective_address
 $04cf: [ b6 5d ] JF0  error_f003_trampoline
 $04d1: [ 81    ] MOVX A, @R1
@@ -1456,11 +1474,11 @@ $0612: [ c6 7a ] JZ   demo_8     ; jump if yes
 not_one:
 $0614: [ 34 79 ] CALL clear_display
 $0616: [ be 00 ] MOV  R6, #$00
-$0618: [ b8 3a ] MOV  R0, #$3a
+$0618: [ b8 3a ] MOV  R0, #STATUS
 $061a: [ f0    ] MOV  A, @R0         ; load status byte
 $061b: [ 12 4f ] JB0  stop_pressed_2 ; jump if STP pressed
 check_step_key:
-$061d: [ b8 3a ] MOV  R0, #$3a
+$061d: [ b8 3a ] MOV  R0, #STATUS
 $061f: [ f0    ] MOV  A, @R0         ; load status byte
 $0620: [ 32 53 ] JB1  step_pressed_2 ; jump if STEP pressed
 
@@ -1483,17 +1501,17 @@ $0635: [ a0    ] MOV  @R0, A         ; PC = PC + 1
 $0636: [ ab    ] MOV  R3, A
 $0637: [ f6 5d ] JC   error_f003     ; Jump if PC overflowed
 end_of_instr:
-$0639: [ b8 3b ] MOV  R0, #$3b
+$0639: [ b8 3b ] MOV  R0, #MEM_SIZE
 $063b: [ f0    ] MOV  A, @R0         ; Load extension status
 $063c: [ f2 41 ] JB7  cp3_installed
 $063e: [ fb    ] MOV  A, R3          ; Restore PC to A
 $063f: [ f2 5d ] JB7  error_f003     ; show error if PC >= 128
 cp3_installed:
 $0641: [ b6 73 ] JF0  single_step_done  ; break if in single-step-mode
-$0643: [ b8 3a ] MOV  R0, #$3a
+$0643: [ b8 3a ] MOV  R0, #STATUS
 $0645: [ f0    ] MOV  A, @R0         ; load status byte
 $0646: [ 32 6f ] JB1  pc_handler_trampoline ; jump if STEP pressed. If not, we're done.
-$0648: [ b8 3a ] MOV  R0, #$3a
+$0648: [ b8 3a ] MOV  R0, #STATUS
 $064a: [ f0    ] MOV  A, @R0         ; Load status byte
 $064b: [ 12 61 ] JB0  print_content_of_addr_0 ; print addr 0 if STP pressed
 $064d: [ c4 22 ] JMP  step_handler   ; Otherwise, move on with the next instr
@@ -1527,7 +1545,7 @@ $066d: [ 44 21 ] JMP  print_C
 pc_handler_trampoline:
 $066f: [ 04 98 ] JMP  pc_handler
 
-; ??????? NEVER REACHED??/
+; ??????? NEVER REACHED?
 $0671: [ 04 86 ] JMP  wait_key
 
 single_step_done:
@@ -1559,7 +1577,7 @@ $0690: [ b8 05 ] MOV  R0, #$05
 $0692: [ ad    ] MOV  R5, A
 $0693: [ be 02 ] MOV  R6, #$02
 $0695: [ 34 83 ] CALL print_value
-$0697: [ b9 3a ] MOV  R1, #$3a
+$0697: [ b9 3a ] MOV  R1, #STATUS
 $0699: [ f1    ] MOV  A, @R1
 $069a: [ 12 a7 ] JB0  $06a7
 $069c: [ fd    ] MOV  A, R5
@@ -1623,7 +1641,7 @@ print_accu:
 $06ea: [ be 00 ] MOV  R6, #$00    ; Load Offset into Video RAM
 $06ec: [ 85    ] CLR  F0          ;
 $06ed: [ 95    ] CPL  F0          ; Set F0: "no hundreds" for print
-$06ee: [ b8 36 ] MOV  R0, #$36    ; Load Accu MSB address
+$06ee: [ b8 36 ] MOV  R0, #ACCU_MSB    ; Load Accu MSB address
 $06f0: [ 34 83 ] CALL print_value ; and print it
 $06f2: [ b8 37 ] MOV  R0, #$37    ; Load Accu LSB address
 $06f4: [ be 02 ] MOV  R6, #$02    ; Offset into Video RAM
@@ -1660,7 +1678,7 @@ $0717: [ 74 0a ] CALL compute_effective_address ; Compute effective addres of 0 
 $0719: [ 99 bf ] ANL  P1, #$bf    ; P1 &= 1011 1111: clear CassWR
 $071b: [ 89 80 ] ORL  P1, #$80    ; P1 |= 1000 0000: set CassData
 wait_cas:
-$071d: [ b8 3a ] MOV  R0, #$3a    ; Load status byte...
+$071d: [ b8 3a ] MOV  R0, #STATUS    ; Load status byte...
 $071f: [ f0    ] MOV  A, @R0      ; .. to A
 $0720: [ 12 78 ] JB0  cal_stop_pressed; jump if STP pressed
 $0722: [ 09    ] IN   A, P1       ; Read port 1
@@ -1675,13 +1693,13 @@ $072e: [ f4 d0 ] CALL $07d0
 $0730: [ f8    ] MOV  A, R0
 $0731: [ d3 08 ] XRL  A, #$08
 $0733: [ 96 2a ] JNZ  $072a
-$0735: [ b8 3a ] MOV  R0, #$3a
+$0735: [ b8 3a ] MOV  R0, #STATUS
 $0737: [ f0    ] MOV  A, @R0
 $0738: [ 12 78 ] JB0  $0778
 $073a: [ b8 08 ] MOV  R0, #$08
 $073c: [ f9    ] MOV  A, R1
 $073d: [ 96 2a ] JNZ  $072a
-$073f: [ b8 3b ] MOV  R0, #$3b
+$073f: [ b8 3b ] MOV  R0, #MEM_SIZE
 $0741: [ f0    ] MOV  A, @R0
 $0742: [ f2 46 ] JB7  $0746
 $0744: [ e4 64 ] JMP  $0764
@@ -1697,7 +1715,7 @@ $0753: [ f4 d0 ] CALL $07d0
 $0755: [ f8    ] MOV  A, R0
 $0756: [ d3 08 ] XRL  A, #$08
 $0758: [ 96 4f ] JNZ  $074f
-$075a: [ b8 3a ] MOV  R0, #$3a
+$075a: [ b8 3a ] MOV  R0, #STATUS
 $075c: [ f0    ] MOV  A, @R0      ; Load status byte
 $075d: [ 12 78 ] JB0  cal_stop_pressed ; jump if STP pressed
 $075f: [ b8 08 ] MOV  R0, #$08
