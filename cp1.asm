@@ -835,7 +835,7 @@ $034d: [ 64 40 ] JMP  caca_done
 ; - Flag F0: set if address is invalid
 check_address:
 $034f: [ 85    ] CLR  F0           ; clear result flag
-$0350: [ f2 53 ] JB7  $0353        ; ca_2
+$0350: [ f2 53 ] JB7  ca_2         ; check memory if >= 128
 ca_end:
 $0352: [ 83    ] RET               ; everything < 128 is valid
 ca_2:
@@ -875,7 +875,7 @@ check_and_test_operand_and_accu
 $0365: [ 81    ] MOVX A, @R1      ; Load operand to A ...
 $0366: [ ab    ] MOV  R3, A       ; ... and to R3
 $0367: [ 74 4f ] CALL check_address ; check if it's valid
-$0369: [ b6 78 ] JF0  $0378       ; bail out if not valid
+$0369: [ b6 78 ] JF0  cata_end    ; bail out if not valid
 $036b: [ fb    ] MOV  A, R3       ; Restore operand...
 $036c: [ 74 0a ] CALL compute_effective_address ; ... and compute address
 $036e: [ 81    ] MOVX A, @R1      ; Load MSB
@@ -883,7 +883,7 @@ $036f: [ 96 78 ] JNZ  cata_end    ; bail out if it's not data (00.xxx)
 $0371: [ 19    ] INC  R1          ; move to LSB
 $0372: [ b8 36 ] MOV  R0, #ACCU_MSB   ; Load Accu MSB address
 $0374: [ f0    ] MOV  A, @R0      ; Load Accu MSB
-$0375: [ 96 78 ] JNZ  $0378       ; bail out if it's not data (00.xxx)
+$0375: [ 96 78 ] JNZ  cata_end    ; bail out if it's not data (00.xxx)
 $0377: [ 18    ] INC  R0          ; move to Accu LSB
 cata_end:
 $0378: [ 83    ] RET
