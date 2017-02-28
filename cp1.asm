@@ -31,9 +31,9 @@
 ;      bit 6: enable IO on 8155s
 ;      bit 5: result of last comparison
 ;      bit 4: accessed RAM extension
-;      bit 3: ?
+;      bit 3: Memory full
 ;      bit 2: Address overflow
-;      bit 1; STEP pressed
+;      bit 1: STEP pressed
 ;      bit 0: STP pressed
 ;0x3b: memory size
 ;0x3c - 0x3e: buffer for atoi
@@ -254,64 +254,71 @@ $00e5: [ 04 86 ] JMP  wait_key       ;
 
 clear_addr_ovfl_error_f004_trampoline2:
 $00e7: [ 24 46 ] JMP  clear_addr_ovfl_error_f004
-$00e9: [ 24 0c ] JMP  $010c
+
+inp_not3_trampoline:
+$00e9: [ 24 0c ] JMP  inp_not3
 
 inp_handler:
-$00eb: [ fe    ] MOV  A, R6
-$00ec: [ d3 03 ] XRL  A, #$03
-$00ee: [ 96 e9 ] JNZ  $00e9
-$00f0: [ 23 f7 ] MOV  A, #$f7           ; 1111 0111
-$00f2: [ 74 33 ] CALL clear_status_bits
-$00f4: [ b8 27 ] MOV  R0, #$27
+$00eb: [ fe    ] MOV  A, R6             ; Load # of entered digits
+$00ec: [ d3 03 ] XRL  A, #$03           ; is it 3?
+$00ee: [ 96 e9 ] JNZ  inp_not3_trampoline ; Jump if not.
+$00f0: [ 23 f7 ] MOV  A, #$f7           ; 1111 0111: "Memory full" bit ...
+$00f2: [ 74 33 ] CALL clear_status_bits ; ... is cleared from status
+$00f4: [ b8 27 ] MOV  R0, #$27          ; load address of entered digits
 $00f6: [ 74 38 ] CALL convert_and_check_address
-$00f8: [ b8 3a ] MOV  R0, #STATUS
-$00fa: [ f0    ] MOV  A, @R0
+$00f8: [ b8 3a ] MOV  R0, #STATUS       ; load ...
+$00fa: [ f0    ] MOV  A, @R0            ; status byte
 $00fb: [ 52 e7 ] JB2  clear_addr_ovfl_error_f004_trampoline2
-$00fd: [ b8 27 ] MOV  R0, #$27    ; address of 1st decoded digit
-$00ff: [ ba 02 ] MOV  R2, #$02    ; 3 digits to convert
-$0101: [ 34 4e ] CALL digits_to_number
-$0103: [ af    ] MOV  R7, A
-$0104: [ be 00 ] MOV  R6, #$00
+$00fd: [ b8 27 ] MOV  R0, #$27          ; address of 1st decoded digit
+$00ff: [ ba 02 ] MOV  R2, #$02          ; 3 digits to convert
+$0101: [ 34 4e ] CALL digits_to_number  ; convert them
+$0103: [ af    ] MOV  R7, A             ; set current I/O pos to entered addres.
+inp_done:
+$0104: [ be 00 ] MOV  R6, #$00    ; Reset # of entered digits
 $0106: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
 $0108: [ b0 79 ] MOV  @R0, #$79   ; ... to 'E'
 $010a: [ 04 86 ] JMP  wait_key
 
-$010c: [ fe    ] MOV  A, R6
-$010d: [ d3 05 ] XRL  A, #$05
-$010f: [ 96 44 ] JNZ  $0144
-$0111: [ b8 3a ] MOV  R0, #STATUS    ; load status byte...
+inp_not3:
+$010c: [ fe    ] MOV  A, R6       ; Load # of entered digits
+$010d: [ d3 05 ] XRL  A, #$05     ; is it 5?
+$010f: [ 96 44 ] JNZ  error_f001_trampoline ; Jump if not.
+$0111: [ b8 3a ] MOV  R0, #STATUS ; load status byte...
 $0113: [ f0    ] MOV  A, @R0      ; ... to A
-$0114: [ 72 4a ] JB3  error_f004  ;
-$0116: [ b8 27 ] MOV  R0, #$27
-$0118: [ ba 01 ] MOV  R2, #$01
+$0114: [ 72 4a ] JB3  error_f004  ; bail out if memory was full
+$0116: [ b8 27 ] MOV  R0, #$27    ; load address of entered digits
+$0118: [ ba 01 ] MOV  R2, #$01    ; 2 digits to convert
 $011a: [ 34 4e ] CALL digits_to_number
-$011c: [ 97    ] CLR  C
-$011d: [ a9    ] MOV  R1, A
-$011e: [ 03 e7 ] ADD  A, #$e7
-$0120: [ f6 4a ] JC   error_f004
-$0122: [ b8 29 ] MOV  R0, #$29
-$0124: [ ba 02 ] MOV  R2, #$02
+$011c: [ 97    ] CLR  C           ; clear carry
+$011d: [ a9    ] MOV  R1, A       ; save number in R1
+$011e: [ 03 e7 ] ADD  A, #$e7     ; add (256 - 25) to check for max opcode
+$0120: [ f6 4a ] JC   error_f004  ; if carry is set, value was > 25 -> invalid opcode
+$0122: [ b8 29 ] MOV  R0, #$29    ; load address if 3rd entered digit
+$0124: [ ba 02 ] MOV  R2, #$02    ; 3 digits to convert
 $0126: [ 34 4e ] CALL digits_to_number
-$0128: [ b6 4a ] JF0  error_f004
-$012a: [ ac    ] MOV  R4, A
-$012b: [ f9    ] MOV  A, R1
-$012c: [ aa    ] MOV  R2, A
-$012d: [ ff    ] MOV  A, R7
+$0128: [ b6 4a ] JF0  error_f004  ; report F-004 if there was an overflow
+$012a: [ ac    ] MOV  R4, A       ; Store operand in R4
+$012b: [ f9    ] MOV  A, R1       ; Move opcode ...
+$012c: [ aa    ] MOV  R2, A       ; ... to R2
+$012d: [ ff    ] MOV  A, R7       ; move R7 (current I/O pointer) to A
 $012e: [ 74 0a ] CALL compute_effective_address
-$0130: [ fa    ] MOV  A, R2
-$0131: [ 91    ] MOVX @R1, A
-$0132: [ 19    ] INC  R1
-$0133: [ fc    ] MOV  A, R4
-$0134: [ 91    ] MOVX @R1, A
-$0135: [ b8 3b ] MOV  R0, #MEM_SIZE
-$0137: [ ff    ] MOV  A, R7
-$0138: [ d0    ] XRL  A, @R0
-$0139: [ c6 3e ] JZ   $013e
-$013b: [ 1f    ] INC  R7
-$013c: [ 24 04 ] JMP  $0104
-$013e: [ 23 08 ] MOV  A, #$08 ; mask 0000 1000
+$0130: [ fa    ] MOV  A, R2       ; Store opcode in...
+$0131: [ 91    ] MOVX @R1, A      ; ... current pos' MSB
+$0132: [ 19    ] INC  R1          ; move to LSB
+$0133: [ fc    ] MOV  A, R4       ; Store operand in...
+$0134: [ 91    ] MOVX @R1, A      ; ... current pos' LSB
+$0135: [ b8 3b ] MOV  R0, #MEM_SIZE ; Load mem-size address
+$0137: [ ff    ] MOV  A, R7       ; compare current i/o pos ...
+$0138: [ d0    ] XRL  A, @R0      ; ... with mem-size
+$0139: [ c6 3e ] JZ   inp_mark_mem_full ; if it's the same, mark "memory full"
+$013b: [ 1f    ] INC  R7          ; otherwise, move to the next position
+$013c: [ 24 04 ] JMP  inp_done
+inp_mark_mem_full:
+$013e: [ 23 08 ] MOV  A, #$08 ; 0000 1000: "memory full" bit
 $0140: [ 74 2e ] CALL set_status_bits
-$0142: [ 24 04 ] JMP  $0104
+$0142: [ 24 04 ] JMP  inp_done
+
+error_f001_trampoline:
 $0144: [ 04 c9 ] JMP  error_f001
 
 clear_addr_ovfl_error_f004
