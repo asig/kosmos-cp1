@@ -973,8 +973,9 @@ Inputs:
 ```
 delay_millis:
 $03b6: [ ba c8 ] MOV  R2, #$c8   ; cycles: 2
-$03b8: [ ea b8 ] DJNZ R2, $03b8  ; cycles: + 200 * 2
-$03ba: [ eb b6 ] DJNZ R3, $03b6  ; cycles: R3 * 201 * 2
+dm_l1:
+$03b8: [ ea b8 ] DJNZ R2, dm_l1  ; cycles: + 200 * 2
+$03ba: [ eb b6 ] DJNZ R3, delay_millis  ; cycles: R3 * 201 * 2
 $03bc: [ 83    ] RET             ; cycles: R3 * 201 * 2 + 1
 
 
@@ -1028,17 +1029,18 @@ $03f3: [ 23 fe ] MOV  A, #$fe      ; mask 1110 1111 ; 'access RAM extension'
 $03f5: [ 74 33 ] CALL clear_status_bits
 $03f7: [ 83    ] RET
 
+; ????? Dead code?
 $03f8: [ 00    ] NOP
-$03f9: [ ef 54 ] DJNZ R7, $0354
+$03f9: [ ef 54 ] .DB $ef, $54
 $03fb: [ 28    ] XCH  A, R0
-$03fc: [ d2 36 ] JB6  $0336
+$03fc: [ d2 36 ] .DB $d2, $36
 $03fe: [ 00    ] NOP
 $03ff: [ 05    ] EN   I
 
 ; Dispatch table for opcodes
 $0400: [ 19    ] .DB  <opcode_INVALID_trampoline  ; $19   ;  opcode 00
 $0401: [ 34    ] .DB  <opcode_HLT       ; $34   ;  opcode 01: HLT
-$402:  [ eb    ] .DB  <opcode_ANZ       ; $eb   ;  opcode 02: ANZ
+$0402: [ eb    ] .DB  <opcode_ANZ       ; $eb   ;  opcode 02: ANZ
 $0403: [ 7b    ] .DB  <opcode_VZG       ; $7b   ;  opcode 03: VZG
 $0404: [ 46    ] .DB  <opcode_AKO       ; $46   ;  opcode 04: AKO
 $0405  [ 5f    ] .DB  <opcode_LDA       ; $5f   ;  opcode 05: LDA
@@ -1097,13 +1099,13 @@ $0436: [ 74 33 ] CALL clear_status_bits ; clear ALL but 'STP pressed'
 $0438: [ b8 38 ] MOV  R0, #VM_PC
 $043a: [ f0    ] MOV  A, @R0            ; Load VM PC into A
 $043b: [ b8 3b ] MOV  R0, #MEM_SIZE
-$043d: [ d0    ] XRL  A, @R0            ; Compare A with ($3b)
-$043e: [ c6 44 ] JZ   $0444
+$043d: [ d0    ] XRL  A, @R0            ; Compare VM PC with Mem size
+$043e: [ c6 44 ] JZ   hlt_no_incr       ; If equal, don't increment PC
 $0440: [ 85    ] CLR  F0
-$0441: [ 95    ] CPL  F0
-$0442: [ c4 2f ] JMP  inc_pc
-
-$0444: [ c4 73 ] JMP  $0673
+$0441: [ 95    ] CPL  F0                ; Set F0 to signal "stop execution"
+$0442: [ c4 2f ] JMP  inc_pc            ; and increment PC
+hlt_no_incr:
+$0444: [ c4 73 ] JMP  stop_execution
 
 opcode_AKO:
 $0446: [ b8 36 ] MOV  R0, #ACCU_MSB     ; load address of Accu MSB
@@ -1514,7 +1516,7 @@ $063c: [ f2 41 ] JB7  cp3_installed
 $063e: [ fb    ] MOV  A, R3          ; Restore PC to A
 $063f: [ f2 5d ] JB7  error_f003     ; show error if PC >= 128
 cp3_installed:
-$0641: [ b6 73 ] JF0  single_step_done  ; break if in single-step-mode
+$0641: [ b6 73 ] JF0  stop_execution ;
 $0643: [ b8 3a ] MOV  R0, #STATUS
 $0645: [ f0    ] MOV  A, @R0         ; load status byte
 $0646: [ 32 6f ] JB1  pc_handler_trampoline ; jump if STEP pressed. If not, we're done.
@@ -1555,7 +1557,7 @@ $066f: [ 04 98 ] JMP  pc_handler
 ; ??????? NEVER REACHED?
 $0671: [ 04 86 ] JMP  wait_key
 
-single_step_done:
+stop_execution:
 $0673: [ 85    ] CLR  F0
 $0674: [ be 00 ] MOV  R6, #$00   ; set # of digits entered to 0
 $0676: [ 04 98 ] JMP  pc_handler ; print PC and back to key loop
