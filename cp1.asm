@@ -10,8 +10,8 @@
 ; Code (C) 1983, Franckh'sche Verlagshandlung, W. Keller & Co., Stuttgart, Germany
 ; Comments (C) 2017, Andreas Signer <asigner@gmail.com>
 
-; RAM Map
-; -------
+; 8049 Memory Map
+; ---------------
 ;0x00 - 0x07: Register Bank 0 (R0 - R7)
 ;0x08 - 0x17: Stack (8 levels)
 ;0x18 - 0x1f: Register Bank 1 (R0 - R7)
@@ -28,7 +28,7 @@
 ;0x39: Last byte read from external RAM
 ;0x3a: status register
 ;      bit 7: ?
-;      bit 6: enable IO on 8155s
+;      bit 6: IO on 8155s enabled
 ;      bit 5: result of last comparison
 ;      bit 4: accessed RAM extension
 ;      bit 3: Memory full
@@ -41,7 +41,7 @@
 ;0x40: Last byte written to port 2
 ;0x41: Last byte written to port 4
 ;0x42: Last byte written to port 5
-;0x43: ???
+;0x43: Reaction test delay in secs
 ;0x44: last key pressed
 
     .equ ACCU_MSB, $36
@@ -413,7 +413,6 @@ $0192: [ 83    ] RET
 no_hundreds:
 $0193: [ 85    ] CLR  F0
 $0194: [ 24 8a ] JMP  print_tens_and_ones
-```
 
 ; Fetch and print external RAM
 ; ----------------------------
@@ -439,7 +438,6 @@ $01a4: [ a0    ] MOV  @R0, A      ; ... in 0x39
 $01a5: [ be 02 ] MOV  R6, #$02    ; print "low byte": start at 2
 $01a7: [ 34 83 ] CALL print_value ; print value
 $01a9: [ 83    ] RET
-```
 
 ; Append digit to Video RAM
 ; -------------------------
@@ -571,12 +569,11 @@ $0254: [ b8 07 ] MOV  R0, #$07
 $0256: [ be 02 ] MOV  R6, #$02
 $0258: [ 34 83 ] CALL print_value
 $025a: [ 04 86 ] JMP  wait_key
-```
 
-### Timer/Counter interrupt
-- R5: Mask used for keyboard reading and display addressing
-- R3: Internal scratch register: Loop vars, computations
-```
+; Timer/Counter interrupt
+; -----------------------
+; - R5: Mask used for keyboard reading and display addressing
+; - R3: Internal scratch register: Loop vars, computations
 timer:
 $025c: [ d5    ] SEL  RB1        ; Switch to register bank 1
 $025d: [ 2f    ] XCH  A, R7      ; Restore A from last interrupt
@@ -965,12 +962,11 @@ $03b1: [ fa    ] MOV  A, R2           ; Move mask to A
 $03b2: [ 37    ] CPL  A               ; negate mask
 $03b3: [ 51    ] ANL  A, @R1          ; AND with target byte
 $03b4: [ 64 af ] JMP  store_result
-```
 
-### Delay for n millis
-Inputs:
-- R3: number of millis to delay
-```
+; Delay for n millis
+; ------------------
+; Inputs:
+; - R3: number of millis to delay
 delay_millis:
 $03b6: [ ba c8 ] MOV  R2, #$c8   ; cycles: 2
 dm_l1:
@@ -1406,19 +1402,20 @@ opcode_P2A:
 $05a4: [ 81    ] MOVX A, @R1        ; load operand...
 $05a5: [ aa    ] MOV  R2, A         ; ... and store it in R2
 $05a6: [ 74 85 ] CALL enable_internal_io  ; enable IO on internal 8155
-$05a8: [ b9 40 ] MOV  R1, #$40      ; load addres of "last byte to p2"
-$05aa: [ bc 02 ] MOV  R4, #$02
+$05a8: [ b9 40 ] MOV  R1, #$40      ; load address of "last byte to p2"
+$05aa: [ bc 02 ] MOV  R4, #$02      ; load port address (2) to R4
+write_to_port:
 $05ac: [ b8 37 ] MOV  R0, #$37      ; Load address of Accu LSB
 $05ae: [ fa    ] MOV  A, R2         ; load instr operand
 $05af: [ 96 bf ] JNZ  p2a_single_pin; jump to single pin if != 0
 $05b1: [ f0    ] MOV  A, @R0        ; load Accu LSB
 $05b2: [ a1    ] MOV  @R1, A        ; store last byte written to port 2
-$05b3: [ 2c    ] XCH  A, R4
-$05b4: [ a8    ] MOV  R0, A
-$05b5: [ 2c    ] XCH  A, R4
-$05b6: [ 90    ] MOVX @R0, A
-$05b7: [ 23 bf ] MOV  A, #$bf
-$05b9: [ 74 33 ] CALL clear_status_bits
+$05b3: [ 2c    ] XCH  A, R4         ; Move port address stored in R4...
+$05b4: [ a8    ] MOV  R0, A         ; ... to R0 ...
+$05b5: [ 2c    ] XCH  A, R4         ; and restore A again
+$05b6: [ 90    ] MOVX @R0, A        ; write A to port
+$05b7: [ 23 bf ] MOV  A, #$bf       ; 1011 1111 (IO enabled)
+$05b9: [ 74 33 ] CALL clear_status_bits ; Clear "IO enabled" bit in status reg
 $05bb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05bd: [ c4 2f ] JMP  inc_pc
 p2a_single_pin:
@@ -1454,20 +1451,20 @@ $05eb: [ 9a 7f ] ANL  P2, #$7f    ; P2 &= 0111 1111 --> IO == 0
 $05ed: [ 84 bd ] JMP  error_f005
 
 opcode_P4A:
-$05ef: [ 81    ] MOVX A, @R1
-$05f0: [ aa    ] MOV  R2, A
-$05f1: [ 74 92 ] CALL enable_cp3_io
-$05f3: [ b9 41 ] MOV  R1, #$41
-$05f5: [ bc 01 ] MOV  R4, #$01
-$05f7: [ a4 ac ] JMP  $05ac
+$05ef: [ 81    ] MOVX A, @R1    ; load operand...
+$05f0: [ aa    ] MOV  R2, A     ; ... and store it in R2
+$05f1: [ 74 92 ] CALL enable_cp3_io ; Enable extension's 8155
+$05f3: [ b9 41 ] MOV  R1, #$41  ; load address of "last byte to p4"
+$05f5: [ bc 01 ] MOV  R4, #$01  ; load port address (1)
+$05f7: [ a4 ac ] JMP  write_to_port
 
 opcode_P5A:
-$05f9: [ 81    ] MOVX A, @R1
-$05fa: [ aa    ] MOV  R2, A
-$05fb: [ 74 92 ] CALL enable_cp3_io
-$05fd: [ b9 42 ] MOV  R1, #$42
-$05ff: [ bc 03 ] MOV  R4, #$03
-$0601: [ a4 ac ] JMP  $05ac
+$05f9: [ 81    ] MOVX A, @R1    ; load operand...
+$05fa: [ aa    ] MOV  R2, A     ; ... and store it in R2
+$05fb: [ 74 92 ] CALL enable_cp3_io ; Enable extension's 8155
+$05fd: [ b9 42 ] MOV  R1, #$42  ; load address of "last byte to p5"
+$05ff: [ bc 03 ] MOV  R4, #$03  ; load port address (3)
+$0601: [ a4 ac ] JMP  write_to_port
 
 run_handler:
 $0603: [ fe    ] MOV  A, R6      ; Load # of entered digits
@@ -1572,38 +1569,43 @@ $067a: [ c4 7c ] JMP  demo_reactiontest
 demo_reactiontest
 $067c: [ 34 79 ] CALL clear_display
 $067e: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
-$0680: [ b8 43 ] MOV  R0, #$43
-$0682: [ 10    ] INC  @R0
-$0683: [ f0    ] MOV  A, @R0        ; @R0 contains # of secs to delay
+$0680: [ b8 43 ] MOV  R0, #$43      ; Load delay in secs address
+$0682: [ 10    ] INC  @R0           ; increment it
+$0683: [ f0    ] MOV  A, @R0        ; load it to A
+dr_delay:
 $0684: [ bc 04 ] MOV  R4, #$04      ; loop 4 times...
+dr_delay2:
 $0686: [ bb fa ] MOV  R3, #$fa      ; 250 millis each time
 $0688: [ 74 b6 ] CALL delay_millis
-$068a: [ ec 86 ] DJNZ R4, $0686
+$068a: [ ec 86 ] DJNZ R4, dr_delay2 ;
 $068c: [ 07    ] DEC  A
-$068d: [ 96 84 ] JNZ  $0684         ; Continue delaying until 0 secs left.
+$068d: [ 96 84 ] JNZ  dr_delay      ; Continue delaying until 0 secs left.
+                 ; A is 0 at this place
 $068f: [ 97    ] CLR  C
-$0690: [ b8 05 ] MOV  R0, #$05
-$0692: [ ad    ] MOV  R5, A
-$0693: [ be 02 ] MOV  R6, #$02
-$0695: [ 34 83 ] CALL print_value
-$0697: [ b9 3a ] MOV  R1, #STATUS
-$0699: [ f1    ] MOV  A, @R1
-$069a: [ 12 a7 ] JB0  $06a7
-$069c: [ fd    ] MOV  A, R5
-$069d: [ 03 01 ] ADD  A, #$01
-$069f: [ f6 a9 ] JC   $06a9
+dr_loop
+$0690: [ b8 05 ] MOV  R0, #$05      ; Load address of value to be printed (5 == R5)
+$0692: [ ad    ] MOV  R5, A         ; Store A at this address
+$0693: [ be 02 ] MOV  R6, #$02      ; start at Video RAM offset 2
+$0695: [ 34 83 ] CALL print_value   ; print value
+$0697: [ b9 3a ] MOV  R1, #STATUS   ; load status byte address
+$0699: [ f1    ] MOV  A, @R1        ; load status byte
+$069a: [ 12 a7 ] JB0  dr_stop_pressed ; break if stop was pressed
+$069c: [ fd    ] MOV  A, R5         ; otherwise, increment A
+$069d: [ 03 01 ] ADD  A, #$01       ; by 1
+$069f: [ f6 a9 ] JC   dr_done       ; break if overflow happened
 $06a1: [ bb 01 ] MOV  R3, #$01      ; 1 milli
 $06a3: [ 74 b6 ] CALL delay_millis
-$06a5: [ c4 90 ] JMP  $0690
+$06a5: [ c4 90 ] JMP  dr_loop
+dr_stop_pressed:
 $06a7: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
-$06a9: [ be 00 ] MOV  R6, #$00
-$06ab: [ b8 43 ] MOV  R0, #$43
-$06ad: [ fd    ] MOV  A, R5
-$06ae: [ 53 07 ] ANL  A, #$07
-$06b0: [ a0    ] MOV  @R0, A
-$06b1: [ 97    ] CLR  C
-$06b2: [ 04 86 ] JMP  wait_key
-```
+dr_done:
+$06a9: [ be 00 ] MOV  R6, #$00      ; reset # of digits entered
+$06ab: [ b8 43 ] MOV  R0, #$43      ; load delay in secs address
+$06ad: [ fd    ] MOV  A, R5         ; store last reaction time...
+$06ae: [ 53 07 ] ANL  A, #$07       ; ... modulo 8 ...
+$06b0: [ a0    ] MOV  @R0, A        ; ... as next delay.
+$06b1: [ 97    ] CLR  C             ; clear carry
+$06b2: [ 04 86 ] JMP  wait_key      ; and back to main loop
 
 ; Print PC
 ; --------
@@ -1623,23 +1625,25 @@ $06c3: [ bb ff ] MOV  R3, #$ff    ; 255 millis
 $06c5: [ 74 b6 ] CALL delay_millis
 $06c7: [ bb ff ] MOV  R3, #$ff    ; 255 millis
 $06c9: [ 74 b6 ] CALL delay_millis
-$06cb: [ b9 09 ] MOV  R1, #$09
-$06cd: [ bc 0a ] MOV  R4, #$0a
-$06cf: [ 23 00 ] MOV  A, #$00
-$06d1: [ 69    ] ADD  A, R1
-$06d2: [ e3    ] MOVP3 A, @A
-$06d3: [ bb 06 ] MOV  R3, #$06
-$06d5: [ b8 25 ] MOV  R0, #$25
-$06d7: [ a0    ] MOV  @R0, A
-$06d8: [ c8    ] DEC  R0
-$06d9: [ eb d7 ] DJNZ R3, $06d7
+$06cb: [ b9 09 ] MOV  R1, #$09    ; start at 9
+$06cd: [ bc 0a ] MOV  R4, #$0a    ; loop counter
+dc_loop:
+$06cf: [ 23 00 ] MOV  A, #$00     ; move 0 to A
+$06d1: [ 69    ] ADD  A, R1       ; add countdown pos
+$06d2: [ e3    ] MOVP3 A, @A      ; Load segment for that digit
+$06d3: [ bb 06 ] MOV  R3, #$06    ; 6 digits to write
+$06d5: [ b8 25 ] MOV  R0, #$25    ; load last digit address of "Video RAM"
+dc_display_loop:
+$06d7: [ a0    ] MOV  @R0, A      ; store segment mask in Video RAM
+$06d8: [ c8    ] DEC  R0          ; move to next Video RAM address
+$06d9: [ eb d7 ] DJNZ R3, dc_display_loop; continue storing digits
 $06db: [ bb ff ] MOV  R3, #$ff     ; 255 millis
 $06dd: [ 74 b6 ] CALL delay_millis
 $06df: [ bb ff ] MOV  R3, #$ff     ; 255 millis
 $06e1: [ 74 b6 ] CALL delay_millis
-$06e3: [ c9    ] DEC  R1
-$06e4: [ ec cf ] DJNZ R4, $06cf
-$06e6: [ be 00 ] MOV  R6, #$00
+$06e3: [ c9    ] DEC  R1           ; Decrement countdown number
+$06e4: [ ec cf ] DJNZ R4, dc_loop  ; if not done, continue counting down
+$06e6: [ be 00 ] MOV  R6, #$00     ; reset # of digits entered
 $06e8: [ 04 86 ] JMP  wait_key
 
 
@@ -1692,44 +1696,49 @@ $071f: [ f0    ] MOV  A, @R0      ; .. to A
 $0720: [ 12 78 ] JB0  cal_stop_pressed; jump if STP pressed
 $0722: [ 09    ] IN   A, P1       ; Read port 1
 $0723: [ f2 1d ] JB7  wait_cas    ; Wait while CassData is not low
-$0725: [ 27    ] CLR  A
-$0726: [ a9    ] MOV  R1, A
-$0727: [ ad    ] MOV  R5, A
-$0728: [ b8 08 ] MOV  R0, #$08
-$072a: [ f4 7c ] CALL $077c
-$072c: [ 76 71 ] JF1  $0771
-$072e: [ f4 d0 ] CALL $07d0
-$0730: [ f8    ] MOV  A, R0
-$0731: [ d3 08 ] XRL  A, #$08
-$0733: [ 96 2a ] JNZ  $072a
-$0735: [ b8 3a ] MOV  R0, #STATUS
-$0737: [ f0    ] MOV  A, @R0
-$0738: [ 12 78 ] JB0  $0778
-$073a: [ b8 08 ] MOV  R0, #$08
-$073c: [ f9    ] MOV  A, R1
-$073d: [ 96 2a ] JNZ  $072a
-$073f: [ b8 3b ] MOV  R0, #MEM_SIZE
-$0741: [ f0    ] MOV  A, @R0
-$0742: [ f2 46 ] JB7  $0746
-$0744: [ e4 64 ] JMP  $0764
-$0746: [ 23 80 ] MOV  A, #$80
-$0748: [ 74 0a ] CALL compute_effective_address
+$0725: [ 27    ] CLR  A           ;
+$0726: [ a9    ] MOV  R1, A       ; Set current address to write data to to 0
+$0727: [ ad    ] MOV  R5, A       ; Set "current byte value" to 0
+$0728: [ b8 08 ] MOV  R0, #$08    ; 8 bits to go
+cal_read_loop:
+$072a: [ f4 7c ] CALL cassette_read_bit
+$072c: [ 76 71 ] JF1  cal_end     ; jump if no data from cassette
+$072e: [ f4 d0 ] CALL cal_store_bit ; store bit
+$0730: [ f8    ] MOV  A, R0       ; compare bits to read...
+$0731: [ d3 08 ] XRL  A, #$08     ; ... to 8
+$0733: [ 96 2a ] JNZ  cal_read_loop ; jump if not a full byte was read yet
+$0735: [ b8 3a ] MOV  R0, #STATUS ; load address of status byte
+$0737: [ f0    ] MOV  A, @R0      ; load status byte
+$0738: [ 12 78 ] JB0  cal_stop_pressed ; jump if STP was pressed
+$073a: [ b8 08 ] MOV  R0, #$08    ; reset bits to read count to 8
+$073c: [ f9    ] MOV  A, R1       ; load current address
+$073d: [ 96 2a ] JNZ  cal_read_loop ; continue reading if there's still data left
+                 ; First block of data is read now. Check if there's a CP3 installed
+                 ; and if so, read 2nd block.
+$073f: [ b8 3b ] MOV  R0, #MEM_SIZE ; load...
+$0741: [ f0    ] MOV  A, @R0        ; ... memory size
+$0742: [ f2 46 ] JB7  cal_read_2nd_block ; carry on with 2nd block if mem size > 127
+$0744: [ e4 64 ] JMP  cal_done
+cal_read_2nd_block:
+$0746: [ 23 80 ] MOV  A, #$80       ; load address 128
+$0748: [ 74 0a ] CALL compute_effective_address ; compute effective address (and select the correct 8155)
 $074a: [ 27    ] CLR  A
-$074b: [ a9    ] MOV  R1, A
-$074c: [ ad    ] MOV  R5, A
-$074d: [ b8 08 ] MOV  R0, #$08
-$074f: [ f4 7c ] CALL $077c
-$0751: [ 76 74 ] JF1  $0774
-$0753: [ f4 d0 ] CALL $07d0
-$0755: [ f8    ] MOV  A, R0
-$0756: [ d3 08 ] XRL  A, #$08
-$0758: [ 96 4f ] JNZ  $074f
-$075a: [ b8 3a ] MOV  R0, #STATUS
-$075c: [ f0    ] MOV  A, @R0      ; Load status byte
+$074b: [ a9    ] MOV  R1, A         ; Set current address to write data to to 0
+$074c: [ ad    ] MOV  R5, A         ; Set "current byte value" to to 0
+$074d: [ b8 08 ] MOV  R0, #$08      ; 8 bits to go
+cal_read_loop2:
+$074f: [ f4 7c ] CALL cassette_read_bit
+$0751: [ 76 74 ] JF1  cal_show_f007 ; Show error if no data from cassette.
+$0753: [ f4 d0 ] CALL cal_store_bit ; store bit read
+$0755: [ f8    ] MOV  A, R0         ; compare bits to read...
+$0756: [ d3 08 ] XRL  A, #$08       ; ... to 8
+$0758: [ 96 4f ] JNZ  cal_read_loop2 ; jump if not a full byte was read yet
+$075a: [ b8 3a ] MOV  R0, #STATUS   ; load address of status byte
+$075c: [ f0    ] MOV  A, @R0        ; Load status byte
 $075d: [ 12 78 ] JB0  cal_stop_pressed ; jump if STP pressed
-$075f: [ b8 08 ] MOV  R0, #$08
-$0761: [ f9    ] MOV  A, R1
-$0762: [ 96 4f ] JNZ  $074f
+$075f: [ b8 08 ] MOV  R0, #$08      ; reset bits to read count to 8
+$0761: [ f9    ] MOV  A, R1         ; load current address
+$0762: [ 96 4f ] JNZ  cal_read_loop2 ; continue reading if there's still data left
 cal_done:
 $0764: [ 34 79 ] CALL clear_display
 $0766: [ b8 20 ] MOV  R0, #$20    ; Set left-most digit...
@@ -1737,75 +1746,89 @@ $0768: [ b0 5c ] MOV  @R0, #$5c   ; ... to 'o'
 $076a: [ 97    ] CLR  C
 $076b: [ 85    ] CLR  F0
 $076c: [ a5    ] CLR  F1
-$076d: [ be 00 ] MOV  R6, #$00
+$076d: [ be 00 ] MOV  R6, #$00    ; Reset # of digits entered
 $076f: [ 04 86 ] JMP  wait_key
-
-$0771: [ f9    ] MOV  A, R1
-$0772: [ c6 1d ] JZ   $071d
-$0774: [ bc 07 ] MOV  R4, #$07    ; F-007
+cal_end:
+$0771: [ f9    ] MOV  A, R1       ; Load destination address
+$0772: [ c6 1d ] JZ   wait_cas    ; if zero, we never read anything, start over
+cal_show_f007:
+$0774: [ bc 07 ] MOV  R4, #$07    ; otherwise, show F-007 (invalid data from cassette)
 $0776: [ c4 fd ] JMP  show_error
 cal_stop_pressed:
 $0778: [ 74 f3 ] CALL clear_access_ram_extension_status_bit
 $077a: [ e4 64 ] JMP  cal_done
 
 
-???????????????????????
------------------------
-$077c: [ 27    ] CLR  A
-$077d: [ aa    ] MOV  R2, A
-$077e: [ ab    ] MOV  R3, A
-$077f: [ 97    ] CLR  C
-$0780: [ 85    ] CLR  F0
-$0781: [ a5    ] CLR  F1
-$0782: [ 89 80 ] ORL  P1, #$80
-$0784: [ 09    ] IN   A, P1
-$0785: [ f2 93 ] JB7  $0793
-$0787: [ fa    ] MOV  A, R2
-$0788: [ 03 01 ] ADD  A, #$01
-$078a: [ f6 c5 ] JC   $07c5
-$078c: [ aa    ] MOV  R2, A
-$078d: [ bc 64 ] MOV  R4, #$64 ; Delay for 100*20 micros == 2 millis
+; Read a single bit from cassette
+; -------------------------------
+; Reads a single bit from cassette (or in fact anything else on port 1 bit 7)
+; Outputs:
+; - F0: set if bit is 1
+; - F1: set if no data received
+cassette_read_bit:
+$077c: [ 27    ] CLR  A         ; Clear A...
+$077d: [ aa    ] MOV  R2, A     ; Set "low count" to 0
+$077e: [ ab    ] MOV  R3, A     ; Set "high count to 0
+$077f: [ 97    ] CLR  C         ; and clear...
+$0780: [ 85    ] CLR  F0        ; ... all the ...
+$0781: [ a5    ] CLR  F1        ; ... flags
+$0782: [ 89 80 ] ORL  P1, #$80  ; Set high CassData on Port 1
+crb_read_loop:
+$0784: [ 09    ] IN   A, P1     ; Read Port 1 ...
+$0785: [ f2 93 ] JB7  crb_low_done ; ...bail out if it's not low
+crb_inc_low_count:
+$0787: [ fa    ] MOV  A, R2     ; otherwise, load "low count"
+$0788: [ 03 01 ] ADD  A, #$01   ; and add 1
+$078a: [ f6 c5 ] JC   crb_done  ; overflow == end of data
+$078c: [ aa    ] MOV  R2, A     ; Update low count
+$078d: [ bc 64 ] MOV  R4, #$64  ; Delay for 100*20 micros == 2 millis
 $078f: [ f4 c7 ] CALL delay_20micros
-$0791: [ e4 84 ] JMP  $0784
-$0793: [ bc c8 ] MOV  R4, #$c8; Delay for 200*20 micros == 4 millis
+$0791: [ e4 84 ] JMP  crb_read_loop
+crb_low_done:
+$0793: [ bc c8 ] MOV  R4, #$c8  ; Delay for 200*20 micros == 4 millis to filter out any glitches
 $0795: [ f4 c7 ] CALL delay_20micros
-$0797: [ 09    ] IN   A, P1
-$0798: [ f2 9c ] JB7  $079c
-$079a: [ e4 87 ] JMP  $0787
-$079c: [ bc 64 ] MOV  R4, #$64 ; Delay for 100*20 micros == 2 millis
+$0797: [ 09    ] IN   A, P1     ; Read port 1 again
+$0798: [ f2 9c ] JB7  crb_still_high    ; Still high, let's move on
+$079a: [ e4 87 ] JMP  crb_inc_low_count ; was just a glitch, increase low count
+crb_still_high:
+$079c: [ bc 64 ] MOV  R4, #$64  ; Delay for 100*20 micros == 2 millis
 $079e: [ f4 c7 ] CALL delay_20micros
-$07a0: [ 09    ] IN   A, P1
-$07a1: [ f2 bd ] JB7  $07bd
-$07a3: [ bc c8 ] MOV  R4, #$c8 ; Delay for 200*20 micros == 4 millis
+$07a0: [ 09    ] IN   A, P1     ; Read Port 1
+$07a1: [ f2 bd ] JB7  crb_inc_high_count
+$07a3: [ bc c8 ] MOV  R4, #$c8 ; Not high anymore, delay for 200*20 micros == 4 millis to check for glitches
 $07a5: [ f4 c7 ] CALL delay_20micros
-$07a7: [ 09    ] IN   A, P1
-$07a8: [ f2 bd ] JB7  $07bd
-$07aa: [ fa    ] MOV  A, R2
-$07ab: [ 03 fd ] ADD  A, #$fd
-$07ad: [ e6 c5 ] JNC  $07c5
-$07af: [ 97    ] CLR  C
-$07b0: [ fb    ] MOV  A, R3
-$07b1: [ 03 fd ] ADD  A, #$fd
-$07b3: [ e6 c5 ] JNC  $07c5
-$07b5: [ 97    ] CLR  C
-$07b6: [ fa    ] MOV  A, R2
-$07b7: [ 37    ] CPL  A
-$07b8: [ 6b    ] ADD  A, R3
-$07b9: [ e6 bc ] JNC  $07bc
-$07bb: [ 95    ] CPL  F0
+$07a7: [ 09    ] IN   A, P1    ; Read P1 again
+$07a8: [ f2 bd ] JB7  crb_inc_high_count    ; Still high, just a glitch; continue counting
+                 ; Now, we're done counting low and high impulses.
+$07aa: [ fa    ] MOV  A, R2     ; load "low count"
+$07ab: [ 03 fd ] ADD  A, #$fd   ; compare to 3 (== 256 - 253)
+$07ad: [ e6 c5 ] JNC  crb_done  ; jump if it's < 3
+$07af: [ 97    ] CLR  C         ; clear carry again
+$07b0: [ fb    ] MOV  A, R3     ; load "high count"
+$07b1: [ 03 fd ] ADD  A, #$fd   ; compare to 3 (== 256 - 253)
+$07b3: [ e6 c5 ] JNC  crb_done  ; jump if it's < 3
+$07b5: [ 97    ] CLR  C         ; clear carry again
+$07b6: [ fa    ] MOV  A, R2     ; load "low count"
+$07b7: [ 37    ] CPL  A         ; negate (one's complement)
+$07b8: [ 6b    ] ADD  A, R3     ; add high count
+$07b9: [ e6 bc ] JNC  crb_end   ; jump if low <= high
+$07bb: [ 95    ] CPL  F0        ; signal bit 1
+crb_end
 $07bc: [ 83    ] RET
+crb_inc_high_count:
 $07bd: [ fb    ] MOV  A, R3
 $07be: [ 03 01 ] ADD  A, #$01
-$07c0: [ f6 c5 ] JC   $07c5
+$07c0: [ f6 c5 ] JC   crb_done
 $07c2: [ ab    ] MOV  R3, A
-$07c3: [ e4 9c ] JMP  $079c
-$07c5: [ b5    ] CPL  F1
+$07c3: [ e4 9c ] JMP  crb_still_high
+crb_done:
+$07c5: [ b5    ] CPL  F1        ; Set F1
 $07c6: [ 83    ] RET
 
-### Delay for a multiple of 20 micros
-Inputs:
-- R4: number of 20 micros delays
-```
+; Delay for a multiple of 20 micros
+; ---------------------------------
+; Inputs:
+; - R4: number of 20 micros delays
 delay_20micros:
 $07c7: [ 00    ] NOP
 $07c8: [ 00    ] NOP
@@ -1816,21 +1839,33 @@ $07cc: [ 00    ] NOP
 $07cd: [ ec c7 ] DJNZ R4, delay_20micros
 $07cf: [ 83    ] RET
 
-???????????????????????
------------------------
-$07d0: [ 97    ] CLR  C
-$07d1: [ b6 de ] JF0  $07de
-$07d3: [ fd    ] MOV  A, R5
-$07d4: [ 67    ] RRC  A
-$07d5: [ ad    ] MOV  R5, A
-$07d6: [ e8 dd ] DJNZ R0, $07dd
-$07d8: [ fd    ] MOV  A, R5
-$07d9: [ 91    ] MOVX @R1, A
-$07da: [ c9    ] DEC  R1
-$07db: [ b8 08 ] MOV  R0, #$08
+; Store bit read from cassette to memory
+; --------------------------------------
+; Inputs:
+; - R0: bits left to read in current byte
+; - R1: physical address of current byte
+; - R5: current byte
+; - F0: bit to store
+; Outputs:
+; - R5: updated byte
+; - R0: bits left to read in current byte
+cal_store_bit:
+$07d0: [ 97    ] CLR  C         ;
+$07d1: [ b6 de ] JF0  csb_set_carry
+csb_cont:
+$07d3: [ fd    ] MOV  A, R5        ; Load current byte
+$07d4: [ 67    ] RRC  A            ; Rotate bit in
+$07d5: [ ad    ] MOV  R5, A        ; update current byte
+$07d6: [ e8 dd ] DJNZ R0, csb_done ; decrement bit count
+$07d8: [ fd    ] MOV  A, R5        ; no bits left in current byte; store R5...
+$07d9: [ 91    ] MOVX @R1, A       ; ...in memory
+$07da: [ c9    ] DEC  R1           ; move to next address
+$07db: [ b8 08 ] MOV  R0, #$08     ; reset bits to read
+csb_done:
 $07dd: [ 83    ] RET
-$07de: [ a7    ] CPL  C
-$07df: [ e4 d3 ] JMP  $07d3
+csb_set_carry:
+$07de: [ a7    ] CPL  C            ; bit is set -> set carry
+$07df: [ e4 d3 ] JMP  csb_cont
 
 
 ; Clear result of last comparison in status byte
