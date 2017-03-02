@@ -1,4 +1,4 @@
-# README
+# KOSMOS CP1
 
 ## What's this?
 This is an emulator for the Kosmos CP1 "Computer Praxis" experimental kit that
@@ -40,6 +40,37 @@ You can find scans of all the manuals at http://www.retrozone.ch/cp1/
 ```
 ./gradlew run
 ```
+
+## Usage
+After starting the Kosmos CP1 emulator, you see 2 windows:
+- The "CPU" windows containing:
+   - The disassembly of the Kosmos CP1's EEPROM,
+   - the complete state and memory of the main Intel 8049,
+   - the complete state and memory of the main unit's 8155, and finally
+   - the complete state and memory of the CP3's 8155.
+- The "Panel" window that shows the display and controls of the CP1 main unit, as well as the LEDs and switches
+  of the CP5 universal I/O interface
+
+Additionally, there is an "Assembler" window (not visible after startup) that you can use to write programs in
+CP1 assembly language.
+
+### CPU Window
+The emulator will start in "trace execution" mode. This means that the state is constantly updated in the CPU window,
+with quite a large impact on the speed of the emulated system. You can turn this off with the checkbox in the toolbar.
+
+Also, the CPU window features a simple debugger that lets you single-step through the exection, set breakpoints
+(double-click on the disassembly line), and break on certain instructions (currently only MOVX).
+
+### Panel Window
+Not a lot to say about that. It tries to reproduce the actual CP1 as good as possible (and looks IMHO way nicer than
+the simulators out there :-) ).
+
+### Assembler Window
+TODO write something up
+
+### Loading and storing programs
+TODO write something up
+
 
 ## Resources
 - The UI ises Fugue Icons by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
