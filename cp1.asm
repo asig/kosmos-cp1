@@ -1899,7 +1899,7 @@ print_digit:
                 RET
 
 
-; Never executed?
+; Dead code.
                 ADD  A, R5
                 .db  $d6
                 ADDC A, R0
