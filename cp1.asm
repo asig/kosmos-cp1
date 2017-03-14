@@ -1132,34 +1132,28 @@ opcode_VZG:
                 MOVX A, @R1      ; load operand into A
                 JZ   end_VZG     ; if zero, no delay necessary
                 MOV  R2, A       ; move # of millis to R2
-vzg_l4:
-                MOV  R3, #$01    ; cycles: 2
-vzg_l3:
-                MOV  R4, #$01    ; cycles: + 2
-vzg_l2:
-                MOV  R5, #$c8    ; cycles: + 2
-vzg_l1:
-                DJNZ R5, vzg_l1  ; cycles: + 200 * 2
+vzg_l4:         MOV  R3, #$01    ; cycles: 2
+vzg_l3:         MOV  R4, #$01    ; cycles: + 2
+vzg_l2:         MOV  R5, #$c8    ; cycles: + 2
+vzg_l1:         DJNZ R5, vzg_l1  ; cycles: + 200 * 2
                 DJNZ R4, vzg_l2  ; cycles: + 2
                 DJNZ R3, vzg_l3  ; cycles: + 2
-                DJNZ R2, vzg_l4  ; cycles: + 2 -> 412 cycles -> a little more than 1 ms per loop. No idea why they added the additional loops...
-end_VZG:
-                JMP  inc_pc
+                DJNZ R2, vzg_l4  ; cycles: + 2 -> 412 cycles -> 1.03 ms per loop. No idea why they added the additional loops...
+end_VZG:        JMP  inc_pc
 
 opcode_SPU:
                 MOVX A, @R1      ; load operand
-                MOV  R0, #PC  ; load address of PC
+                MOV  R0, #PC     ; load address of PC
                 MOV  R3, A       ; save new PC in R3 (will be restored from R3 at end_of_instr)
                 MOV  @R0, A      ; store new address in PC
                 JMP  end_of_instr
 
 opcode_SPB:
                 MOV  R0, #STATUS    ; Load address of status byte
-                MOV  A, @R0      ; Load status byte
-                JB5  spb_cond_true ; comparison was true -> execute jump
-                JMP  inc_pc      ; comparuson was false, move on with next instr
-spb_cond_true:
-                JMP  opcode_SPU
+                MOV  A, @R0         ; Load status byte
+                JB5  spb_cond_true  ; comparison was true -> execute jump
+                JMP  inc_pc         ; comparison was false, move on with next instr
+spb_cond_true:  JMP  opcode_SPU     ; comparison was true, continue with the uncoditional jump code.
 
 opcode_SIU:
                 CALL check_and_load_effective_address
@@ -1169,21 +1163,19 @@ opcode_SIU:
 
 opcode_NEG:
                 MOV  R0, #ACCU   ; Load Accu's MSB...
-                MOV  A, @R0          ; ... into A
-                JNZ  error_f005      ; Error if Accu does not contain data
-                CLR  C               ; Clear Carry
-                INC  R0              ; Load Accu's LSB...
-                MOV  A, @R0          ; ... into A
-                ADD  A, #$fe         ; .. add 254 ...
-                JC   error_f005      ; if it overflows, A was > 1
-                MOV  A, @R0          ; Load Accu again
-                JZ   $04b9           ; if 0, set it to 1
-                MOV  @R0, #$00       ; otherwise, set  it to 0
+                MOV  A, @R0      ; ... into A
+                JNZ  error_f005  ; Error if Accu does not contain data
+                CLR  C           ; Clear Carry
+                INC  R0          ; Load Accu's LSB...
+                MOV  A, @R0      ; ... into A
+                ADD  A, #$fe     ; .. add 254 ...
+                JC   error_f005  ; if it overflows, A was > 1
+                MOV  A, @R0      ; Load Accu again
+                JZ   $04b9       ; if 0, set it to 1
+                MOV  @R0, #$00   ; otherwise, set  it to 0
                 JMP  inc_pc
-neg_was_zero:
-                MOV  @R0, #$01
-neg_done:
-                JMP  inc_pc
+neg_was_zero:   MOV  @R0, #$01
+neg_done:       JMP  inc_pc
 
 error_f005:
                 MOV  R4, #$05
@@ -1214,8 +1206,7 @@ opcode_UND:
                 JZ   und_zero       ; jump if zero
                 MOV  @R0, #$01      ; store 1 in Accu LSB
                 JMP  inc_pc
-und_zero:
-                MOV  @R0, #$00      ; store 0 in Accu LSB
+und_zero:       MOV  @R0, #$00      ; store 0 in Accu LSB
                 JMP  inc_pc
 
 opcode_ANZ:
@@ -1288,11 +1279,9 @@ opcode_VGL:
                 MOVX A, @R1   ; Load operand cell content LSB
                 XRL  A, @R0   ; Compare to Accu LSB
                 JZ   vgl_true ; jump if equal
-vgl_end:
-                CLR  C        ; clear carry
+vgl_end:        CLR  C        ; clear carry
                 JMP  inc_pc
-vgl_true:
-                CALL set_comparison_result
+vgl_true:       CALL set_comparison_result
                 JMP  vgl_end
 
 opcode_VKL:
