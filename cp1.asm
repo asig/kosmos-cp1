@@ -1,17 +1,17 @@
 ; ROM Listing
 ; ===========
 ;
-; This is the reverse engineered and fully commented ROM listing of the EPROM
+; This is the reverse engineered and fully commented ROM listing of the ROM
 ; contents of the Intel 8049 used in the Kosmos CP1 experimental computer.
 ;
-; To recreate the EEPROM content, you can use this 8048 cross assembler:
+; To recreate the ROM content, you can use this 8048 cross assembler:
 ; https://sourceforge.net/projects/asm48/
 ;
 ; Code (C) 1983, Franckh'sche Verlagshandlung, W. Keller & Co., Stuttgart, Germany
 ; Comments (C) 2017, Andreas Signer <asigner@gmail.com>
 ;
-; 8049 Memory Map
-; ---------------
+; 8049 RAM Memory Map
+; -------------------
 ; 0x00 - 0x07: Register Bank 0 (R0 - R7)
 ; 0x08 - 0x17: Stack (8 levels)
 ; 0x18 - 0x1f: Register Bank 1 (R0 - R7)
@@ -47,12 +47,13 @@
 ; ----------------------
 ; R0: Address pointer
 ; R1: Address pointer
-; R2: ????
-; R3: ????
-; R4: ????
-; R5: ????
+; R2: -
+; R3: -
+; R4: -
+; R5: -
 ; R6: Number of digits entered
 ; R7: current input/output position
+
 
 ; Listing
 ; -------
@@ -115,8 +116,7 @@ init:
                 MOV  @R0, #$00  ; Set R6' to 0
                 MOV  R0, #$20   ; Clear 0x28 ...
                 MOV  R3, #$28   ;
-init1:
-                MOV  @R0, #$00  ;
+init1:          MOV  @R0, #$00  ;
                 INC  R0         ;
                 DJNZ R3, init1  ; ... bytes of RAM
                 MOV  R6, #$00
@@ -145,7 +145,7 @@ init1:
                 MOV  R0, #$03
                 MOVX @R0, A     ; Write 1111 1111 to Port A
 
-; Test whether extension is available:
+                ; Test whether extension is available:
                 ANL  P2, #$5f   ; P2 &= 0101 1111 --> /CE == 0, IO == 0
                 ORL  P2, #$10   ; P2 |= 0001 0000 --> 8155 /CE == 1
                 MOV  R0, #$13
@@ -195,7 +195,7 @@ pc_handler:
                 MOV  R0, #STATUS    ; Load status byte...
                 MOV  A, @R0      ; ... to A
                 JB2  clear_addr_ovfl_error_f004_trampoline
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$73   ; ... to 'P'
                 MOV  R0, #KBUF   ; address of 1st decoded digit
                 MOV  R2, #$02    ; 3 digits to convert
@@ -271,7 +271,7 @@ inp_handler:
                 MOV  R7, A             ; set current I/O pos to entered addres.
 inp_done:
                 MOV  R6, #$00    ; Reset # of entered digits
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$79   ; ... to 'E'
                 JMP  wait_key
 
@@ -377,7 +377,7 @@ dtn_overflow:
 ;
 clear_display:
                 MOV  R2, #$06  ; 6 digits to clear
-                MOV  R0, #$20  ; load address of "Video RAM"
+                MOV  R0, #VRAM ; load address of "Video RAM"
 cd_loop:
                 MOV  @R0, #$00 ; clear segments of that Video RAM address
                 INC  R0        ; move to next address
@@ -472,7 +472,7 @@ cas_stop_pressed:
 cas_handler:
                 CALL clear_display
                 CALL clear_access_ram_extension_status_bit
-                MOV  R0, #$20      ; Set left-most digit...
+                MOV  R0, #VRAM     ; Set left-most digit...
                 MOV  @R0, #$23     ; .. to 'CAS' symbol
                 ORL  P1, #$c0      ; P1 |= 1100 0000 --> CassData == 1, CassWR == 1
                 MOV  R0, #STATUS
@@ -499,7 +499,7 @@ cas_block_2:
 save_done:
                 ANL  P1, #$7f
                 CALL clear_display
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$63   ; ... to 'ᵒ'
                 MOV  R6, #$00
                 JMP  wait_key
@@ -528,7 +528,7 @@ out_print:
                 CALL compute_effective_address
                 CALL fetch_and_print_ram
 print_C:
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$39   ; ... to 'C'
                 JMP  wait_key
 no_digits:
@@ -562,7 +562,7 @@ one_digit:
                 XRL  A, #$09    ; is it 9?
                 JNZ  one_digit_f001 ; no, error F-001
                 CALL clear_display
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$39   ; ... to 'C'
                 MOV  R0, #$07    ; Load address 7 (== R7)
                 MOV  R6, #$02    ; 3 digits to print
@@ -832,8 +832,7 @@ caca_ovfl2:
 check_address:
                 CLR  F0           ; clear result flag
                 JB7  ca_2         ; check memory if >= 128
-ca_end:
-                RET               ; everything < 128 is valid
+ca_end:         RET               ; everything < 128 is valid
 ca_2:
                 MOV  R0, #MEM_SIZE     ; load memory size...
                 MOV  A, @R0       ; ... to A
@@ -964,8 +963,7 @@ clear_bits:     MOV  A, R2           ; Move mask to A
 ; - R3: number of millis to delay
 delay_millis:
                 MOV  R2, #$c8   ; cycles: 2
-dm_l1:
-                DJNZ R2, dm_l1  ; cycles: + 200 * 2
+dm_l1:          DJNZ R2, dm_l1  ; cycles: + 200 * 2
                 DJNZ R3, delay_millis  ; cycles: R3 * 201 * 2
                 RET             ; cycles: R3 * 201 * 2 + 1
 
@@ -983,8 +981,7 @@ byteloop:
                 CLR  C
                 MOV  R0, #$08     ; 8 bits to send
                 MOVX A, @R1       ; Read a byte from RAM
-bitloop:
-                RRC  A            ; LSB -> Carry
+bitloop:        RRC  A            ; LSB -> Carry
                 JNC  write_0      ; jump if 0 bit
                 ANL  P1, #$7f     ; P1 &= 01111111 -> clear CassData
                 MOV  R3, #$1e     ; 30 millis
@@ -992,11 +989,9 @@ bitloop:
                 ORL  P1, #$80     ; P1 |= 10000000 -> set CassData
                 MOV  R3, #$3c     ; 60 millis
                 CALL delay_millis
-save_cont:
-                DJNZ R0, bitloop  ; next bit
+save_cont:      DJNZ R0, bitloop  ; next bit
                 DJNZ R1, byteloop ; next byte
-save_end:
-                CLR  C
+save_end:       CLR  C
                 RET
 write_0:
                 ANL  P1, #$7f     ; P1 &= 01111111 -> clear CassData
@@ -1600,7 +1595,7 @@ dr_done:
 ; Print the current PC.
 print_pc:
                 CALL clear_display
-                MOV  R0, #$20      ; Set left-most digit...
+                MOV  R0, #VRAM     ; Set left-most digit...
                 MOV  @R0, #$73     ; ... to 'P'
                 MOV  R0, #PC       ; Load address of VM's PC
                 MOV  R6, #$02      ; Start at Video RAM offset 2
@@ -1647,7 +1642,7 @@ print_accu:
                 MOV  R0, #ACCU_LSB ; Load Accu LSB address
                 MOV  R6, #$02    ; Offset into Video RAM
                 CALL print_value ; and print it
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$77   ; ... to 'A'
                 RET
 
@@ -1662,7 +1657,7 @@ show_error:
                 CLR  C
                 CLR  F0
                 CLR  F1
-                MOV  R0, #$20       ; Set left-most digit...
+                MOV  R0, #VRAM      ; Set left-most digit...
                 MOV  @R0, #$71      ; ... to 'F'
                 MOV  R0, #$04       ; Load address of error code
                 MOV  R6, #$02       ; Offset into Video RAM
@@ -1672,7 +1667,7 @@ show_error:
 cal_handler:
                 CALL clear_display
                 CALL clear_access_ram_extension_status_bit
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$1c   ; .. to 'CAL' symbol
                 CLR  A
                 CALL compute_effective_address ; Compute effective addres of 0 to enable main 8155
@@ -1729,7 +1724,7 @@ cal_read_loop2:
                 JNZ  cal_read_loop2 ; continue reading if there's still data left
 cal_done:
                 CALL clear_display
-                MOV  R0, #$20    ; Set left-most digit...
+                MOV  R0, #VRAM   ; Set left-most digit...
                 MOV  @R0, #$5c   ; ... to 'o'
                 CLR  C
                 CLR  F0
@@ -1890,7 +1885,7 @@ print_digit:
                 MOVP3 A, @A   ; Load segment for digit in A
                 MOV  R3, A    ; Store segment in R3
                 MOV  A, R6    ; Digit offset to A
-                ADD  A, #$20  ; add display base address
+                ADD  A, #VRAM ; add display base address
                 INC  A        ; make room for leftmost indicator
                 MOV  R0, A    ; move to address register
                 MOV  A, R3    ;
