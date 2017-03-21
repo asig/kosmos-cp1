@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: programmable-fun
-Source: http://www.programmablefun.com
+Upstream-Name: kosmos-cp1
+Source: http://www.retrozone.ch/cp1
 
 Files: *
 Copyright: 2017 Andreas Signer <asigner@gmail.com>
