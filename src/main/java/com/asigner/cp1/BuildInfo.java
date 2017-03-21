@@ -19,11 +19,19 @@
 
 package com.asigner.cp1;
 
-interface BuildInfo {
+public interface BuildInfo {
     Version getVersion();
     java.time.Instant getBuildTime();
     String getCommit();
     String getOSName();
     String getOSArch();
     String toString();
+
+    static BuildInfo create() {
+        try {
+            return (BuildInfo)BuildInfo.class.getClassLoader().loadClass("com.asigner.cp1").newInstance();
+        } catch (InstantiationException|IllegalAccessException|ClassNotFoundException e) {
+            throw new RuntimeException("Can't load build info implementation", e);
+        }
+    }
 }
