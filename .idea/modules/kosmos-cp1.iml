@@ -206,15 +206,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.swt.cocoa.macosx.x86_64_3.105.1.v20160907-0248.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.text_3.6.0.v20160503-1849.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -225,6 +216,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../../build/output/lib/commons-io-2.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../build/output/lib/org.eclipse.swt.gtk.linux.x86_64_3.105.1.v20160907-0248.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
