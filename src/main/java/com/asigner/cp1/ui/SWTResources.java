@@ -20,7 +20,9 @@
 package com.asigner.cp1.ui;
 
 import com.google.common.collect.Maps;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.RGBA;
@@ -37,6 +39,7 @@ public class SWTResources {
 
     private static final Map<RGBA, Color> colors = Maps.newHashMap();
     private static final Map<String, Image> images = Maps.newHashMap();
+    private static final Map<String, Font> fonts = Maps.newHashMap();
 
     public static final Color WHITE = getColor(new RGB(255,255,255));
     public static final Color BLACK = getColor(new RGB(0,0,0));
@@ -76,9 +79,20 @@ public class SWTResources {
         return c;
     }
 
+    public static Font getFont(String fontName, int size, boolean bold) {
+        String key = String.format("%s|%d", fontName, size);
+        return fonts.computeIfAbsent(key, k -> new Font(Display.getDefault(), fontName, size, bold ? SWT.BOLD : SWT.NONE));
+    }
+
     static {
-        loadFont("/com/asigner/cp1/ui/helvetica-light-586c33cdd0018.ttf");
-        loadFont("/com/asigner/cp1/ui/helvetica-black-586c33de4b4d0.otf");
+        loadFont("/com/asigner/cp1/ui/fonts/helvetica-light-586c33cdd0018.ttf");
+        loadFont("/com/asigner/cp1/ui/fonts/helvetica-black-586c33de4b4d0.otf");
+
+        loadFont("/com/asigner/cp1/ui/fonts/Montserrat/Montserrat-Regular.ttf");
+        loadFont("/com/asigner/cp1/ui/fonts/Montserrat/Montserrat-Bold.ttf");
+
+        loadFont("/com/asigner/cp1/ui/fonts/Ubuntu/Ubuntu-Regular.ttf");
+        loadFont("/com/asigner/cp1/ui/fonts/Ubuntu/Ubuntu-Bold.ttf");
     }
 
     private static void loadFont(String path) {

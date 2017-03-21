@@ -62,8 +62,8 @@ public class CP1Button extends Composite {
     public CP1Button(Composite parent, int style) {
         super(parent, style);
 
-        largeFont = new Font(parent.getDisplay(), LARGE_FONT_NAME, scaleFontSize(12), SWT.NONE);
-        smallFont = new Font(parent.getDisplay(), SMALL_FONT_NAME, scaleFontSize(6), SWT.NONE);
+        largeFont = SWTResources.getFont(LARGE_FONT_NAME, scaleFontSize(12), false);
+        smallFont = SWTResources.getFont(SMALL_FONT_NAME, scaleFontSize(6), false);
 
         this.setSize((int)(3.2 * 50), 50);
         this.addPaintListener(this::paint);
