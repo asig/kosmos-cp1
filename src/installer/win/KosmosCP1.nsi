@@ -20,7 +20,7 @@
 !define PRODUCT_DIR "KosmosCP1"
 !define PRODUCT_NAME "Kosmos CP1"
 !define PRODUCT_FILENAME "KosmosCP1"
-!define PRODUCT_VERSION "0.0.1"
+!define PRODUCT_VERSION "1.0.0"
 !define PRODUCT_PUBLISHER "Andreas Signer"
 !define PRODUCT_WEB_SITE "http://www.retrozone.ch/cp1"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_EXE}"
