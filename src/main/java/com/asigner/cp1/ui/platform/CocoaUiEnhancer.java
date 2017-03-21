@@ -19,6 +19,7 @@
 
 package com.asigner.cp1.ui.platform;
 
+import com.google.common.base.Preconditions;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.internal.C;
@@ -93,6 +94,7 @@ public class CocoaUiEnhancer {
             final IAction aboutAction,
             final IAction preferencesAction
     ) {
+        Preconditions.checkArgument(quitAction != null);
         if (isEnhanced) {
             return;
         }
@@ -107,9 +109,13 @@ public class CocoaUiEnhancer {
             @SuppressWarnings( "unused" )
             long actionProc( long id, long sel, long arg0 ) {
                 if ( sel == sel_aboutMenuItemSelected_ ) {
-                    aboutAction.run();
+                    if (aboutAction != null) {
+                        aboutAction.run();
+                    }
                 } else if ( sel == sel_preferencesMenuItemSelected_ ) {
-                    preferencesAction.run();
+                    if (preferencesAction != null) {
+                        preferencesAction.run();
+                    }
                 } else {
                     // Unknown selection!
                 }

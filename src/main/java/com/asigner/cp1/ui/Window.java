@@ -42,7 +42,7 @@ public abstract class Window {
 
     // Shared actions
     private static QuitAction quitAction = new QuitAction();
-    private static PreferencesAction preferencesAction = new PreferencesAction();
+    private static PreferencesAction preferencesAction = null; // new PreferencesAction();
     private static AboutAction aboutAction = new AboutAction();
 
     public interface Listener {
@@ -99,8 +99,8 @@ public abstract class Window {
         Menu fileMenu = null;
         if (!OS.isMac()) {
             fileMenu = createMenuInternal(parent, "&File", menuCreators);
-            new MenuItem(fileMenu, SWT.SEPARATOR);
-            new ActionMenuItem(fileMenu, SWT.PUSH, preferencesAction);
+//            new MenuItem(fileMenu, SWT.SEPARATOR);
+//            new ActionMenuItem(fileMenu, SWT.PUSH, preferencesAction);
             new MenuItem(fileMenu, SWT.SEPARATOR);
             new ActionMenuItem(fileMenu, SWT.PUSH, quitAction);
         } else {
