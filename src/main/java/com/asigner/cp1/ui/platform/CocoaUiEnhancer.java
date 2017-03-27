@@ -29,48 +29,21 @@ import org.eclipse.swt.widgets.Display;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-/**
- * Provide a hook to connecting the Preferences, About and Quit menu items of the Mac OS X
- * Application menu when using the SWT Cocoa bindings.
- * <p>
- * This code does not require the Cocoa SWT JAR in order to be compiled as it uses reflection to
- * access the Cocoa specific API methods. It does, however, depend on JFace (for IAction), but you
- * could easily modify the code to use SWT Listeners instead in order to use this class in SWT only
- * applications.
- * </p>
- * <p>
- * This code was influenced by the <a
- * href="http://www.simidude.com/blog/2008/macify-a-swt-application-in-a-cross-platform-way/"
- * >CarbonUIEnhancer from Agynami</a> with the implementation being modified from the <a href="http://dev.eclipse.org/viewcvs/index.cgi/org.eclipse.ui.cocoa/src/org/eclipse/ui/internal/cocoa/CocoaUIEnhancer.java"
- * >org.eclipse.ui.internal.cocoa.CocoaUIEnhancer</a>.
- * </p>
- */
 public class CocoaUiEnhancer {
 
-    private static final int kAboutMenuItem = 0;
-    private static final int kPreferencesMenuItem = 2;
-    // private static final int kServicesMenuItem = 4;
-    // private static final int kHideApplicationMenuItem = 6;
-    private static final int kQuitMenuItem = 10;
+    private static final int ABOUT_MENU_ITEM = 0;
+    private static final int PREFERENCES_MENU_ITEM = 2;
+    private static final int QUIT_MENU_ITEM = 10;
 
-    private long sel_toolbarButtonClicked_;
-    private long sel_preferencesMenuItemSelected_;
-    private long sel_aboutMenuItemSelected_;
+    private final String appName;
 
+    private long toolbarButtonClicked;
+    private long prefsMenuItemSelected;
+    private long aboutMenuItemSelected;
     private Callback proc3Args;
-
-    final private String appName;
 
     private boolean isEnhanced = false;
 
-    /**
-     * Construct a new CocoaUIEnhancer.
-     *
-     * @param appName
-     *            The name of the application. It will be used to customize the About and Quit menu
-     *            items. If you do not wish to customize the About and Quit menu items, just pass
-     *            <tt>null</tt> here.
-     */
     public CocoaUiEnhancer( String appName ) {
         this.appName = appName;
     }
@@ -100,19 +73,14 @@ public class CocoaUiEnhancer {
         }
         isEnhanced = true;
 
-        // This is our callbackObject whose 'actionProc' method will be called when the About or
-        // Preferences menuItem is invoked.
-        //
-        // Connect the given IAction objects to the actionProce method.
-        //
         Object target = new Object() {
             @SuppressWarnings( "unused" )
             long actionProc( long id, long sel, long arg0 ) {
-                if ( sel == sel_aboutMenuItemSelected_ ) {
+                if ( sel == aboutMenuItemSelected) {
                     if (aboutAction != null) {
                         aboutAction.run();
                     }
-                } else if ( sel == sel_preferencesMenuItemSelected_ ) {
+                } else if ( sel == prefsMenuItemSelected) {
                     if (preferencesAction != null) {
                         preferencesAction.run();
                     }
@@ -150,10 +118,10 @@ public class CocoaUiEnhancer {
         Class<?> osCls = classForName( "org.eclipse.swt.internal.cocoa.OS" );
 
         // Register names in objective-c.
-        if ( sel_toolbarButtonClicked_ == 0 ) {
-            // sel_toolbarButtonClicked_ = registerName( osCls, "toolbarButtonClicked:" ); //$NON-NLS-1$
-            sel_preferencesMenuItemSelected_ = registerName( osCls, "preferencesMenuItemSelected:" ); //$NON-NLS-1$
-            sel_aboutMenuItemSelected_ = registerName( osCls, "aboutMenuItemSelected:" ); //$NON-NLS-1$
+        if ( toolbarButtonClicked == 0 ) {
+            toolbarButtonClicked = registerName( osCls, "toolbarButtonClicked:" );
+            prefsMenuItemSelected = registerName( osCls, "preferencesMenuItemSelected:" );
+            aboutMenuItemSelected = registerName( osCls, "aboutMenuItemSelected:" );
         }
 
         // Create an SWT Callback object that will invoke the actionProc method of our internal
@@ -182,12 +150,12 @@ public class CocoaUiEnhancer {
         // Add the action callbacks for Preferences and About menu items.
         invoke( osCls, "class_addMethod", new Object[] {
                 wrapPointer( cls ),
-                wrapPointer( sel_preferencesMenuItemSelected_ ),
+                wrapPointer(prefsMenuItemSelected),
                 wrapPointer( proc3 ),
                 "@:@" } ); //$NON-NLS-1$
         invoke( osCls, "class_addMethod", new Object[] {
                 wrapPointer( cls ),
-                wrapPointer( sel_aboutMenuItemSelected_ ),
+                wrapPointer(aboutMenuItemSelected),
                 wrapPointer( proc3 ),
                 "@:@" } ); //$NON-NLS-1$
 
@@ -199,7 +167,7 @@ public class CocoaUiEnhancer {
 
         // Create the About <application-name> menu command
         Object aboutMenuItem =
-                invoke( nsmenuCls, appMenu, "itemAtIndex", new Object[] { wrapPointer( kAboutMenuItem ) } );
+                invoke( nsmenuCls, appMenu, "itemAtIndex", new Object[] { wrapPointer(ABOUT_MENU_ITEM) } );
         if ( appName != null ) {
             Object nsStr = invoke( nsstringCls, "stringWith", new Object[] { "About " + appName } );
             invoke( nsmenuitemCls, aboutMenuItem, "setTitle", new Object[] { nsStr } );
@@ -207,14 +175,14 @@ public class CocoaUiEnhancer {
         // Rename the quit action.
         if ( appName != null ) {
             Object quitMenuItem =
-                    invoke( nsmenuCls, appMenu, "itemAtIndex", new Object[] { wrapPointer( kQuitMenuItem ) } );
+                    invoke( nsmenuCls, appMenu, "itemAtIndex", new Object[] { wrapPointer(QUIT_MENU_ITEM) } );
             Object nsStr = invoke( nsstringCls, "stringWith", new Object[] { "Quit " + appName } );
             invoke( nsmenuitemCls, quitMenuItem, "setTitle", new Object[] { nsStr } );
         }
 
         // Enable the Preferences menuItem.
         Object prefMenuItem =
-                invoke( nsmenuCls, appMenu, "itemAtIndex", new Object[] { wrapPointer( kPreferencesMenuItem ) } );
+                invoke( nsmenuCls, appMenu, "itemAtIndex", new Object[] { wrapPointer(PREFERENCES_MENU_ITEM) } );
         invoke( nsmenuitemCls, prefMenuItem, "setEnabled", new Object[] { true } );
 
         // Set the action to execute when the About or Preferences menuItem is invoked.
@@ -223,9 +191,9 @@ public class CocoaUiEnhancer {
         // and we have registerd the new selectors on it. So just set the new action to invoke the
         // selector.
         invoke( nsmenuitemCls, prefMenuItem, "setAction",
-                new Object[] { wrapPointer( sel_preferencesMenuItemSelected_ ) } );
+                new Object[] { wrapPointer(prefsMenuItemSelected) } );
         invoke( nsmenuitemCls, aboutMenuItem, "setAction",
-                new Object[] { wrapPointer( sel_aboutMenuItemSelected_ ) } );
+                new Object[] { wrapPointer(aboutMenuItemSelected) } );
     }
 
     private long registerName( Class<?> osCls, String name )
