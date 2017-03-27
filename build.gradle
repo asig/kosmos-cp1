@@ -287,17 +287,17 @@ task makePackageWin64(type: Exec) {
     commandLine 'makensis', "-DVERSION=${project.ext.version}", '-DEXE_PATH=../../../build/dist/win64/KosmosCP1.exe','-DARCH=x86_64', 'KosmosCP1.nsi'
 }
 
-task stagePackageDeb(type: Copy) {
+task stagePackageDeb64(type: Copy) {
     dependsOn jar
 
-    into "$buildDir/stage/linux/jars"
+    into "$buildDir/stage/linux64/jars"
     from configurations.runtime
     from osDependentRuntime
     from jar.outputs
 }
 
-task makePackageDeb {
-    dependsOn stagePackageDeb
+task makePackageDeb64 {
+    dependsOn stagePackageDeb64
     doLast {
         exec {
             workingDir 'src/installer/deb'
@@ -315,5 +315,5 @@ task makePackageDeb {
 task makePackages {
     dependsOn makePackageWin32
     dependsOn makePackageWin64
-    dependsOn makePackageDeb
+    dependsOn makePackageDeb64
 }
