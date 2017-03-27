@@ -34,7 +34,6 @@ plugins {
     id 'java'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '1.2.3'
-    id 'edu.sc.seis.launch4j' version '1.6.2'
 }
 
 mainClassName = "com.asigner.cp1.ui.KosmosCP1"
@@ -52,16 +51,17 @@ props.each { key, val ->
     project.ext.set(key, val)
 }
 
-
 configurations {
     providedCompile
 
     compile
 
     // OS specific runtimes
-    runtimeLinux
+    runtimeLinux32
+    runtimeLinux64
     runtimeMac
-    runtimeWin
+    runtimeWin32
+    runtimeWin64
 }
 
 dependencies {
@@ -72,9 +72,11 @@ dependencies {
     compile 'commons-io:commons-io:2.5'
 
     // OS-dependent runtimes
-    runtimeLinux group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'linux-gtk-x86_64'
+    runtimeLinux32 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'linux-gtk-x86'
+    runtimeLinux64 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'linux-gtk-x86_64'
     runtimeMac group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'macosx-cocoa-x86_64'
-    runtimeWin group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'win32-x86'
+    runtimeWin32 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'win32-x86'
+    runtimeWin64 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'win32-x86_64'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.9.5'
@@ -91,10 +93,19 @@ sourceSets {
 // Setup OS dependent runtime path
 def osDependentRuntime;
 String osName = System.getProperty("os.name").toLowerCase();
+String arch = System.getProperty("os.arch").toLowerCase();
 if (osName.contains("windows")) {
-    osDependentRuntime = configurations.runtimeWin
+    if (arch.contains("64")) {
+        osDependentRuntime = configurations.runtimeWin64
+    } else {
+        osDependentRuntime = configurations.runtimeWin32
+    }
 } else if (osName.contains("linux")) {
-    osDependentRuntime = configurations.runtimeLinux
+    if (arch.contains("64")) {
+        osDependentRuntime = configurations.runtimeLinux64
+    } else {
+        osDependentRuntime = configurations.runtimeLinux32
+    }
 } else {
     osDependentRuntime = configurations.runtimeMac
 }
@@ -136,15 +147,15 @@ task copyToLib(type: Copy) {
 // Shadow jar targets
 //
 
-task shadowJarWin(type: ShadowJar) {
+task shadowJarWin32(type: ShadowJar) {
     manifest {
         attributes 'Main-Class': mainClassName
     }
     from sourceSets.main.output //tells the task to include the project code
     baseName = project.archivesBaseName
-    destinationDir = file("$rootDir/build/dist/win")
-    classifier = "win"
-    configurations = [ project.configurations.runtime, project.configurations.runtimeWin ] //tells the task to shadow in the jars files in the 'runtime' scope
+    destinationDir = file("$rootDir/build/dist/win32")
+    classifier = "win32"
+    configurations = [ project.configurations.runtime, project.configurations.runtimeWin32 ] //tells the task to shadow in the jars files in the 'runtime' scope
 
     // Don't include signatures
     exclude "META-INF/*.SF"
@@ -154,16 +165,53 @@ task shadowJarWin(type: ShadowJar) {
     mergeServiceFiles()
 }
 
-task shadowJarLinux(type: ShadowJar) {
+task shadowJarWin64(type: ShadowJar) {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    from sourceSets.main.output //tells the task to include the project code
+    baseName = project.archivesBaseName
+    destinationDir = file("$rootDir/build/dist/win64")
+    classifier = "win64"
+    configurations = [ project.configurations.runtime, project.configurations.runtimeWin64 ] //tells the task to shadow in the jars files in the 'runtime' scope
+
+    // Don't include signatures
+    exclude "META-INF/*.SF"
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+
+    mergeServiceFiles()
+}
+
+task shadowJarLinux32(type: ShadowJar) {
     manifest {
         attributes 'Main-Class': mainClassName
     }
 
     from sourceSets.main.output //tells the task to include the project code
     baseName = project.archivesBaseName
-    destinationDir = file("$rootDir/build/dist/linux")
-    classifier = "linux"
-    configurations = [ project.configurations.runtime, project.configurations.runtimeLinux ] //tells the task to shadow in the jars files in the 'runtime' scope
+    destinationDir = file("$rootDir/build/dist/linux32")
+    classifier = "linux32"
+    configurations = [ project.configurations.runtime, project.configurations.runtimeLinux32 ] //tells the task to shadow in the jars files in the 'runtime' scope
+
+    // Don't include signatures
+    exclude "META-INF/*.SF"
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+
+    mergeServiceFiles()
+}
+
+task shadowJarLinux64(type: ShadowJar) {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+
+    from sourceSets.main.output //tells the task to include the project code
+    baseName = project.archivesBaseName
+    destinationDir = file("$rootDir/build/dist/linux64")
+    classifier = "linux64"
+    configurations = [ project.configurations.runtime, project.configurations.runtimeLinux64 ] //tells the task to shadow in the jars files in the 'runtime' scope
 
     // Don't include signatures
     exclude "META-INF/*.SF"
@@ -192,8 +240,10 @@ task shadowJarMac(type: ShadowJar) {
 }
 
 shadowJar {
-    dependsOn shadowJarLinux
-    dependsOn shadowJarWin
+    dependsOn shadowJarLinux32
+    dependsOn shadowJarWin32
+    dependsOn shadowJarLinux64
+    dependsOn shadowJarWin64
     dependsOn shadowJarMac
 }
 
@@ -201,29 +251,40 @@ shadowJar {
 // launch4j
 //
 
-launch4j {
-    // Stupid launch4j gradle plugin ignores copyConfigurable when building the XML file,
-    // so we need to fall back to fat jar.
-    outfile = 'KosmosCP1.exe'
-    mainClassName = project.mainClassName
-    copyConfigurable = project.tasks.shadowJarWin.outputs.files
-    jar = "lib/${project.tasks.shadowJarWin.archiveName}"
-    icon = '../../src/main/resources/com/asigner/cp1/ui/icon.ico' // Icon is relative to build/launch4j
+task createExe32(type:JavaExec) {
+    dependsOn shadowJarWin32
+
+    main = "net.sf.launch4j.Main"
+    classpath = files("tools/launch4j/launch4j.jar")
+    args "src/installer/win/l4j_32.xml"
 }
 
-createExe {
-    dependsOn shadowJarWin
+task createExe64(type:JavaExec) {
+    dependsOn shadowJarWin64
+
+    main = "net.sf.launch4j.Main"
+    classpath = files("tools/launch4j/launch4j.jar")
+    args "src/installer/win/l4j_64.xml"
 }
 
 //
 // Packages
 //
 
-task makePackageWin(type: Exec) {
-    dependsOn createExe // This does for whatever reason not work...
+task makePackageWin32(type: Exec) {
+    dependsOn createExe32 // This does for whatever reason not work...
+
     file("$rootDir/build/installers").mkdirs()
     workingDir 'src/installer/win'
-    commandLine 'makensis', 'KosmosCP1.nsi'
+    commandLine 'makensis', "-DVERSION=${project.ext.version}", '-DEXE_PATH=../../../build/dist/win32/KosmosCP1.exe', '-DARCH=x86', 'KosmosCP1.nsi'
+}
+
+task makePackageWin64(type: Exec) {
+    dependsOn createExe64 // This does for whatever reason not work...
+
+    file("$rootDir/build/installers").mkdirs()
+    workingDir 'src/installer/win'
+    commandLine 'makensis', "-DVERSION=${project.ext.version}", '-DEXE_PATH=../../../build/dist/win64/KosmosCP1.exe','-DARCH=x86_64', 'KosmosCP1.nsi'
 }
 
 task stagePackageDeb(type: Copy) {
@@ -252,6 +313,7 @@ task makePackageDeb {
 }
 
 task makePackages {
-    dependsOn makePackageWin
+    dependsOn makePackageWin32
+    dependsOn makePackageWin64
     dependsOn makePackageDeb
 }

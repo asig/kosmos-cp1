@@ -15,17 +15,34 @@
 ; You should have received a copy of the GNU General Public License
 ; along with kosmos-cp1.  If not, see <http://www.gnu.org/licenses/>.
 
+; The following values need to be set on the command line.
+; - ARCH
+; - VERSION
+; - EXE_PATH
+
+!ifndef ARCH
+  !error "ARCH must be defined!"
+!endif
+
+!ifndef VERSION
+  !error "VERSION must be defined!"
+!endif
+!ifndef EXE_PATH
+  !error "EXE_PATH must be defined!"
+!endif
+
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_EXE "KosmosCP1.exe"
 !define PRODUCT_DIR "KosmosCP1"
 !define PRODUCT_NAME "Kosmos CP1"
 !define PRODUCT_FILENAME "KosmosCP1"
-!define PRODUCT_VERSION "1.0.0"
+!define PRODUCT_VERSION "${VERSION}"
 !define PRODUCT_PUBLISHER "Andreas Signer"
 !define PRODUCT_WEB_SITE "http://www.retrozone.ch/cp1"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_EXE}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
 
 ; MUI 1.67 compatible ------
 !include "MUI2.nsh"
@@ -63,8 +80,14 @@
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "../../../build/installers/${PRODUCT_FILENAME}-${PRODUCT_VERSION}-Setup.exe"
-InstallDir "$PROGRAMFILES\${PRODUCT_DIR}"
+OutFile "../../../build/installers/${PRODUCT_FILENAME}-${PRODUCT_VERSION}-${ARCH}-Setup.exe"
+!if ${ARCH} == "x86"
+  InstallDir "$PROGRAMFILES32\${PRODUCT_DIR}"
+!else if ${ARCH} == "x86_64"
+  InstallDir "$PROGRAMFILES64\${PRODUCT_DIR}"
+!else
+  !error "Unsupported ARCH ${ARCH}. Use x86 or x86_64"
+!endif
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
@@ -76,7 +99,7 @@ FunctionEnd
 Section "Hauptgruppe" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "../../../build/launch4j/KosmosCP1.exe"
+  File "${EXE_PATH}"
   CreateDirectory "$SMPROGRAMS\${PRODUCT_DIR}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_DIR}\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE}"
   CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE}"
@@ -108,7 +131,7 @@ FunctionEnd
 
 Function un.onInit
 !insertmacro MUI_UNGETLANGUAGE
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "MÃ¶chten Sie $(^Name) und alle seinen Komponenten deinstallieren?" IDYES +2
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Möchten Sie $(^Name) und alle seinen Komponenten deinstallieren?" IDYES +2
   Abort
 FunctionEnd
 
