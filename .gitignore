@@ -1,5 +1,7 @@
-build
-.gradle
+/build/
+/bin/
+/.gradle/
+
 
 # deb packaging
 src/installer/deb/debian/debhelper-build-stamp
@@ -10,6 +12,6 @@ src/installer/deb/debian/kosmos-cp1/
 src/installer/kosmos-cp1_*.changes
 
 # See https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/libraries/Gradle__*
+/.idea/workspace.xml
+/.idea/tasks.xml
+/.idea/libraries/Gradle__*
