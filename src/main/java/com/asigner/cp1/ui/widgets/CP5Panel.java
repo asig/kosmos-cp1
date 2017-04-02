@@ -35,6 +35,7 @@ public class CP5Panel extends Composite {
         leds.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 
         Label placeholder2 = new Label(this, SWT.NONE);
+        placeholder2.setBackground(CP1Colors.GREEN);
         placeholder2.setLayoutData(GridDataFactory.fillDefaults().grab(false, false).hint(50,-1).create());
 
         switches = new CP5Switches(this, SWT.NONE);
