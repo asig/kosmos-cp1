@@ -20,7 +20,7 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.SWTResources;
-import com.google.common.collect.Sets;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -65,7 +65,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
     private int mask = 0;
 
     public CP1SevenSegmentComposite(org.eclipse.swt.widgets.Composite parent, int style) {
-        super(parent, style);
+        super(parent, style | SWT.NO_BACKGROUND);
         this.addPaintListener(this::paint);
     }
 
