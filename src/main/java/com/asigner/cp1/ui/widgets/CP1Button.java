@@ -170,6 +170,7 @@ public class CP1Button extends Composite {
 
     private void paint(PaintEvent paintEvent) {
         GC gc = paintEvent.gc;
+        gc.setAntialias(SWT.ON);
         Rectangle bounds = this.getClientArea();
 
         Color fg = (pressed) ? SWTResources.GRAY50 : SWTResources.BLACK;
