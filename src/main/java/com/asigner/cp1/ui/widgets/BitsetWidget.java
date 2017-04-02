@@ -85,6 +85,7 @@ public class BitsetWidget extends Label {
     }
 
     private void paint(GC gc) {
+        gc.setAntialias(SWT.ON);
         int mask = 1 << (size - 1);
         for (int i = 0; i < size; i++) {
             drawBit(gc, BORDER_LEFT + i * (BOX_W + SEPARATOR_WIDTH), BORDER_TOP, (value & mask) > 0);
