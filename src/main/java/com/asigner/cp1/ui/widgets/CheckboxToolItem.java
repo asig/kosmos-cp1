@@ -20,7 +20,6 @@
 package com.asigner.cp1.ui.widgets;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
@@ -61,5 +60,4 @@ public class CheckboxToolItem extends ToolItem {
     @Override
     protected void checkSubclass() {
     }
-
 }
