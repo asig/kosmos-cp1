@@ -48,24 +48,24 @@ public class CP1Display extends Composite {
 
     private final CP1SevenSegmentComposite[] digits = new CP1SevenSegmentComposite[6];
 
-    private final static Map<Character, Set<Integer> > charMap = ImmutableMap.<Character, Set<Integer>>builder()
-            .put('0', Sets.newHashSet(0,1,2,3,4,5))
-            .put('1', Sets.newHashSet(1,2))
-            .put('2', Sets.newHashSet(0,1,3,4,6))
-            .put('3', Sets.newHashSet(0,1,2,3,6))
-            .put('4', Sets.newHashSet(1,2,5,6))
-            .put('5', Sets.newHashSet(0,2,3,5,6))
-            .put('6', Sets.newHashSet(0,2,3,4,5,6))
-            .put('7', Sets.newHashSet(0,1,2,5))
-            .put('8', Sets.newHashSet(0,1,2,3,4,5,6))
-            .put('9', Sets.newHashSet(0,1,2,3,5,6))
-            .put('A', Sets.newHashSet(0,1,2,4,5,6))
-            .put('E', Sets.newHashSet(0,3,4,5,6))
-            .put('P', Sets.newHashSet(0,1,4,5,6))
-            .put('C', Sets.newHashSet(0,3,4,5))
-            .put('u', Sets.newHashSet(2,3,4))
-            .put('ⁿ', Sets.newHashSet(0,1,5))
-            .put(' ', Sets.newHashSet())
+    private final static Map<Character, Integer > charMap = ImmutableMap.<Character, Integer>builder()
+            .put('0', 1 << 5 | 1 << 4 | 1 << 3 | 1 << 2 | 1 << 1 | 1 << 0)
+            .put('1', 1 << 2 | 1 << 1)
+            .put('2', 1 << 6 | 1 << 4 | 1 << 3 | 1 << 1 | 1 << 0)
+            .put('3', 1 << 6 | 1 << 3 | 1 << 2 | 1 << 1 | 1 << 0)
+            .put('4', 1 << 6 | 1 << 5 | 1 << 2 | 1 << 1)
+            .put('5', 1 << 6 | 1 << 5 | 1 << 3 | 1 << 2 | 1 << 0)
+            .put('6', 1 << 6 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 2 | 1 << 0)
+            .put('7', 1 << 5 | 1 << 2 | 1 << 1 | 1 << 0)
+            .put('8', 1 << 6 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 2 | 1 << 1 | 1 << 0)
+            .put('9', 1 << 6 | 1 << 5 | 1 << 4 | 1 << 2 | 1 << 1 | 1 << 0)
+            .put('A', 1 << 6 | 1 << 5 | 1 << 4 | 1 << 2 | 1 << 1 | 1 << 0)
+            .put('E', 1 << 6 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 0)
+            .put('P', 1 << 6 | 1 << 5 | 1 << 4 | 1 << 1 | 1 << 0)
+            .put('C', 1 << 5 | 1 << 4 | 1 << 3 | 1 << 0)
+            .put('u', 1 << 4 | 1 << 3 | 1 << 2 )
+            .put('n', 1 << 5 | 1 << 1 | 1 << 0)
+            .put(' ', 0)
             .build();
 
     private Intel8155 pid = null;
@@ -106,7 +106,6 @@ public class CP1Display extends Composite {
         digits[2] = new CP1SevenSegmentComposite(this, SWT.NONE);
         digits[2].setLayoutData(GridDataFactory.swtDefaults().hint(-1,  80).create());
         digits[2].setShowDot(true);
-        digits[2].setDot(true);
 
         Label spacer2 = new Label(this, SWT.NONE);
         spacer2.setLayoutData(GridDataFactory.swtDefaults().grab(true,  true).create());
@@ -143,6 +142,7 @@ public class CP1Display extends Composite {
                     // 5/6th of the time...
                     getDisplay().syncExec(() -> {
                         digits[5-activeDigit].setSegments(value);
+                        digits[5-activeDigit].redraw();
                     });
                 }
                 lastPortWritten = port;
@@ -202,7 +202,7 @@ public class CP1Display extends Composite {
         s = "      " + s;
         s = s.substring(s.length() - 6);
         for (int i = 0; i < 6; i++) {
-            digits[i].setSegments(charMap.getOrDefault(s.charAt(i), Sets.newHashSet()));
+            digits[i].setSegments(charMap.getOrDefault(s.charAt(i), 0));
         }
     }
 

@@ -53,7 +53,6 @@ public class SevenSegmentGenerator {
 
     private Set<Integer> segs = Sets.newHashSet();
     private Shape segments[] = new Shape[8];
-    private boolean showDot = false;
 
     private int w, h;
 
@@ -76,17 +75,28 @@ public class SevenSegmentGenerator {
         }
     }
 
-    public void generate(int mask) throws IOException {
+    public void generate(int mask, boolean showDot) throws IOException {
+        this.segs.clear();
         for (int i = 0; i < 8; i++) {
-            if ( (mask ))
-
+            if ( (mask & (1 << i)) > 0) {
+                this.segs.add(i);
+            }
         }
 
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2d = img.createGraphics();
-        paint(g2d);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
-        ImageIO.write(img, "pnh", new File(String.format("segs-%02x.png",mask)));
+        paint(g2d, showDot);
+
+        String path = String.format("digits/%s", showDot ? "dot" : "nodot");
+        String name = String.format("%02x.png", mask);
+        new File(path).mkdirs();
+        ImageIO.write(img, "png", new File(path + "/" + name));
     }
 
     private void initSegments() {
@@ -171,7 +181,10 @@ public class SevenSegmentGenerator {
      *
      * @param g Graphics context.
      */
-    public void paint(Graphics2D g) {
+    public void paint(Graphics2D g, boolean showDot) {
+        g.setColor(new Color(fromRGB(CP1Colors.SEGMENT_BG.getRGB())));
+        g.fillRect(0, 0, w, h);
+
         java.util.LinkedList<AffineTransform> transformations = new java.util.LinkedList<AffineTransform>();
 
         double scale = (double)h/(double)getOrigHeight();
@@ -248,5 +261,15 @@ public class SevenSegmentGenerator {
      */
     public static int getOrigHeight() {
         return 186;
+    }
+
+    public static void main(String ... args) throws IOException {
+        SevenSegmentGenerator gen = new SevenSegmentGenerator();
+        for (int i =0 ; i < 128; i++) {
+            gen.generate(i, false);
+        }
+        for (int i =0 ; i < 256; i++) {
+            gen.generate(i, true);
+        }
     }
 }
