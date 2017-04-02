@@ -94,7 +94,7 @@ public class BitsetWidget extends Label {
 
 
     private void drawBit(GC gc, int x, int y, boolean set) {
-        int finetuning = OS.isLinux() ? 1 : 0;
+        int finetuning = OS.isMac() ? 0 : 1;
         if (isEnabled()) {
             gc.setBackground(bgCol);
             gc.setForeground(fgCol);
