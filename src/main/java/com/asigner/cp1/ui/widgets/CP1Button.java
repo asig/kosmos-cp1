@@ -28,11 +28,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Composite;
 
 import java.util.LinkedList;
@@ -45,29 +41,25 @@ public class CP1Button extends Composite {
         void keyReleased(CP1Button btn);
     }
 
-    private static final String LARGE_FONT_NAME = "Helvetica Black";
-    private static final String SMALL_FONT_NAME = "Helvetica";
-    private static final boolean isMac = OS.isMac();
-
     private boolean pressed = false;
     private boolean mouseOverControl = false;
     private List<KeyListener> keyListeners = new LinkedList<>();
 
-    private Font largeFont;
-    private Font smallFont;
+    private Image imgNormal;
+    private Image imgPressed;
+    private int w;
+    private int h;
 
-    private String text = "";
-    private String subText = "";
+    public CP1Button(Composite parent, String name, int style) {
+        super(parent, style | SWT.NO_BACKGROUND);
+        this.imgNormal = SWTResources.getImage("/com/asigner/cp1/ui/buttons/"+ name + ".png");
+        this.imgPressed = SWTResources.getImage("/com/asigner/cp1/ui/buttons/"+ name + "_pressed.png");
+        Rectangle r = this.imgNormal.getBounds();
+        this.w = r.width;
+        this.h = r.height;
+        super.setSize(this.w, this.h);
 
-    public CP1Button(Composite parent, int style) {
-        super(parent, style);
-
-        largeFont = SWTResources.getFont(LARGE_FONT_NAME, scaleFontSize(12), false);
-        smallFont = SWTResources.getFont(SMALL_FONT_NAME, scaleFontSize(6), false);
-
-        this.setSize((int)(3.2 * 50), 50);
         this.addPaintListener(this::paint);
-        this.setBackground(CP1Colors.PANEL_BACKGROUND);
 
         this.addMouseTrackListener(new MouseTrackListener() {
             @Override
@@ -141,26 +133,7 @@ public class CP1Button extends Composite {
 
     @Override
     public void setSize(int width, int height) {
-        super.setSize(width, height);
-        initializeFonts();
-    }
-
-    private void initializeFonts() {
-        int height = this.getSize().y;
-        if (largeFont != null) {
-            largeFont.dispose();
-        }
-        if (smallFont != null) {
-            smallFont.dispose();
-        }
-
-        double largeTextSizeFactor = Strings.isNullOrEmpty(subText) ? 0.5 : 0.375;
-        largeFont = new Font(this.getDisplay(), LARGE_FONT_NAME, scaleFontSize(height * largeTextSizeFactor), SWT.NONE);
-        smallFont = new Font(this.getDisplay(), SMALL_FONT_NAME, scaleFontSize(height * 0.15), SWT.NONE);
-    }
-
-    private int scaleFontSize(double fontSize) {
-        return (int)(isMac ? 1.3 * fontSize : fontSize);
+        super.setSize(w, h);
     }
 
     @Override
@@ -170,52 +143,7 @@ public class CP1Button extends Composite {
 
     private void paint(PaintEvent paintEvent) {
         GC gc = paintEvent.gc;
-        gc.setAntialias(SWT.ON);
-        Rectangle bounds = this.getClientArea();
-
-        Color fg = (pressed) ? SWTResources.GRAY50 : SWTResources.BLACK;
-        gc.setForeground(fg);
-        gc.setBackground(SWTResources.WHITE);
-
-        int r = bounds.height/2;
-
-        gc.setLineWidth(1);
-        gc.fillRoundRectangle(bounds.x, bounds.y, bounds.width-1, bounds.height-1, r, r);
-        gc.drawRoundRectangle(bounds.x, bounds.y, bounds.width-1, bounds.height-1, r, r);
-
-        gc.setLineWidth(1);
-        gc.drawRoundRectangle(bounds.x+3, bounds.y+3, bounds.width-6-1, bounds.height-6-1, (int)(r*0.8), (int)(r*0.8));
-
-        gc.setFont(largeFont);
-        Point pt = gc.textExtent(text);
-        int h = pt.y;
-        int largeTextY;
-        if (Strings.isNullOrEmpty(subText)) {
-            // Only large text, center it.
-            largeTextY = bounds.y + (bounds.height - h)/2;
-            // Needs some manual adjustment...
-            largeTextY -= (int)(bounds.height*0.05);
-        } else {
-            largeTextY = bounds.y + (int)( (bounds.height - h)/2 * 0.2);
-        }
-        gc.drawString(text, bounds.x+(bounds.width-pt.x)/2, largeTextY, true);
-
-        if (!Strings.isNullOrEmpty(subText)) {
-            gc.setFont(smallFont);
-            pt = gc.textExtent(subText);
-            int y = bounds.y + bounds.height - 6 - pt.y;
-            gc.drawString(subText, bounds.x+(bounds.width-pt.x)/2, y, true);
-        }
-    }
-
-    public void setText(String text) {
-        this.text = text;
-        initializeFonts();
-    }
-
-    public void setSubText(String subText) {
-        this.subText = subText;
-        initializeFonts();
+        gc.drawImage(pressed ? imgPressed : imgNormal, 0, 0);
     }
 
     @Override
