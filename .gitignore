@@ -1,7 +1,6 @@
-/build/
+build/
+.gradle/
 /bin/
-/.gradle/
-
 
 # deb packaging
 src/installer/deb/debian/debhelper-build-stamp
