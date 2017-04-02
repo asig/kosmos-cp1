@@ -254,6 +254,7 @@ public class KosmosPanelWindow extends Window {
 
         Label spacer1 = new Label(composite, SWT.NONE);
         spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
+        spacer1.setBackground(CP1Colors.GREEN);
 
         Composite composite_1 = new Composite(composite, SWT.NONE);
         composite_1.setBackground(CP1Colors.GREEN);
@@ -278,6 +279,7 @@ public class KosmosPanelWindow extends Window {
 
         Label spacer2 = new Label(composite, SWT.NONE);
         spacer2.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
+        spacer2.setBackground(CP1Colors.GREEN);
 
         kosmosControlPanel = new KosmosControlPanel(composite, SWT.NONE);
     }
