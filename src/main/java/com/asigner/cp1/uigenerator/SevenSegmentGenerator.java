@@ -93,7 +93,7 @@ public class SevenSegmentGenerator {
 
         paint(g2d, showDot);
 
-        String path = String.format("src/resources/com/asigner/cp1/ui/digits/%s", showDot ? "dot" : "nodot");
+        String path = String.format("src/main/resources/com/asigner/cp1/ui/digits/%s", showDot ? "dot" : "nodot");
         String name = String.format("%02x.png", mask);
         new File(path).mkdirs();
         ImageIO.write(img, "png", new File(path + "/" + name));
