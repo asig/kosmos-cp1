@@ -39,6 +39,10 @@ mainClassName = "com.asigner.cp1.ui.KosmosCP1"
 
 apply from: "repositories.gradle"
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 //
