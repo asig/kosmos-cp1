@@ -37,7 +37,7 @@ import java.util.function.Function;
 
 public abstract class Window {
 
-    private static final String APP_NAME = "Kosmos CP1";
+    public static final String APP_NAME = "Kosmos CP1";
     private static final CocoaUiEnhancer enhancer = new CocoaUiEnhancer(APP_NAME);
 
     // Shared actions

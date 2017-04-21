@@ -56,7 +56,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
         for (int i = 0; i < 256; i++) {
             DIGITS_DOT[i] = SWTResources.getImage(String.format("/com/asigner/cp1/ui/digits/dot/%02x.png", i));
         }
-        Rectangle r = DIGITS_DOT[0].getBoundsInPixels();
+        Rectangle r = DIGITS_DOT[0].getBounds();
         w = r.width;
         h = r.height;
     }
@@ -81,7 +81,7 @@ public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite 
     }
 
     @Override
-    public Point computeSize(final int wHint, final int hHint, final boolean changed) {
+    public Point computeSize(int wHint, int hHint, boolean changed) {
         return new Point(w,h);
     }
 
