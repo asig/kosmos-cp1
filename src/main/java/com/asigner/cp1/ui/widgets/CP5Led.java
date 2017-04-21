@@ -26,21 +26,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
-import org.jfree.swt.SWTGraphics2D;
-
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RadialGradientPaint;
-import java.awt.Shape;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
-
-import static java.awt.Color.WHITE;
-import static java.awt.MultipleGradientPaint.ColorSpaceType.SRGB;
-import static java.awt.MultipleGradientPaint.CycleMethod.NO_CYCLE;
 
 public class CP5Led extends Composite {
 
@@ -51,7 +36,7 @@ public class CP5Led extends Composite {
     static {
         ON = SWTResources.getImage("/com/asigner/cp1/ui/led_on.png");
         OFF = SWTResources.getImage("/com/asigner/cp1/ui/led_off.png");
-        Rectangle r = ON.getBoundsInPixels();
+        Rectangle r = ON.getBounds();
         w = r.width;
         h = r.height;
     }
@@ -67,7 +52,6 @@ public class CP5Led extends Composite {
 
     public CP5Led(Composite parent, int style) {
         super(parent, style);
-
         this.setSize(w, h);
         this.addPaintListener(this::paint);
         this.setBackground(CP1Colors.GREEN);
@@ -89,8 +73,7 @@ public class CP5Led extends Composite {
     }
 
     private void paint(PaintEvent paintEvent) {
-        SWTGraphics2D g2d = new SWTGraphics2D(paintEvent.gc);
-        g2d.drawImage(on ? ON : OFF,  0, 0);
+        paintEvent.gc.drawImage(on ? ON : OFF,  0, 0);
     }
 
     @Override

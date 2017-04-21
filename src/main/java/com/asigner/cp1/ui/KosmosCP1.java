@@ -76,6 +76,8 @@ public class KosmosCP1 {
             // Now, reset the CPU
             cpu.reset();
 
+            Display.setAppName(Window.APP_NAME);
+            
             WindowManager windowManager = new WindowManager();
             CpuWindow cpuWindow = new CpuWindow(windowManager, cpu, pid, pidExtension, executorThread);
             KosmosPanelWindow panelWindow = new KosmosPanelWindow(windowManager, cpu, pid, pidExtension, executorThread);
