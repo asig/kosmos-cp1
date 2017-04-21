@@ -268,7 +268,7 @@ public class KosmosPanelWindow extends Window {
 
         CP1Display p1Display = new CP1Display(composite_1, SWT.NONE);
         p1Display.setPid(pid);
-        GridData gd_p1Display = GridDataFactory.swtDefaults().hint(-1, 100).create();
+        GridData gd_p1Display = GridDataFactory.swtDefaults().create();
         p1Display.setLayoutData(gd_p1Display);
 
         KosmosLogoComposite kosmosLogo = new KosmosLogoComposite(composite_1, SWT.NONE);

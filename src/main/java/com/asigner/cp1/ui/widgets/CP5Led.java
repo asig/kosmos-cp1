@@ -36,7 +36,7 @@ public class CP5Led extends Composite {
     static {
         ON = SWTResources.getImage("/com/asigner/cp1/ui/led_on.png");
         OFF = SWTResources.getImage("/com/asigner/cp1/ui/led_off.png");
-        Rectangle r = ON.getBoundsInPixels();
+        Rectangle r = ON.getBounds();
         w = r.width;
         h = r.height;
     }
