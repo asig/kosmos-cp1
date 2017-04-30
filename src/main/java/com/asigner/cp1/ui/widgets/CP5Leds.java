@@ -30,15 +30,14 @@ public class CP5Leds extends Composite {
         }
     }
 
+    public void setValue(int value) {
+        for (int i = 0; i < 8; i++) {
+            leds[i].setOn((value & (1 << i)) > 0);
+        }
+    }
+
     @Override
     protected void checkSubclass() {
         // Disable the check that prevents subclassing of SWT components
-    }
-
-    public void setValue(int value) {
-        this.getDisplay().syncExec(() -> {
-            for (int i = 0; i < 8; i++) {
-                leds[i].setOn((value & (1 << i)) > 0);
-            }});
     }
 }

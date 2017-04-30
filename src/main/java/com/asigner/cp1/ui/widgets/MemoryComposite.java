@@ -95,7 +95,7 @@ public class MemoryComposite extends Composite {
         memoryModifiedListener = new MemoryModifiedListener() {
             @Override
             public void memoryWritten(final int addr, int value) {
-                if (!isTraceExecution()) {
+                if (isDisposed() || !isTraceExecution()) {
                     return;
                 }
                 if (addr != lastWritten) {
@@ -106,7 +106,7 @@ public class MemoryComposite extends Composite {
 
             @Override
             public void memoryCleared() {
-                if (!isTraceExecution()) {
+                if (isDisposed() || !isTraceExecution()) {
                     return;
                 }
                 if (lastWritten != -1) {
