@@ -73,11 +73,6 @@ public class CP1Display extends Composite {
     private Intel8155.StateListener.Port lastPortWritten = null;
     private Intel8155.StateListener pidListener;
 
-    /**
-     * Create the composite.
-     * @param parent
-     * @param style
-     */
     public CP1Display(Composite parent, int style) {
         super(parent, style);
 
@@ -122,7 +117,6 @@ public class CP1Display extends Composite {
         pidListener = new Intel8155.StateListener() {
             @Override
             public void commandRegisterWritten() {
-
             }
 
             @Override
@@ -150,17 +144,14 @@ public class CP1Display extends Composite {
 
             @Override
             public void memoryWritten() {
-
             }
 
             @Override
             public void pinsChanged() {
-
             }
 
             @Override
             public void resetExecuted() {
-
             }
         };
         this.addDisposeListener(ev -> {
