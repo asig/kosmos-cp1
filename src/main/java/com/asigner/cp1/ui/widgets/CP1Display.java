@@ -94,7 +94,7 @@ public class CP1Display extends Composite {
 
         Label spacer1 = new Label(this, SWT.NONE);
         spacer1.setLayoutData(GridDataFactory.swtDefaults().grab(true,  true).create());
-        
+
         digits[1] = new CP1SevenSegmentComposite(this, SWT.NONE);
         digits[1].setLayoutData(GridDataFactory.swtDefaults().hint(-1,  80).create());
 
@@ -135,8 +135,11 @@ public class CP1Display extends Composite {
                     // Port C, and only then the new value is written, so a digit is empty at
                     // 5/6th of the time...
                     getDisplay().syncExec(() -> {
-                        digits[5-activeDigit].setSegments(value);
-                        digits[5-activeDigit].redraw();
+                        CP1SevenSegmentComposite digit = digits[5 - activeDigit];
+                        if (!digit.isDisposed()) {
+                            digits[5 - activeDigit].setSegments(value);
+                            digits[5 - activeDigit].redraw();
+                        }
                     });
                 }
                 lastPortWritten = port;
@@ -172,7 +175,7 @@ public class CP1Display extends Composite {
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point pt;
-        if (wHint > 0) {        	
+        if (wHint > 0) {
             pt = digits[0].computeSize((int)((wHint-2*MARGIN_WIDTH)/(6+2*SPACER_PERCENTAGE)), -1, changed);
         } else if (hHint > 0) {
             pt = digits[0].computeSize(-1, hHint - 2 * MARGIN_WIDTH, changed);
