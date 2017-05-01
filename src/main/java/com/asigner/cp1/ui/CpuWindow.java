@@ -35,11 +35,15 @@ import com.asigner.cp1.ui.actions.SingleStepAction;
 import com.asigner.cp1.ui.actions.StopAction;
 import com.asigner.cp1.ui.actions.TraceExecutionAction;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
-import com.asigner.cp1.ui.widgets.ActionToolItem;
-import com.asigner.cp1.ui.widgets.CheckboxToolItem;
+import com.asigner.cp1.ui.widgets.CheckboxContributionItem;
 import com.asigner.cp1.ui.widgets.DisassemblyComposite;
 import com.asigner.cp1.ui.widgets.Status8049Composite;
 import com.asigner.cp1.ui.widgets.Status8155Composite;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.CoolBarManager;
+import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -51,8 +55,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.ToolBar;
-import org.eclipse.swt.widgets.ToolItem;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -72,7 +74,7 @@ public class CpuWindow extends Window {
     private SaveAction saveAction;
     private AboutAction aboutAction;
     private QuitAction quitAction;
-
+    private CoolBarManager coolBarManager;
 
     private Shell shell;
     private Intel8049 cpu;
@@ -113,7 +115,7 @@ public class CpuWindow extends Window {
 
             @Override
             public void resetExecuted() {
-                CpuWindow.this.resetExecuted();
+                shell.getDisplay().syncExec(CpuWindow.this::resetExecuted);
             }
 
             @Override
@@ -152,9 +154,6 @@ public class CpuWindow extends Window {
 
             @Override
             public void resetExecuted() {
-                if (isDisposed() || !isTraceExecution()) {
-                    return;
-                }
                 shell.getDisplay().syncExec(CpuWindow.this::resetExecuted);
             }
 
@@ -201,7 +200,7 @@ public class CpuWindow extends Window {
 
             @Override
             public void resetExecuted() {
-                CpuWindow.this.resetExecuted();
+                shell.getDisplay().syncExec(CpuWindow.this::resetExecuted);
             }
 
             @Override
@@ -254,7 +253,7 @@ public class CpuWindow extends Window {
         shell.layout();
         fireWindowOpened();
     }
-    
+
     @Override
     protected Shell getShell() {
         return shell;
@@ -305,20 +304,51 @@ public class CpuWindow extends Window {
         shell.setLayout(new GridLayout(1, false));
         Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
         shell.setImage(icon);
-        shell.addDisposeListener(disposeEvent -> fireWindowClosed());
+        shell.addDisposeListener(disposeEvent -> {
+            dispose();
+            fireWindowClosed();
+        });
+    }
+
+    public void dispose() {
+        if (coolBarManager != null) {
+            coolBarManager.dispose();
+        }
+    }
+
+    private IContributionItem makeForcedTextContributionItem(Action action) {
+        ActionContributionItem item = new ActionContributionItem(action);
+        item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        return item;
+    }
+
+    private CoolBarManager createToolBarManager() {
+        CoolBarManager coolBarManager = new CoolBarManager(SWT.FLAT);
+        {
+            ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.NO_FOCUS);
+            coolBarManager.add(toolBarManager);
+            toolBarManager.add(makeForcedTextContributionItem(singleStepAction));
+            toolBarManager.add(makeForcedTextContributionItem(singleStepAction));
+            toolBarManager.add(makeForcedTextContributionItem(runAction));
+            toolBarManager.add(makeForcedTextContributionItem(stopAction));
+            toolBarManager.add(makeForcedTextContributionItem(resetAction));
+        }
+        {
+            ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.NO_FOCUS);
+            coolBarManager.add(toolBarManager);
+            toolBarManager.add(new CheckboxContributionItem(breakOnMovxAction));
+            toolBarManager.add(new CheckboxContributionItem(traceExecutionAction));
+        }
+
+        return coolBarManager;
     }
 
     /**
      * Create contents of the window.
      */
     protected void createContents() {
-        ToolBar toolbar = new ToolBar(shell, SWT.FLAT);
-        ToolItem toolItem1 = new ActionToolItem(toolbar, SWT.PUSH, singleStepAction);
-        ToolItem toolItem2 = new ActionToolItem(toolbar, SWT.PUSH, runAction);
-        ToolItem toolItem3 = new ActionToolItem(toolbar, SWT.PUSH, stopAction);
-        ToolItem toolItem4 = new ActionToolItem(toolbar, SWT.PUSH, resetAction);
-        ToolItem toolItem5 = new CheckboxToolItem(toolbar, breakOnMovxAction);
-        ToolItem toolItem6 = new CheckboxToolItem(toolbar, traceExecutionAction);
+        coolBarManager = createToolBarManager();
+        coolBarManager.createControl(shell);
 
         Composite composite_1 = new Composite(shell, SWT.NONE);
         composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -387,18 +417,15 @@ public class CpuWindow extends Window {
     }
 
     private void resetExecuted() {
-        if (!isDisposed()) {
-            shell.getDisplay().asyncExec(() -> {
-                singleStepAction.setEnabled(true);
-                stopAction.setEnabled(false);
-                runAction.setEnabled(true);
-            });
-            updateView();
-            shell.getDisplay().asyncExec(() -> {
-                status8049.updateState();
-            });
-            update8155States();
+        if (isDisposed()) {
+            return;
         }
+        singleStepAction.setEnabled(true);
+        stopAction.setEnabled(false);
+        runAction.setEnabled(true);
+        updateView();
+        status8049.updateState();
+        update8155States();
     }
 
     private void updateView() {
