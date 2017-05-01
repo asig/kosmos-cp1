@@ -51,13 +51,8 @@ public class BitsetWidget extends Label {
 
     private int value = 0;
 
-    /**
-     * Create the composite.
-     * @param parent
-     * @param style
-     */
     public BitsetWidget(Composite parent, int size, int style) {
-        super(parent, style);
+        super(parent, style | SWT.NO_BACKGROUND);
         this.size = size;
         this.addPaintListener(new PaintListener() {
             @Override
@@ -122,5 +117,4 @@ public class BitsetWidget extends Label {
     protected void checkSubclass() {
         // Disable the check that prevents subclassing of SWT components
     }
-
 }

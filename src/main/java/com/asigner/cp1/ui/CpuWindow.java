@@ -101,16 +101,14 @@ public class CpuWindow extends Window {
         cpuStateListener = new Intel8049.StateListener() {
             @Override
             public void instructionExecuted() {
-                if (!isTraceExecution()) {
+                if (isDisposed() || !isTraceExecution()) {
                     return;
                 }
-                updateView();
-                if (!isDisposed()) {
-                    shell.getDisplay().syncExec(() -> {
-                        status8049.updateState();
-                    });
-                }
-                update8155States();
+                shell.getDisplay().asyncExec(() -> {
+                    updateView();
+                    status8049.updateState();
+                    update8155States();
+                });
             }
 
             @Override
@@ -120,14 +118,13 @@ public class CpuWindow extends Window {
 
             @Override
             public void stateChanged(Intel8049.State newState) {
-                if (!isDisposed()) {
-                    if (isTraceExecution()) {
-                        if (disassembly.getSelectedAddress() != cpu.getPC()) {
-                            updateView();
-                        }
-                        shell.getDisplay().syncExec(status8049::updateState);
-                    }
+                if (isDisposed() || !isTraceExecution()) {
+                    return;
                 }
+                shell.getDisplay().asyncExec(() -> {
+                    updateView();
+                    status8049.updateState();
+                });
             }
         };
 
@@ -135,28 +132,39 @@ public class CpuWindow extends Window {
         pidStateListener = new Intel8155.StateListener() {
             @Override
             public void commandRegisterWritten() {
-                update8155States();
+                update8155();
             }
 
             @Override
             public void portWritten(Port port, int value) {
-                update8155States();
+                update8155();
             }
 
             @Override
             public void memoryWritten() {
-                update8155States();
+                update8155();
             }
 
             @Override
             public void pinsChanged() {
-                update8155States();
+                update8155();
             }
 
             @Override
             public void resetExecuted() {
-                CpuWindow.this.resetExecuted();
+                if (isDisposed() || !isTraceExecution()) {
+                    return;
+                }
+                shell.getDisplay().syncExec(CpuWindow.this::resetExecuted);
+            }
 
+            private void update8155() {
+                if (isDisposed() || !isTraceExecution()) {
+                    return;
+                }
+                shell.getDisplay().syncExec(() -> {
+                    update8155States();
+                });
             }
         };
 
@@ -172,16 +180,17 @@ public class CpuWindow extends Window {
 
             @Override
             public void executionStopped() {
-                if (!isDisposed()) {
-                    updateView();
-                    shell.getDisplay().syncExec(() -> {
-                        singleStepAction.setEnabled(true);
-                        stopAction.setEnabled(false);
-                        runAction.setEnabled(true);
-                        status8049.updateState();
-                        update8155States();
-                    });
+                if (isDisposed()) {
+                    return;
                 }
+                shell.getDisplay().syncExec(() -> {
+                    updateView();
+                    singleStepAction.setEnabled(true);
+                    stopAction.setEnabled(false);
+                    runAction.setEnabled(true);
+                    status8049.updateState();
+                    update8155States();
+                });
             }
 
 
@@ -197,13 +206,14 @@ public class CpuWindow extends Window {
 
             @Override
             public void breakpointHit(int addr) {
-                if (!isDisposed()) {
-                    shell.getDisplay().syncExec(() -> {
-                        status8049.updateState();
-                    });
+                if (isDisposed()) {
+                    return;
+                }
+                shell.getDisplay().syncExec(() -> {
+                    status8049.updateState();
                     update8155States();
                     updateView();
-                }
+                });
             }
         };
     }
@@ -338,7 +348,7 @@ public class CpuWindow extends Window {
         portListener = (oldValue, newValue) -> {
             if (isTraceExecution()) {
                 if (!isDisposed()) {
-                    shell.getDisplay().syncExec(() -> status8049.updateState());
+                    shell.getDisplay().asyncExec(() -> status8049.updateState());
                 }
             }
         };
@@ -365,46 +375,34 @@ public class CpuWindow extends Window {
     }
 
     public void setTraceExecution(boolean traceExecution) {
-        if (!isDisposed()) {
             status8049.setTraceExecution(traceExecution);
             status8155.setTraceExecution(traceExecution);
             status8155Extension.setTraceExecution(traceExecution);
             this.traceExecution = traceExecution;
-        }
     }
-
 
     private void update8155States() {
-        if (!isDisposed()) {
-            if (!isTraceExecution()) {
-                return;
-            }
-            shell.getDisplay().syncExec(() -> {
-                status8155.updateState();
-                status8155Extension.updateState();
-            });
-        }
+        status8155.updateState();
+        status8155Extension.updateState();
     }
 
-    public void resetExecuted() {
+    private void resetExecuted() {
         if (!isDisposed()) {
-            shell.getDisplay().syncExec(() -> {
+            shell.getDisplay().asyncExec(() -> {
                 singleStepAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 runAction.setEnabled(true);
             });
             updateView();
-            shell.getDisplay().syncExec(() -> {
+            shell.getDisplay().asyncExec(() -> {
                 status8049.updateState();
             });
             update8155States();
         }
     }
 
-    public void updateView() {
-        if (!isDisposed()) {
-            shell.getDisplay().syncExec(() -> disassembly.selectAddress(cpu.getPC()));
-        }
+    private void updateView() {
+        disassembly.selectAddress(cpu.getPC());
     }
 
     /**

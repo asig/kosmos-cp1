@@ -21,12 +21,6 @@ package com.asigner.cp1.ui.actions;
 
 import com.asigner.cp1.ui.Window;
 import org.eclipse.jface.action.Action;
-import org.eclipse.swt.SWTException;
-import org.eclipse.swt.widgets.Display;
-
-import java.awt.event.WindowListener;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class WindowAction extends Action {
 
@@ -35,35 +29,6 @@ public class WindowAction extends Action {
     public WindowAction(Window window) {
         super(window.getName());
         this.window = window;
-//        setEnabled(!window.isOpen());
-//        window.addWindowListener(new Window.Listener() {
-//            // For some reason, the menu item is still in disposed state when this is called.
-//            // In this case, we just create a timer that enables the action after some delay.
-//            // I have *NO* clue how to do this properly...
-//
-//            @Override
-//            public void windowOpened(Window window) {
-//                setEnabledDelayed(false);
-//            }
-//
-//            @Override
-//            public void windowClosed(Window window) {
-//                setEnabledDelayed(true);
-//            }
-//        });
-    }
-
-    private void setEnabledDelayed(boolean enabled) {
-        try {
-            setEnabled(enabled);
-        } catch (SWTException e) {
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    Display.getDefault().syncExec(() ->  setEnabled(enabled));
-                }
-            }, 200);
-        }
     }
 
     @Override

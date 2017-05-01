@@ -78,21 +78,18 @@ public class InlineEdit extends Text {
                 dispose();
             }
         });
-        this.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent disposeEvent) {
-                if (!ok) {
-                    return;
+        this.addDisposeListener(disposeEvent -> {
+            if (!ok) {
+                return;
+            }
+            String s = getText();
+            try {
+                int i = Integer.valueOf(s, 16);
+                if (i >= rangeLow && i <= rangeHigh) {
+                    consumer.accept(i);
                 }
-                String s = getText();
-                try {
-                    int i = Integer.valueOf(s, 16);
-                    if (i >= rangeLow && i <= rangeHigh) {
-                        consumer.accept(i);
-                    }
-                } catch (NumberFormatException e) {
-                    // Ignore
-                }
+            } catch (NumberFormatException e) {
+                // Ignore
             }
         });
     }

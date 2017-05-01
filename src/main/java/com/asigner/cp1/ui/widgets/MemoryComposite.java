@@ -62,13 +62,8 @@ public class MemoryComposite extends Composite {
 
     private MemoryModifiedListener memoryModifiedListener;
 
-    /**
-     * Create the composite.
-     * @param parent
-     * @param style
-     */
     public MemoryComposite(Composite parent, int style) {
-        super(parent, style);
+        super(parent, style | SWT.NO_BACKGROUND);
 
         font = JFaceResources.getFont(JFaceResources.TEXT_FONT);
         GC gc = new GC(Display.getDefault());
@@ -95,7 +90,7 @@ public class MemoryComposite extends Composite {
         memoryModifiedListener = new MemoryModifiedListener() {
             @Override
             public void memoryWritten(final int addr, int value) {
-                if (!isTraceExecution()) {
+                if (isDisposed() || !isTraceExecution()) {
                     return;
                 }
                 if (addr != lastWritten) {
@@ -106,7 +101,7 @@ public class MemoryComposite extends Composite {
 
             @Override
             public void memoryCleared() {
-                if (!isTraceExecution()) {
+                if (isDisposed() || !isTraceExecution()) {
                     return;
                 }
                 if (lastWritten != -1) {

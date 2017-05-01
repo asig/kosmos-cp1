@@ -137,7 +137,9 @@ public class KosmosPanelWindow extends Window {
             @Override
             public void portWritten(Port port, int value) {
                 if (port == Port.B) {
-                    cp5Panel.writeLeds(value);
+                    shell.getDisplay().syncExec(() -> {
+                        cp5Panel.writeLeds(value);
+                    });
                 }
             }
 
