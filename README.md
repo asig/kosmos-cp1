@@ -73,10 +73,9 @@ TODO write something up
 
 
 ## Resources
-- The UI ises Fugue Icons by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
+- The UI uses Fugue Icons by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/)
 - The keyboard font seems to be "Newhouse DT Black" or "Pragmatica Black Regular".
   However, "Helvetica" is close enough. The bundled fonts are
    - https://www.download-free-fonts.com/details/92227/helvetica-black, and
    - https://www.download-free-fonts.com/details/37282/helvetica-light
-
 
