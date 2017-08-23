@@ -21,6 +21,8 @@ package com.asigner.cp1.ui;
 
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
+import com.asigner.cp1.emulation.PerformanceMeasurer;
+import com.asigner.cp1.emulation.Throttler;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -29,6 +31,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
+
+import static com.asigner.cp1.ui.ExecutorThread.Command.NIL;
 
 public class ExecutorThread extends Thread {
 
@@ -43,6 +47,7 @@ public class ExecutorThread extends Thread {
     }
 
     public enum Command {
+        NIL,
         SINGLE_STEP,
         START,
         STOP,
@@ -57,9 +62,11 @@ public class ExecutorThread extends Thread {
     private final Intel8155 pid;
     private final Intel8155 pidExtension;
     private final PerformanceMeasurer performanceMeasurer = new PerformanceMeasurer();
+    private final Throttler throttler = new Throttler(5);
 
     private boolean isRunning = false;
     private boolean breakOnMovx = false;
+    private int interruptsSeen = 0;
 
     public ExecutorThread(Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension) {
         this.cpu = cpu;
@@ -99,33 +106,41 @@ public class ExecutorThread extends Thread {
     public void run() {
         for(;;) {
             Command command = fetchCommand();
-            if (command == null) {
-                // can only happen if we're in state "running";
-                int executed = executeInstr();
-                performanceMeasurer.register(executed);
-                if (performanceMeasurer.isUpdateDue()) {
-                    double performance = performanceMeasurer.getPerformance();
-                    listeners.forEach(l -> l.performanceUpdate(performance));
-                }
-            } else {
-                switch(command) {
-                    case SINGLE_STEP:
-                        singleStep();
-                        break;
-                    case START:
-                        startExecution();
-                        break;
-                    case STOP:
-                        stopExecution();
-                        break;
-                    case RESET:
-                        reset();
-                        break;
-                    case QUIT:
-                        return;
-                    default:
-                        break;
-                }
+            switch(command) {
+                case NIL:
+                    boolean wasInInterrupt = cpu.isInInterrupt();
+                    int executed = executeInstr();
+                    boolean isInInterrupt = cpu.isInInterrupt();
+                    performanceMeasurer.register(executed);
+                    if (!wasInInterrupt && isInInterrupt) {
+                        // Kosmos CP1 uses a timer interrupt that fires every 2560 μs, so let's try and sync
+                        // on 5 millis every 2 interrupts.
+                        interruptsSeen = (interruptsSeen + 1) % 2;
+                        if (interruptsSeen == 0) {
+                            throttler.throttle();
+                        }
+                    }
+                    if (performanceMeasurer.isUpdateDue()) {
+                        double performance = performanceMeasurer.getPerformance();
+                        listeners.forEach(l -> l.performanceUpdate(performance));
+                    }
+                    break;
+                case SINGLE_STEP:
+                    singleStep();
+                    break;
+                case START:
+                    startExecution();
+                    break;
+                case STOP:
+                    stopExecution();
+                    break;
+                case RESET:
+                    reset();
+                    break;
+                case QUIT:
+                    return;
+                default:
+                    break;
             }
             yield();
         }
@@ -138,6 +153,7 @@ public class ExecutorThread extends Thread {
 
     private void startExecution() {
         if (!isRunning) {
+            interruptsSeen = 0;
             isRunning = true;
             performanceMeasurer.reset();
             listeners.forEach(ExecutionListener::executionStarted);
@@ -161,12 +177,14 @@ public class ExecutorThread extends Thread {
     }
 
     private Command fetchCommand() {
-        Command command = null;
+        Command command = NIL;
         try {
             if (isRunning) {
                 command = commands.peek();
                 if (command != null) {
                     commands.take(); // also remove it
+                } else {
+                    command = NIL;
                 }
             } else {
                 command = commands.take();

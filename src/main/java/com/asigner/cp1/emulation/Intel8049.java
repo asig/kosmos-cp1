@@ -176,6 +176,9 @@ public class Intel8049 {
         }
     }
 
+    public boolean isInInterrupt() {
+        return state.inInterrupt;
+    }
 
     public void addListener(StateListener listener) {
         listeners.add(listener);
@@ -302,9 +305,7 @@ public class Intel8049 {
     }
 
     private void tick() {
-        // Force a fall
-
-        // "executes" another cycle, and performs some periodic stuff (e.g. counting after a STRT T, or interrupt checks
+        // "executes" another cycle, and performs some periodic stuff (e.g. counting after a STRT T)
         if (state.timerRunning) {
             state.cyclesUntilCount--;
             if (state.cyclesUntilCount == 0) {
@@ -343,7 +344,6 @@ public class Intel8049 {
     }
 
     public int executeSingleInstr() {
-
         if (logger.isLoggable(Level.FINEST)) {
             Disassembler.Line line = disassembler.disassemble(state.PC);
             logger.finest(String.format("Executing instr: %03x %s", line.getAddress(), line.getDisassembly()));

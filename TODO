@@ -11,10 +11,10 @@ TODO
     [X] save disassembly (8049)
 
 [X] ExecutorThread should broadcast performance
-[ ] Throttle execution at 100%
+[X] Throttle execution at 100%
 [ ] Menus in panel window
 [X] Keyboard shortcuts on panel window
-[ ] "About" dialog
+[X] "About" dialog
 [ ] "Open window" menu items
 [ ] CP1 assembly language
     [X] Assembler
