@@ -23,7 +23,10 @@ TODO
     [X] Support for CP3
     [ ] Support for CP2 (Cassette)
     [ ] Enable/Disable modules in settings dialog
+[ ] Reset action
 [X] Assembler window
+    [ ] Save source
+    [ ] load source
 
 Bugs
 ====
