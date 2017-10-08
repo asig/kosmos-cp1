@@ -2,11 +2,11 @@
 Version=1.0
 Name=Kosmos CP1 Emulator
 Comment=A cycle-exact emulator of the famous Kosmos CP1 computer
-Keywords=Educatiom
+Keywords=CP1;Emulator;Kosmos;
 Exec=/usr/bin/kosmos-cp1
 Terminal=false
 Type=Application
 Icon=/usr/share/kosmos-cp1/icon.png
-Categories=GNOME;GTK;Network;IDE;
+Categories=System;Emulator;
 StartupNotify=true
 

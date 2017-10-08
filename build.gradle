@@ -156,97 +156,28 @@ task copyToLib(type: Copy) {
 //
 // Shadow jar targets
 //
+["win32", "win64", "linux32", "linux64", "mac"].eachWithIndex { env, index ->
 
-task shadowJarWin32(type: ShadowJar) {
-    manifest {
-        attributes 'Main-Class': mainClassName
+    def envUc = env.substring(0, 1).toUpperCase() + env.substring(1)
+
+    task "shadowJar${envUc}"(type: ShadowJar) {
+        manifest {
+            attributes 'Main-Class': mainClassName
+        }
+        from sourceSets.main.output //tells the task to include the project code
+        baseName = project.archivesBaseName
+        destinationDir = file("$rootDir/build/dist/${env}")
+        classifier = "${env}"
+        configurations = [ project.configurations.runtime, project.configurations["runtime${envUc}"] ] //tells the task to shadow in the jars files in the 'runtime' scope
+
+        // Don't include signatures
+        exclude "META-INF/*.SF"
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+
+        mergeServiceFiles()
     }
-    from sourceSets.main.output //tells the task to include the project code
-    baseName = project.archivesBaseName
-    destinationDir = file("$rootDir/build/dist/win32")
-    classifier = "win32"
-    configurations = [ project.configurations.runtime, project.configurations.runtimeWin32 ] //tells the task to shadow in the jars files in the 'runtime' scope
-
-    // Don't include signatures
-    exclude "META-INF/*.SF"
-    exclude 'META-INF/*.DSA'
-    exclude 'META-INF/*.RSA'
-
-    mergeServiceFiles()
-}
-
-task shadowJarWin64(type: ShadowJar) {
-    manifest {
-        attributes 'Main-Class': mainClassName
-    }
-    from sourceSets.main.output //tells the task to include the project code
-    baseName = project.archivesBaseName
-    destinationDir = file("$rootDir/build/dist/win64")
-    classifier = "win64"
-    configurations = [ project.configurations.runtime, project.configurations.runtimeWin64 ] //tells the task to shadow in the jars files in the 'runtime' scope
-
-    // Don't include signatures
-    exclude "META-INF/*.SF"
-    exclude 'META-INF/*.DSA'
-    exclude 'META-INF/*.RSA'
-
-    mergeServiceFiles()
-}
-
-task shadowJarLinux32(type: ShadowJar) {
-    manifest {
-        attributes 'Main-Class': mainClassName
-    }
-
-    from sourceSets.main.output //tells the task to include the project code
-    baseName = project.archivesBaseName
-    destinationDir = file("$rootDir/build/dist/linux32")
-    classifier = "linux32"
-    configurations = [ project.configurations.runtime, project.configurations.runtimeLinux32 ] //tells the task to shadow in the jars files in the 'runtime' scope
-
-    // Don't include signatures
-    exclude "META-INF/*.SF"
-    exclude 'META-INF/*.DSA'
-    exclude 'META-INF/*.RSA'
-
-    mergeServiceFiles()
-}
-
-task shadowJarLinux64(type: ShadowJar) {
-    manifest {
-        attributes 'Main-Class': mainClassName
-    }
-
-    from sourceSets.main.output //tells the task to include the project code
-    baseName = project.archivesBaseName
-    destinationDir = file("$rootDir/build/dist/linux64")
-    classifier = "linux64"
-    configurations = [ project.configurations.runtime, project.configurations.runtimeLinux64 ] //tells the task to shadow in the jars files in the 'runtime' scope
-
-    // Don't include signatures
-    exclude "META-INF/*.SF"
-    exclude 'META-INF/*.DSA'
-    exclude 'META-INF/*.RSA'
-
-    mergeServiceFiles()
-}
-
-task shadowJarMac(type: ShadowJar) {
-    manifest {
-        attributes 'Main-Class': mainClassName
-    }
-    from sourceSets.main.output //tells the task to include the project code
-    baseName = project.archivesBaseName
-    destinationDir = file("$rootDir/build/dist/mac")
-    classifier = "mac"
-    configurations = [ project.configurations.runtime, project.configurations.runtimeMac ] //tells the task to shadow in the jars files in the 'runtime' scope
-
-    // Don't include signatures
-    exclude "META-INF/*.SF"
-    exclude 'META-INF/*.DSA'
-    exclude 'META-INF/*.RSA'
-
-    mergeServiceFiles()
+    
 }
 
 shadowJar {
@@ -261,20 +192,16 @@ shadowJar {
 // launch4j
 //
 
-task createExe32(type:JavaExec) {
-    dependsOn shadowJarWin32
+["32", "64"].eachWithIndex { bits, index ->
 
-    main = "net.sf.launch4j.Main"
-    classpath = files("tools/launch4j/launch4j.jar")
-    args "src/installer/win/l4j_32.xml"
-}
+    task "createExe${bits}"(type: JavaExec) {
+        dependsOn "shadowJarWin${bits}"
 
-task createExe64(type:JavaExec) {
-    dependsOn shadowJarWin64
+        main = "net.sf.launch4j.Main"
+        classpath = files("tools/launch4j/launch4j.jar")
+        args "src/installer/win/l4j_${bits}.xml"
+    }
 
-    main = "net.sf.launch4j.Main"
-    classpath = files("tools/launch4j/launch4j.jar")
-    args "src/installer/win/l4j_64.xml"
 }
 
 //

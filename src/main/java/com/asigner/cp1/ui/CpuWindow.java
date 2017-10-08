@@ -328,7 +328,6 @@ public class CpuWindow extends Window {
             ToolBarManager toolBarManager = new ToolBarManager(SWT.FLAT | SWT.NO_FOCUS);
             coolBarManager.add(toolBarManager);
             toolBarManager.add(makeForcedTextContributionItem(singleStepAction));
-            toolBarManager.add(makeForcedTextContributionItem(singleStepAction));
             toolBarManager.add(makeForcedTextContributionItem(runAction));
             toolBarManager.add(makeForcedTextContributionItem(stopAction));
             toolBarManager.add(makeForcedTextContributionItem(resetAction));
