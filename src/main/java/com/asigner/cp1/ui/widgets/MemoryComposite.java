@@ -19,12 +19,12 @@
 
 package com.asigner.cp1.ui.widgets;
 
+import com.asigner.cp1.emulation.MemoryModifiedListener;
+import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.ui.OS;
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
@@ -36,9 +36,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-
-import com.asigner.cp1.emulation.MemoryModifiedListener;
-import com.asigner.cp1.emulation.Ram;
 
 public class MemoryComposite extends Composite {
 

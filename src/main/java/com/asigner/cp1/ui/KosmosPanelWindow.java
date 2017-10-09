@@ -23,8 +23,6 @@ import com.asigner.cp1.emulation.DataPort;
 import com.asigner.cp1.emulation.InputPin;
 import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
-import com.asigner.cp1.ui.actions.Cp3ExtensionAction;
-import com.asigner.cp1.ui.actions.Cp5ExtensionAction;
 import com.asigner.cp1.ui.actions.LoadAction;
 import com.asigner.cp1.ui.actions.SaveAction;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;

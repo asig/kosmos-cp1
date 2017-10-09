@@ -19,8 +19,6 @@
 
 package com.asigner.cp1.emulation;
 
-import javax.sound.midi.SysexMessage;
-
 public class Throttler {
     private final long millis;
 

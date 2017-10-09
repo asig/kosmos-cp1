@@ -26,8 +26,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 
-import java.util.Set;
-
 
 public class CP1SevenSegmentComposite extends org.eclipse.swt.widgets.Composite {
 

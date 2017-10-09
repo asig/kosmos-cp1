@@ -19,12 +19,10 @@
 
 package com.asigner.cp1.ui.actions;
 
+import com.asigner.cp1.ui.AboutDialog;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
-
-import com.asigner.cp1.ui.AboutDialog;
 
 public class AboutAction extends Action {
 

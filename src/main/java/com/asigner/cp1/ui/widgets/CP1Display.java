@@ -23,20 +23,17 @@ import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.ui.CP1Colors;
 import com.asigner.cp1.ui.SWTResources;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
-
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 import java.util.Map;
-import java.util.Set;
 
 import static com.asigner.cp1.emulation.Intel8155.StateListener.Port.A;
 import static com.asigner.cp1.emulation.Intel8155.StateListener.Port.C;

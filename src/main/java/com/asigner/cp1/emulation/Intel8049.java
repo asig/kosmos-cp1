@@ -19,7 +19,6 @@
 
 package com.asigner.cp1.emulation;
 
-
 import com.asigner.cp1.emulation.util.Disassembler;
 
 import java.util.LinkedList;

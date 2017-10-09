@@ -23,7 +23,6 @@ import com.google.common.collect.Lists;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;

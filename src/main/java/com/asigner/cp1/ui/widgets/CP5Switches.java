@@ -4,7 +4,6 @@ import com.asigner.cp1.ui.CP1Colors;
 import com.google.common.collect.Lists;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 

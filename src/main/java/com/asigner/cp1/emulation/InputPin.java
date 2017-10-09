@@ -20,7 +20,6 @@
 package com.asigner.cp1.emulation;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class InputPin extends Pin {
 

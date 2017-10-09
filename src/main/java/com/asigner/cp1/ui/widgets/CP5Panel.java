@@ -2,11 +2,11 @@ package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 public class CP5Panel extends Composite {
 

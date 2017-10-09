@@ -21,8 +21,6 @@ package com.asigner.cp1;
 
 import com.google.common.base.Preconditions;
 
-import java.util.Comparator;
-
 public class Version implements Comparable {
     private final int major;
     private final int minor;

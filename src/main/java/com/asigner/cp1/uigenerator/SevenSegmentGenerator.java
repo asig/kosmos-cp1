@@ -21,13 +21,14 @@ package com.asigner.cp1.uigenerator;
 
 import com.asigner.cp1.ui.CP1Colors;
 import com.google.common.collect.Sets;
-import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
-import org.jfree.swt.SWTGraphics2D;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;

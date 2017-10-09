@@ -20,8 +20,8 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.emulation.Rom;
-import com.asigner.cp1.ui.BreakpointChangedListener;
 import com.asigner.cp1.emulation.util.Disassembler;
+import com.asigner.cp1.ui.BreakpointChangedListener;
 import com.asigner.cp1.ui.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;

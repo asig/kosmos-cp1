@@ -19,18 +19,17 @@
 
 package com.asigner.cp1.ui.actions;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
-
+import com.asigner.cp1.emulation.Intel8049;
+import com.asigner.cp1.emulation.util.Disassembler;
+import com.asigner.cp1.emulation.util.Disassembler.Line;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 
-import com.asigner.cp1.emulation.Intel8049;
-import com.asigner.cp1.emulation.util.Disassembler;
-import com.asigner.cp1.emulation.util.Disassembler.Line;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
 
 public class Save8049DisassemblyAction extends Action {
 
