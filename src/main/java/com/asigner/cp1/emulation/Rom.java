@@ -23,7 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class Rom implements Readable {
+public class Rom {
 
     private final byte[] rom;
 
@@ -37,12 +37,10 @@ public class Rom implements Readable {
         rom = os.toByteArray();
     }
 
-    @Override
     public int size() {
         return rom.length;
     }
 
-    @Override
     public int read(int addr) {
         return rom[addr] & 0xff;
     }
