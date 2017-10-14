@@ -126,28 +126,12 @@ public class KosmosPanelWindow extends Window {
         };
         pidListener = new Intel8155.StateListener() {
             @Override
-            public void commandRegisterWritten() {
-            }
-
-            @Override
             public void portWritten(Port port, int value) {
                 if (port == Port.B) {
                     shell.getDisplay().syncExec(() -> {
                         cp5.writeLeds(value);
                     });
                 }
-            }
-
-            @Override
-            public void memoryWritten() {
-            }
-
-            @Override
-            public void pinsChanged() {
-            }
-
-            @Override
-            public void resetExecuted() {
             }
         };
 

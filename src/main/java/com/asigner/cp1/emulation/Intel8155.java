@@ -36,11 +36,11 @@ public class Intel8155 {
             A, B, C
         }
 
-        void commandRegisterWritten();
-        void portWritten(Port port, int value);
-        void memoryWritten();
-        void pinsChanged();
-        void resetExecuted();
+        default void commandRegisterWritten() {};
+        default void portWritten(Port port, int value) {};
+        default void memoryWritten() {};
+        default void pinsChanged() {};
+        default void resetExecuted() {};
     }
 
     public enum PortMode {
