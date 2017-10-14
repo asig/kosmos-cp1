@@ -19,28 +19,20 @@
 
 package com.asigner.cp1.uigenerator;
 
-import com.asigner.cp1.ui.CP1Colors;
-
 import javax.imageio.ImageIO;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-
-import static java.awt.Color.WHITE;
-import static java.awt.MultipleGradientPaint.ColorSpaceType.SRGB;
-import static java.awt.MultipleGradientPaint.CycleMethod.NO_CYCLE;
 
 public class ContactGenerator {
 
