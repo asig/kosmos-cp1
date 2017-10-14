@@ -20,11 +20,13 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
+import com.asigner.cp1.ui.util.SWTResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -63,7 +65,7 @@ import java.util.logging.Logger;
  */
 
 
-public class KosmosControlPanel extends Composite {
+public class CP1Keyboard extends Composite {
 
     private static final int BTN_0    = 0;
     private static final int BTN_1    = 1;
@@ -87,7 +89,7 @@ public class KosmosControlPanel extends Composite {
     private static final int BTN_ACC  = 19;
     private static final int BTNS_SIZE = 20;
 
-    private static final Logger logger = Logger.getLogger(KosmosControlPanel.class.getName());
+    private static final Logger logger = Logger.getLogger(CP1Keyboard.class.getName());
 
     private static final int BUTTON_HEIGHT = 50;
     private static final int MARGIN_WIDTH = 10;
@@ -124,7 +126,7 @@ public class KosmosControlPanel extends Composite {
      * @param parent
      * @param style
      */
-    public KosmosControlPanel(Composite parent, int style) {
+    public CP1Keyboard(Composite parent, int style) {
         super(parent, style);
         GridLayout gridLayout = new GridLayout(2, false);
         gridLayout.marginRight = MARGIN_WIDTH;

@@ -21,7 +21,7 @@ package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.ui.CP1Colors;
-import com.asigner.cp1.ui.SWTResources;
+import com.asigner.cp1.ui.util.SWTResources;
 import com.google.common.collect.ImmutableMap;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
@@ -131,11 +131,11 @@ public class CP1Display extends Composite {
                     // in the ROM port A is cleared, then the line is selected by writing to
                     // Port C, and only then the new value is written, so a digit is empty at
                     // 5/6th of the time...
+                    final CP1SevenSegmentComposite digit = digits[5 - activeDigit];
+                    digit.setSegments(value);
                     getDisplay().syncExec(() -> {
-                        CP1SevenSegmentComposite digit = digits[5 - activeDigit];
                         if (!digit.isDisposed()) {
-                            digits[5 - activeDigit].setSegments(value);
-                            digits[5 - activeDigit].redraw();
+                            digit.redraw();
                         }
                     });
                 }

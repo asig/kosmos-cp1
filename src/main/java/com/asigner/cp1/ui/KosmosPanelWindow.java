@@ -25,20 +25,17 @@ import com.asigner.cp1.emulation.Intel8049;
 import com.asigner.cp1.emulation.Intel8155;
 import com.asigner.cp1.ui.actions.LoadAction;
 import com.asigner.cp1.ui.actions.SaveAction;
+import com.asigner.cp1.ui.util.SWTResources;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
-import com.asigner.cp1.ui.widgets.CP1Display;
+import com.asigner.cp1.ui.widgets.CP1Panel;
 import com.asigner.cp1.ui.widgets.CP5Panel;
-import com.asigner.cp1.ui.widgets.KosmosControlPanel;
-import com.asigner.cp1.ui.widgets.KosmosLogoComposite;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
@@ -64,8 +61,8 @@ public class KosmosPanelWindow extends Window {
     private Intel8155 pidExtension;
     private ExecutorThread executorThread;
 
-    private KosmosControlPanel kosmosControlPanel;
-    private CP5Panel cp5Panel;
+    private CP1Panel cp1;
+    private CP5Panel cp5;
 
     private ExecutorThread.ExecutionListener executionListener;
     private DataPort.Listener port1Listener;
@@ -123,7 +120,7 @@ public class KosmosPanelWindow extends Window {
 
                 // CPU wrote to the port to prepare the pins for input. Write switch settings
                 inValueChanged = true;
-                cpu.getPort(1).write(cp5Panel.readSwitches());
+                cpu.getPort(1).write(cp5.readSwitches());
                 inValueChanged = false;
             }
         };
@@ -136,7 +133,7 @@ public class KosmosPanelWindow extends Window {
             public void portWritten(Port port, int value) {
                 if (port == Port.B) {
                     shell.getDisplay().syncExec(() -> {
-                        cp5Panel.writeLeds(value);
+                        cp5.writeLeds(value);
                     });
                 }
             }
@@ -174,13 +171,12 @@ public class KosmosPanelWindow extends Window {
                     break;
                 }
             }
-            int keyMask = kosmosControlPanel.getKeyMask(row);
+            int keyMask = cp1.getCP1Keyboard().getKeyMask(row);
             cpu.getPort(2).write(keyMask, 0x0f); // only the lower 4 bits of the port are connected to the key matrix. DO NOT TOUCH the upper nibble, as this is connected to the 8155s.
             if (logger.isLoggable(Level.FINEST)) {
                 logger.finest(String.format("Writing to Port 2: KeyMask for row %d == $%02x", row, keyMask));
             }
         }
-
     }
 
     /**
@@ -237,51 +233,28 @@ public class KosmosPanelWindow extends Window {
     private void createContent() {
         Composite composite = new Composite(shell, SWT.NONE);
         GridLayout gl_composite = new GridLayout(1, false);
-        gl_composite.marginTop = 50;
-        gl_composite.marginBottom = 50;
-        gl_composite.marginRight = 50;
-        gl_composite.marginLeft = 50;
+        gl_composite.marginTop = 0;
+        gl_composite.marginBottom = 0;
+        gl_composite.marginRight = 0;
+        gl_composite.marginLeft = 0;
         composite.setLayout(gl_composite);
         composite.setBackground(CP1Colors.GREEN);
 
-        cp5Panel = new CP5Panel(composite, SWT.NONE);
-        cp5Panel.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-        cp5Panel.writeLeds(pid.getPaValue());
-        cpu.getPort(1).write(cp5Panel.readSwitches());
-        cp5Panel.addSwitchesListener(() -> {
-            cpu.getPort(1).write(cp5Panel.readSwitches());
+        cp5 = new CP5Panel(composite, SWT.NONE);
+        cp5.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        cp5.writeLeds(pid.getPaValue());
+        cpu.getPort(1).write(cp5.readSwitches());
+        cp5.addSwitchesListener(() -> {
+            cpu.getPort(1).write(cp5.readSwitches());
         });
 
-        Label spacer1 = new Label(composite, SWT.NONE);
-        spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
-        spacer1.setBackground(CP1Colors.GREEN);
+//        Label spacer1 = new Label(composite, SWT.NONE);
+//        spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
+//        spacer1.setBackground(CP1Colors.GREEN);
 
-        Composite composite_1 = new Composite(composite, SWT.NONE);
-        composite_1.setBackground(CP1Colors.GREEN);
-        composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-        GridLayout gl_composite_1 = new GridLayout(2, false);
-        gl_composite_1.horizontalSpacing = 0;
-        gl_composite_1.verticalSpacing = 0;
-        gl_composite_1.marginWidth = 0;
-        gl_composite_1.marginHeight = 0;
-        composite_1.setLayout(gl_composite_1);
-
-        CP1Display p1Display = new CP1Display(composite_1, SWT.NONE);
-        p1Display.setPid(pid);
-        GridData gd_p1Display = GridDataFactory.swtDefaults().create();
-        p1Display.setLayoutData(gd_p1Display);
-
-        KosmosLogoComposite kosmosLogo = new KosmosLogoComposite(composite_1, SWT.NONE);
-        GridData gd_kosmosLogo = new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1);
-        gd_kosmosLogo.heightHint = 100;
-        kosmosLogo.setLayoutData(gd_kosmosLogo);
-        p1Display.display("C12127");
-
-        Label spacer2 = new Label(composite, SWT.NONE);
-        spacer2.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
-        spacer2.setBackground(CP1Colors.GREEN);
-
-        kosmosControlPanel = new KosmosControlPanel(composite, SWT.NONE);
+        cp1 = new CP1Panel(composite, SWT.NONE);
+        cp1.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+        cp1.getCP1Display().setPid(pid);
     }
 
     private Menu createMenuBar() {
