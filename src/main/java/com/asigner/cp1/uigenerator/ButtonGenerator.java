@@ -2,7 +2,7 @@ package com.asigner.cp1.uigenerator;
 
 import com.asigner.cp1.ui.CP1Colors;
 import com.asigner.cp1.ui.OS;
-import com.asigner.cp1.ui.SWTResources;
+import com.asigner.cp1.ui.util.SWTResources;
 import com.google.common.base.Strings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -54,10 +54,9 @@ public class ButtonGenerator {
             smallFont.dispose();
         }
 
-        Display display = Display.getDefault();
         double largeTextSizeFactor = Strings.isNullOrEmpty(subText) ? 0.5 : 0.375;
-        largeFont = new Font(display, LARGE_FONT_NAME, scaleFontSize(height * largeTextSizeFactor), SWT.NONE);
-        smallFont = new Font(display, SMALL_FONT_NAME, scaleFontSize(height * 0.15), SWT.NONE);
+        largeFont = SWTResources.getFont(LARGE_FONT_NAME, scaleFontSize(height * largeTextSizeFactor), false);
+        smallFont = SWTResources.getFont(SMALL_FONT_NAME, scaleFontSize(height * 0.15), false);
     }
 
     private int scaleFontSize(double fontSize) {
