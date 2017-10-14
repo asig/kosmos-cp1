@@ -20,13 +20,11 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
-import com.asigner.cp1.ui.util.SWTResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
