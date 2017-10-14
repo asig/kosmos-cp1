@@ -19,10 +19,9 @@
 
 package com.asigner.cp1.ui.widgets;
 
-import com.asigner.cp1.emulation.MemoryModifiedListener;
 import com.asigner.cp1.emulation.Ram;
 import com.asigner.cp1.ui.OS;
-import com.asigner.cp1.ui.SWTResources;
+import com.asigner.cp1.ui.util.SWTResources;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -57,7 +56,7 @@ public class MemoryComposite extends Composite {
 
     private boolean traceExecution;
 
-    private MemoryModifiedListener memoryModifiedListener;
+    private Ram.MemoryModifiedListener memoryModifiedListener;
 
     public MemoryComposite(Composite parent, int style) {
         super(parent, style | SWT.NO_BACKGROUND);
@@ -84,7 +83,7 @@ public class MemoryComposite extends Composite {
             }
         });
 
-        memoryModifiedListener = new MemoryModifiedListener() {
+        memoryModifiedListener = new Ram.MemoryModifiedListener() {
             @Override
             public void memoryWritten(final int addr, int value) {
                 if (isDisposed() || !isTraceExecution()) {

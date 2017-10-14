@@ -19,6 +19,7 @@
 
 package com.asigner.cp1.ui;
 
+import com.asigner.cp1.ui.util.SWTResources;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 

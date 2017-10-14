@@ -2,6 +2,7 @@ package com.asigner.cp1.ui;
 
 import com.asigner.cp1.BuildInfo;
 import com.asigner.cp1.BuildInfoImpl;
+import com.asigner.cp1.ui.util.SWTResources;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;

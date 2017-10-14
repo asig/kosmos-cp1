@@ -20,7 +20,7 @@
 package com.asigner.cp1.ui.widgets;
 
 import com.asigner.cp1.ui.CP1Colors;
-import com.asigner.cp1.ui.SWTResources;
+import com.asigner.cp1.ui.util.SWTResources;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -74,9 +74,5 @@ public class CP5Led extends Composite {
 
     private void paint(PaintEvent paintEvent) {
         paintEvent.gc.drawImage(on ? ON : OFF,  0, 0);
-    }
-
-    @Override
-    protected void checkSubclass() {
     }
 }

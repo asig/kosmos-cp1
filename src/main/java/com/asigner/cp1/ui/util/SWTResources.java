@@ -17,7 +17,7 @@
  * along with kosmos-cp1.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.asigner.cp1.ui;
+package com.asigner.cp1.ui.util;
 
 import com.google.common.collect.Maps;
 import org.eclipse.swt.SWT;

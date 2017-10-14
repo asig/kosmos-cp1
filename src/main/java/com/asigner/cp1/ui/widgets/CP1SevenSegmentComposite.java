@@ -19,7 +19,7 @@
 
 package com.asigner.cp1.ui.widgets;
 
-import com.asigner.cp1.ui.SWTResources;
+import com.asigner.cp1.ui.util.SWTResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Image;

@@ -24,9 +24,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Ram {
+    public interface MemoryModifiedListener {
+        void memoryWritten(int addr, int value);
+        void memoryCleared();
+    }
 
-    private byte[] memory;
-    private List<MemoryModifiedListener> listeners = new LinkedList<MemoryModifiedListener>();
+    private final byte[] memory;
+    private final List<MemoryModifiedListener> listeners = new LinkedList<MemoryModifiedListener>();
 
     public Ram(int size) {
         memory = new byte[size];

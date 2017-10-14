@@ -34,6 +34,7 @@ import com.asigner.cp1.ui.actions.SaveAction;
 import com.asigner.cp1.ui.actions.SingleStepAction;
 import com.asigner.cp1.ui.actions.StopAction;
 import com.asigner.cp1.ui.actions.TraceExecutionAction;
+import com.asigner.cp1.ui.util.SWTResources;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
 import com.asigner.cp1.ui.widgets.CheckboxContributionItem;
 import com.asigner.cp1.ui.widgets.DisassemblyComposite;
@@ -59,9 +60,20 @@ import org.eclipse.swt.widgets.Shell;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+@SuppressWarnings("unchecked")
 public class CpuWindow extends Window {
 
-    public static final String NAME = "CPU";
+    private static final String NAME = "CPU";
+
+    private final Intel8049 cpu;
+    private final Intel8155 pid;
+    private final Intel8155 pidExtension;
+    private final ExecutorThread executorThread;
+
+    private final ExecutorThread.ExecutionListener executionListener;
+    private final Intel8049.StateListener cpuStateListener;
+    private final Intel8155.StateListener pidStateListener;
+    private final DataPort.Listener portListener;
 
     private RunAction runAction;
     private StopAction stopAction;
@@ -77,10 +89,6 @@ public class CpuWindow extends Window {
     private CoolBarManager coolBarManager;
 
     private Shell shell;
-    private Intel8049 cpu;
-    private Intel8155 pid;
-    private Intel8155 pidExtension;
-    private ExecutorThread executorThread;
     private boolean traceExecution = true;
 
     private Status8049Composite status8049;
@@ -88,12 +96,7 @@ public class CpuWindow extends Window {
     private Status8155Composite status8155Extension;
     private DisassemblyComposite disassembly;
 
-    private ExecutorThread.ExecutionListener executionListener;
-    private Intel8049.StateListener cpuStateListener;
-    private Intel8155.StateListener pidStateListener;
-    private DataPort.Listener portListener;
-
-    public CpuWindow(WindowManager windowManager, Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) throws IOException {
+    public CpuWindow(WindowManager windowManager, Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension, ExecutorThread executorThread) {
         super(windowManager, NAME);
         this.cpu = cpu;
         this.pid = pid;
@@ -215,6 +218,14 @@ public class CpuWindow extends Window {
                 });
             }
         };
+
+        portListener = (oldValue, newValue) -> {
+            if (isTraceExecution()) {
+                if (!isDisposed()) {
+                    shell.getDisplay().asyncExec(() -> status8049.updateState());
+                }
+            }
+        };
     }
 
     private void createActions() {
@@ -244,9 +255,7 @@ public class CpuWindow extends Window {
         createContents();
 
         addListeners();
-        shell.addDisposeListener(disposeEvent -> {
-            removeListeners();
-        });
+        shell.addDisposeListener(disposeEvent -> removeListeners());
 
         shell.setMenuBar(createMenuBar());
         shell.open();
@@ -283,7 +292,8 @@ public class CpuWindow extends Window {
         return shell.isDisposed();
     }
 
-    protected Menu createMenuBar() {
+    @SuppressWarnings("unchecked")
+    private Menu createMenuBar() {
         Menu menu = new Menu(shell, SWT.BAR);
 
         createFileMenu(
@@ -345,7 +355,7 @@ public class CpuWindow extends Window {
     /**
      * Create contents of the window.
      */
-    protected void createContents() {
+    private void createContents() {
         coolBarManager = createToolBarManager();
         coolBarManager.createControl(shell);
 
@@ -374,13 +384,6 @@ public class CpuWindow extends Window {
         status8049.setText("8049 (Main unit)");
         status8049.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
         status8049.setCpu(cpu);
-        portListener = (oldValue, newValue) -> {
-            if (isTraceExecution()) {
-                if (!isDisposed()) {
-                    shell.getDisplay().asyncExec(() -> status8049.updateState());
-                }
-            }
-        };
 
         status8155 = new Status8155Composite(composite, SWT.NONE);
         status8155.setText("8155 (Main unit)");
@@ -404,10 +407,10 @@ public class CpuWindow extends Window {
     }
 
     public void setTraceExecution(boolean traceExecution) {
-            status8049.setTraceExecution(traceExecution);
-            status8155.setTraceExecution(traceExecution);
-            status8155Extension.setTraceExecution(traceExecution);
-            this.traceExecution = traceExecution;
+        status8049.setTraceExecution(traceExecution);
+        status8155.setTraceExecution(traceExecution);
+        status8155Extension.setTraceExecution(traceExecution);
+        this.traceExecution = traceExecution;
     }
 
     private void update8155States() {

@@ -19,7 +19,7 @@
 
 package com.asigner.cp1.ui.widgets;
 
-import com.asigner.cp1.ui.SWTResources;
+import com.asigner.cp1.ui.util.SWTResources;
 import com.google.common.collect.ImmutableMap;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.Image;
