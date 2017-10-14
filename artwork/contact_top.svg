@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright (c) 2017 Andreas Signer <asigner@gmail.com>
+  ~
+  ~ This file is part of kosmos-cp1.
+  ~
+  ~ kosmos-cp1 is free software: you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ kosmos-cp1 is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with kosmos-cp1.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:osb="http://www.openswatchbook.org/uri/2009/osb"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="11.288889mm"
+   height="22.679792mm"
+   viewBox="0 0 40 80.361469"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="contact_top.svg">
+  <defs
+     id="defs4">
+    <linearGradient
+       osb:paint="gradient"
+       id="linearGradient5747-3">
+      <stop
+         id="stop5757"
+         offset="0"
+         style="stop-color:#ff3c22;stop-opacity:1;" />
+      <stop
+         id="stop5759"
+         offset="1"
+         style="stop-color:#008300;stop-opacity:0;" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5747"
+       osb:paint="gradient">
+      <stop
+         style="stop-color:#1e221c;stop-opacity:1"
+         offset="0"
+         id="stop5749" />
+      <stop
+         style="stop-color:#596353;stop-opacity:1"
+         offset="1"
+         id="stop5751" />
+    </linearGradient>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18111 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18111 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78741 : 1"
+       id="perspective5729" />
+    <linearGradient
+       osb:paint="gradient"
+       id="linearGradient4152-6">
+      <stop
+         id="stop4174"
+         offset="0"
+         style="stop-color:#808080;stop-opacity:1;" />
+      <stop
+         id="stop4176"
+         offset="1"
+         style="stop-color:#008300;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient4152"
+       osb:paint="gradient">
+      <stop
+         style="stop-color:#808080;stop-opacity:1;"
+         offset="0"
+         id="stop4154" />
+      <stop
+         style="stop-color:#008300;stop-opacity:1"
+         offset="1"
+         id="stop4156" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.6495836"
+     inkscape:cx="127.97706"
+     inkscape:cy="-14.877534"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1680"
+     inkscape:window-height="1001"
+     inkscape:window-x="0"
+     inkscape:window-y="1"
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(882.1452,-32.18148)">
+    <rect
+       style="fill:#3f5d47;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4168-3"
+       width="40"
+       height="71.648293"
+       x="-882.1452"
+       y="32.18148" />
+    <path
+       style="fill:#fdc8a8;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m -879.10949,32.19406 33.92857,0 0,35.12887 -16.96429,11.06304 -16.96428,-11.06304 z"
+       id="rect4161-75"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccccc" />
+    <rect
+       style="fill:#506d5d;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4170-9"
+       width="4.2857141"
+       height="26.835388"
+       x="-864.28809"
+       y="76.994438" />
+    <circle
+       style="fill:#010001;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4172-22"
+       cx="-862.1452"
+       cy="60.4403"
+       r="7.8286824" />
+    <rect
+       style="fill:#1e221c;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4222-8"
+       width="40"
+       height="8.7130003"
+       x="-882.1452"
+       y="103.82995" />
+  </g>
+</svg>

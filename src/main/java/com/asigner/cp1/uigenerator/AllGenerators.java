@@ -26,5 +26,7 @@ public class AllGenerators {
         ButtonGenerator.main(args);
         LedGenerator.main(args);
         SevenSegmentGenerator.main(args);
+        SwitchGenerator.main(args);
+        ContactGenerator.main(args);
     }
 }
