@@ -212,10 +212,4 @@ public class MemoryComposite extends Composite {
     private int getLineCount() {
         return ram != null ? (ram.size() + BYTES_PER_LINE - 1)/BYTES_PER_LINE : 0;
     }
-
-    @Override
-    protected void checkSubclass() {
-        // Disable the check that prevents subclassing of SWT components
-    }
-
 }
