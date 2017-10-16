@@ -145,8 +145,8 @@ compileJava {
     dependsOn generateBuildInfo
 }
 
-// Use this task if you need all runtime deps in one place. Helpful for me when playing with Eclipse (to get a
-// decent SWT UI designer...)
+// Use this task if you need all runtime deps in one place. Helpful for me when
+// playing with Eclipse (to get a decent SWT UI designer...)
 task copyToLib(type: Copy) {
     into "$buildDir/output/lib"
     from configurations.runtime
