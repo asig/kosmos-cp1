@@ -68,18 +68,15 @@ configurations {
 }
 
 dependencies {
-    // For compilation, we use the system's runtime.
-    // providedCompile group: 'org.eclipse', name: 'platform-minimal', version: '4.5.1', configuration: 'linux-gtk-x86_64'
-
     compile 'com.google.guava:guava:19.0'
     compile 'commons-io:commons-io:2.5'
 
     // OS-dependent runtimes
-    runtimeLinux32 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'linux-gtk-x86'
-    runtimeLinux64 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'linux-gtk-x86_64'
-    runtimeMac group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'macosx-cocoa-x86_64'
-    runtimeWin32 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'win32-x86'
-    runtimeWin64 group: 'org.eclipse', name: 'platform-minimal', version: '4.6.1', configuration: 'win32-x86_64'
+    runtimeLinux32 group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'linux-gtk-x86'
+    runtimeLinux64 group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'linux-gtk-x86_64'
+    runtimeMac group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'macosx-cocoa-x86_64'
+    runtimeWin32 group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'win32-x86'
+    runtimeWin64 group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'win32-x86_64'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:1.9.5'
@@ -177,7 +174,7 @@ task copyToLib(type: Copy) {
 
         mergeServiceFiles()
     }
-    
+
 }
 
 shadowJar {
