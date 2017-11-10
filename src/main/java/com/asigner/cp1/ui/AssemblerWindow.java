@@ -105,7 +105,7 @@ public class AssemblerWindow extends Window {
         Display display = Display.getDefault();
         shell = new Shell(display, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.SHELL_TRIM);
         shell.setText("Assembler");
-        shell.setSize(552, 592);
+        shell.setSize(650, 600);
         shell.setLayout(new GridLayout(2, false));
         shell.addDisposeListener(disposeEvent -> fireWindowClosed());
 
