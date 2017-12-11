@@ -6,10 +6,14 @@ TODO
 [X] menu bar
 [X] toolbar
 [ ] more actions:
-    [ ] load state
-    [ ] save state
-    [X] save disassembly (8049)
-
+    [ ] CPU core
+        [ ] load CPU state
+        [ ] save CPU state
+        [X] save 8049 disassembly
+        [ ] Throttle checkbox
+    [ ] Assembler window
+        [ ] load
+        [ ] save
 [X] ExecutorThread should broadcast performance
 [X] Throttle execution at 100%
 [ ] Menus in panel window
