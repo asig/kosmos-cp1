@@ -16,6 +16,7 @@ TODO
         [ ] save
 [X] ExecutorThread should broadcast performance
 [X] Throttle execution at 100%
+[ ] Add checkbox to enable/disable throttling
 [ ] Menus in panel window
 [X] Keyboard shortcuts on panel window
 [X] "About" dialog
@@ -31,6 +32,7 @@ TODO
 [X] Assembler window
     [ ] Save source
     [ ] load source
+    [ ] Halt CPU execution when assembling
 
 Bugs
 ====
