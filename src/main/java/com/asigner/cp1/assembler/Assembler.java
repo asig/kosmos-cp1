@@ -61,6 +61,14 @@ public class Assembler {
         }
 
         protected Integer parseIntOrLabel(int lineNo, String s) {
+            return parseIntOrLabelOrUnknownInternal(lineNo, s, false);
+        }
+
+        protected Integer parseIntOrLabelOrUnknown(int lineNo, String s) {
+            return parseIntOrLabelOrUnknownInternal(lineNo, s, true);
+        }
+
+        protected Integer parseIntOrLabelOrUnknownInternal(int lineNo, String s, boolean allowUnknown) {
             int i;
             try {
                 if (s.startsWith("$")) {
@@ -73,6 +81,10 @@ public class Assembler {
                     i = 0;
                 }
             } catch (NumberFormatException e) {
+                if (allowUnknown && "?".equals(s)) {
+                    // Treat "unknown" as 0
+                    return 0;
+                }
                 Integer c = consts.get(s);
                 if (c == null) {
                     c = labels.get(s);
@@ -127,7 +139,7 @@ public class Assembler {
         @Override
         public void generate(int lineNum, int opcode, List<String> params) {
             for (String param : params) {
-                int val = parseIntOrLabel(lineNum, param);
+                int val = parseIntOrLabelOrUnknown(lineNum, param);
                 memory[pc++] = val;
             }
         }
