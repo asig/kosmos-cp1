@@ -10,7 +10,7 @@ TODO
         [ ] load CPU state
         [ ] save CPU state
         [X] save 8049 disassembly
-        [ ] Throttle checkbox
+        [X] Throttle checkbox
     [ ] Assembler window
         [ ] load
         [ ] save

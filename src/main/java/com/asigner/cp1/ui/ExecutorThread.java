@@ -36,6 +36,12 @@ import static com.asigner.cp1.ui.ExecutorThread.Command.NIL;
 
 public class ExecutorThread extends Thread {
 
+    // Throttling happens on timer interrupts. Timer interrupts happen every 2560 μs, so let's just throttle
+    // every other interrupt, and approximate the delay with 5 ms (instead of 5120 μs) so that we can use the fast
+    // currentTimeMillis() method.
+    private final static long THROTTLE_INTERVAL_MS = 5;
+    private final static int THROTTLE_INTERRUPTS = 2;
+
     private static final Logger logger = Logger.getLogger(ExecutorThread.class.getName());
 
     public interface ExecutionListener {
@@ -62,10 +68,13 @@ public class ExecutorThread extends Thread {
     private final Intel8155 pid;
     private final Intel8155 pidExtension;
     private final PerformanceMeasurer performanceMeasurer = new PerformanceMeasurer();
-    private final Throttler throttler = new Throttler(5);
+
+    // If throttle, then we throttle every 2 timer interrupts
+    private final Throttler throttler = new Throttler(THROTTLE_INTERVAL_MS);
 
     private boolean isRunning = false;
     private boolean breakOnMovx = false;
+    private boolean isThrottled = true;
     private int interruptsSeen = 0;
 
     public ExecutorThread(Intel8049 cpu, Intel8155 pid, Intel8155 pidExtension) {
@@ -88,6 +97,14 @@ public class ExecutorThread extends Thread {
 
     public boolean isRunning() {
         return isRunning;
+    }
+
+    public boolean isThrottled() {
+        return isThrottled;
+    }
+
+    public void setThrottled(boolean throttled) {
+        isThrottled = throttled;
     }
 
     public void enableBreakpoint(int addr, boolean enabled) {
@@ -115,9 +132,11 @@ public class ExecutorThread extends Thread {
                     if (!wasInInterrupt && isInInterrupt) {
                         // Kosmos CP1 uses a timer interrupt that fires every 2560 μs, so let's try and sync
                         // on 5 millis every 2 interrupts.
-                        interruptsSeen = (interruptsSeen + 1) % 2;
+                        interruptsSeen = (interruptsSeen + 1) % THROTTLE_INTERRUPTS;
                         if (interruptsSeen == 0) {
-                            throttler.throttle();
+                            if (isThrottled) {
+                                throttler.throttle();
+                            }
                         }
                     }
                     if (performanceMeasurer.isUpdateDue()) {

@@ -33,6 +33,7 @@ import com.asigner.cp1.ui.actions.Save8049DisassemblyAction;
 import com.asigner.cp1.ui.actions.SaveAction;
 import com.asigner.cp1.ui.actions.SingleStepAction;
 import com.asigner.cp1.ui.actions.StopAction;
+import com.asigner.cp1.ui.actions.ThrottleExecutionAction;
 import com.asigner.cp1.ui.actions.TraceExecutionAction;
 import com.asigner.cp1.ui.util.SWTResources;
 import com.asigner.cp1.ui.widgets.ActionMenuItem;
@@ -81,6 +82,7 @@ public class CpuWindow extends Window {
     private ResetAction resetAction;
     private BreakOnMovxAction breakOnMovxAction;
     private TraceExecutionAction traceExecutionAction;
+    private ThrottleExecutionAction throttleExecutionAction;
     private Save8049DisassemblyAction save8049DisassemblyAction;
     private LoadAction loadAction;
     private SaveAction saveAction;
@@ -232,6 +234,7 @@ public class CpuWindow extends Window {
         resetAction = new ResetAction(executorThread);
         breakOnMovxAction = new BreakOnMovxAction(executorThread);
         traceExecutionAction = new TraceExecutionAction(executorThread, this);
+        throttleExecutionAction = new ThrottleExecutionAction(executorThread);
         runAction = new RunAction(executorThread);
         stopAction = new StopAction(executorThread, this);
         singleStepAction = new SingleStepAction(this, executorThread);
@@ -347,6 +350,7 @@ public class CpuWindow extends Window {
             coolBarManager.add(toolBarManager);
             toolBarManager.add(new CheckboxContributionItem(breakOnMovxAction));
             toolBarManager.add(new CheckboxContributionItem(traceExecutionAction));
+            toolBarManager.add(new CheckboxContributionItem(throttleExecutionAction));
         }
 
         return coolBarManager;
