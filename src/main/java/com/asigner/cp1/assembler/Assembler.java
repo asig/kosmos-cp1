@@ -298,8 +298,8 @@ public class Assembler {
 
         // label
         String label = "";
-        if (Character.isLetter(line.charAt(curPos))) {
-            while (curPos < line.length() && Character.isLetterOrDigit(line.charAt(curPos))) {
+        if (isIdentStart(line.charAt(curPos))) {
+            while (curPos < line.length() && isIdentPart(line.charAt(curPos))) {
                 label += line.charAt(curPos++);
             }
         }
@@ -307,7 +307,17 @@ public class Assembler {
         // skip whitespace
         while (curPos < line.length() && Character.isWhitespace(line.charAt(curPos))) {
             curPos++;
-        };
+        }
+
+        // add and resolve label
+        if (!label.isEmpty()) {
+            addLabel(label, pc);
+        }
+
+        if (curPos >= line.length()) {
+            // No content, move on
+            return;
+        }
 
         // opcode
         String opcode = "" + line.charAt(curPos++);
@@ -331,11 +341,6 @@ public class Assembler {
                     .collect(Collectors.toList());
         }
 
-        // add and resolve label
-        if (!label.isEmpty()) {
-            addLabel(label, pc);
-        }
-
         // find opcode
         OpDesc op = ops.get(opcode);
         if (op == null) {
@@ -343,6 +348,14 @@ public class Assembler {
         } else {
             op.handler.generate(lineNum, op.opCode, params);
         }
+    }
+
+    private boolean isIdentStart(char c) {
+        return Character.isLetter(c) || c == '_';
+    }
+
+    private boolean isIdentPart(char c) {
+        return Character.isLetterOrDigit(c) || c == '_';
     }
 
     private void addLabel(String label, int address) {
