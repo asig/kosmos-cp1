@@ -66,7 +66,7 @@ public class AssemblerWindow extends Window {
         this.executor = executor;
 
         this.sampleListings = Lists.newArrayListWithCapacity(100);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 999; i++) {
             InputStream is = this.getClass().getResourceAsStream(String.format("/com/asigner/cp1/listings/listing%d.asm", i));
             if (is != null) {
                 try {
