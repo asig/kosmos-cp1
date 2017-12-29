@@ -37,3 +37,4 @@ TODO
 Bugs
 ====
 [ ] Don't crash when a window is closed (add isDisposed() checks)
+[ ] CRAZY SLOW on Macs... maybe after move to new SWT?
