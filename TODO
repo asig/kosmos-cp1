@@ -14,6 +14,9 @@ TODO
     [ ] Assembler window
         [ ] load
         [ ] save
+        [ ] "Select all"
+        [ ] "Undo"
+
 [X] ExecutorThread should broadcast performance
 [X] Throttle execution at 100%
 [ ] Add checkbox to enable/disable throttling
@@ -37,4 +40,4 @@ TODO
 Bugs
 ====
 [ ] Don't crash when a window is closed (add isDisposed() checks)
-[ ] CRAZY SLOW on Macs... maybe after move to new SWT?
+[ ] When closing and opening panel window again, LEDs are wrong.
