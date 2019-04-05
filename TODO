@@ -30,7 +30,7 @@ TODO
 [ ] Extension Modules
     [X] Support for CP3
     [ ] Support for CP2 (Cassette)
-    [ ] Enable/Disable modules in settings dialog
+    [ ] Enable/Disable modules in settings dialog (especially CP3)
 [ ] Reset action
 [X] Assembler window
     [ ] Save source
