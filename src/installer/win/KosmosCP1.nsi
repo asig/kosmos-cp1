@@ -20,6 +20,8 @@
 ; - VERSION
 ; - EXE_PATH
 
+Unicode True
+
 !ifndef ARCH
   !error "ARCH must be defined!"
 !endif
@@ -131,7 +133,7 @@ FunctionEnd
 
 Function un.onInit
 !insertmacro MUI_UNGETLANGUAGE
-  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Möchten Sie $(^Name) und alle seinen Komponenten deinstallieren?" IDYES +2
+  MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "MÃ¶chten Sie $(^Name) und alle seinen Komponenten deinstallieren?" IDYES +2
   Abort
 FunctionEnd
 
