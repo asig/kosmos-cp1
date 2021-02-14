@@ -121,7 +121,7 @@ D2		LDA 111		; lade Zelle 111 (11. Stunde, also 11.000) in den Akku
 		.RAW 10.000	; Stunde 10
 		.RAW 11.000	; Stunde n
 		.RAW 12.000 ; Stunde 12
-		.DB 2		; noch ein Stundenvergleich: „2 "
+		.DB 2		; noch ein Stundenvergleich: „2"
 		.DB 13		; „13 " als Obergrenze der Stundenanzeige
 		.DB 60		; „60 " als Obergrenze für Minutenzähler
 		.DB 240		; „240" als Grenze für Viertelsekundenzähler
