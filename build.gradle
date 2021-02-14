@@ -49,7 +49,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 // Load custom properties
 //
 def props = new Properties()
-props.load(new FileInputStream("build.properties"))
+props.load(new FileInputStream(project.file("build.properties")))
 props.each { key, val ->
     project.ext.set(key, val)
 }
