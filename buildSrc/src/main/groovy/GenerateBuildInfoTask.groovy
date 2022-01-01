@@ -20,14 +20,21 @@
 package com.asigner.build
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 class GenerateBuildInfoTask extends DefaultTask {
 
+    @Internal
     def File outputDir = new File(project.buildDir.path + "/src/")
+
+    @Internal
     def packageName = "com.asigner.cp1"
+
+    @Internal
     def className = "BuildInfoImpl"
 
+    @Internal
     def getGitCommit() {
         def proc = "git log -1".execute()
         def commit = proc.in.newReader().readLine().split(" ")[1]
@@ -41,6 +48,7 @@ class GenerateBuildInfoTask extends DefaultTask {
         return commit;
     }
 
+    @Internal
     def getHostName() {
         if (System.getProperty("os.name").startsWith("Windows")) {
             return System.getenv("COMPUTERNAME");
@@ -50,6 +58,7 @@ class GenerateBuildInfoTask extends DefaultTask {
         }
     }
 
+    @Internal
     def getVersion() {
         def props = new Properties()
         props.load(new FileInputStream("build.properties"))

@@ -161,7 +161,7 @@ public class ExecutorThread extends Thread {
                 default:
                     break;
             }
-            yield();
+            this.yield();
         }
     }
 

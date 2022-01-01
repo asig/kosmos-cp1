@@ -68,8 +68,8 @@ configurations {
 }
 
 dependencies {
-    compile 'com.google.guava:guava:19.0'
-    compile 'commons-io:commons-io:2.5'
+    implementation 'com.google.guava:guava:19.0'
+    implementation 'commons-io:commons-io:2.5'
 
     // OS-dependent runtimes
     runtimeLinux32 group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'linux-gtk-x86'
@@ -78,8 +78,8 @@ dependencies {
     runtimeWin32 group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'win32-x86'
     runtimeWin64 group: 'org.eclipse', name: 'platform-minimal', version: '4.7.1a', configuration: 'win32-x86_64'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:1.9.5'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:1.9.5'
 }
 
 sourceSets {
@@ -146,7 +146,7 @@ compileJava {
 // playing with Eclipse (to get a decent SWT UI designer...)
 task copyToLib(type: Copy) {
     into "$buildDir/output/lib"
-    from configurations.runtime
+    from configurations.runtimeClasspath
     from osDependentRuntime
 }
 
@@ -165,7 +165,7 @@ task copyToLib(type: Copy) {
         baseName = project.archivesBaseName
         destinationDir = file("$rootDir/build/dist/${env}")
         classifier = "${env}"
-        configurations = [ project.configurations.runtime, project.configurations["runtime${envUc}"] ] //tells the task to shadow in the jars files in the 'runtime' scope
+        configurations = [ project.configurations.runtimeClasspath, project.configurations["runtime${envUc}"] ] //tells the task to shadow in the jars files in the 'runtime' scope
 
         // Don't include signatures
         exclude "META-INF/*.SF"
@@ -225,7 +225,7 @@ task stagePackageDeb64(type: Copy) {
     dependsOn jar
 
     into "$buildDir/stage/linux64/jars"
-    from configurations.runtime
+    from configurations.runtimeClasspath
     from osDependentRuntime
     from jar.outputs
 }
