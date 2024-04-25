@@ -1,0 +1,43 @@
+TODO
+====
+
+[ ] Switch to a simple event bus, get rid of all the listeners
+[ ] more breakpoint types?
+[X] menu bar
+[X] toolbar
+[ ] more actions:
+    [ ] CPU core
+        [ ] load CPU state
+        [ ] save CPU state
+        [X] save 8049 disassembly
+        [X] Throttle checkbox
+    [ ] Assembler window
+        [ ] load
+        [ ] save
+        [ ] "Select all"
+        [ ] "Undo"
+
+[X] ExecutorThread should broadcast performance
+[X] Throttle execution at 100%
+[ ] Add checkbox to enable/disable throttling
+[ ] Menus in panel window
+[X] Keyboard shortcuts on panel window
+[X] "About" dialog
+[ ] "Open window" menu items
+[ ] CP1 assembly language
+    [X] Assembler
+    [ ] Store memory as listing
+[ ] Extension Modules
+    [X] Support for CP3
+    [ ] Support for CP2 (Cassette)
+    [ ] Enable/Disable modules in settings dialog (especially CP3)
+[ ] Reset action
+[X] Assembler window
+    [ ] Save source
+    [ ] load source
+    [ ] Halt CPU execution when assembling
+
+Bugs
+====
+[ ] Don't crash when a window is closed (add isDisposed() checks)
+[ ] When closing and opening panel window again, LEDs are wrong.

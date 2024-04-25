@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright (c) 2017 Andreas Signer <asigner@gmail.com>
+  ~
+  ~ This file is part of kosmos-cp1.
+  ~
+  ~ kosmos-cp1 is free software: you can redistribute it and/or
+  ~ modify it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 3 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ kosmos-cp1 is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with kosmos-cp1.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 26 26"
+   enable-background="new 0 0 26 26"
+   width="26"
+   height="26"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="checkbox.svg">
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1056"
+     id="namedview6"
+     showgrid="false"
+     inkscape:zoom="6.4183539"
+     inkscape:cx="-66.117349"
+     inkscape:cy="45.90293"
+     inkscape:window-x="1920"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 13.763197,-75.809907 c -2.745454,0 -5.0000001,2.254545 -5.0000001,5 l 0,14 c 0,2.745455 2.2545461,5 5.0000001,5 l 14.000001,0 c 2.745455,0 5,-2.254545 5,-5 l 0,-14 c 0,-2.745455 -2.254545,-5 -5,-5 l -14.000001,0 z m 0,2 14.000001,0 c 1.654545,0 3,1.345454 3,3 l 0,14 c 0,1.654545 -1.345455,3 -3,3 l -14.000001,0 c -1.654545,0 -3,-1.345455 -3,-3 l 0,-14 c 0,-1.654546 1.345455,-3 3,-3 z m 11.187501,4.0625 c -0.15,0.025 -0.275,0.1 -0.375,0.25 l -4.906251,7.28125 -2.3125,-2.28125 c -0.2,-0.3 -0.58125,-0.325 -0.78125,-0.125 l -0.90625,0.90625 c -0.2,0.3 -0.2,0.70625 0,0.90625 l 3.5,3.5 c 0.2,0.1 0.48125,0.3125 0.78125,0.3125 0.2,0 0.51875,-0.10625 0.71875,-0.40625 l 6.000001,-8.8125 c 0.2,-0.3 0.0875,-0.58125 -0.3125,-0.78125 l -1,-0.71875 c -0.1,-0.05 -0.25625,-0.05625 -0.40625,-0.03125 z"
+     id="path4-6" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 51.765244,-70.981417 c -0.15,0.025 -0.275,0.1 -0.375,0.25 l -4.90625,7.28125 -2.3125,-2.28125 c -0.2,-0.3 -0.58125,-0.325 -0.78125,-0.125 l -0.90625,0.90625 c -0.2,0.3 -0.2,0.70625 0,0.90625 l 3.5,3.5 c 0.2,0.1 0.48125,0.3125 0.78125,0.3125 0.2,0 0.51875,-0.10625 0.71875,-0.40625 l 6,-8.8125 c 0.2,-0.3 0.0875,-0.58125 -0.3125,-0.78125 l -1,-0.71875 c -0.1,-0.05 -0.25625,-0.05625 -0.40625,-0.03125 z"
+     id="path4-7"
+     sodipodi:nodetypes="scccscscsccccs" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 28.444361,-12.476588 c -0.230559,0.03843 -0.422693,0.153707 -0.576401,0.384267 L 20.326717,-0.90053885 16.772246,-4.4069759 c -0.307414,-0.461121 -0.893421,-0.499548 -1.200835,-0.192134 l -1.392968,1.392968 c -0.307414,0.461121 -0.307414,1.085555 0,1.392969 l 5.379739,5.379741 c 0.307414,0.153707 0.739715,0.4803346 1.200835,0.4803346 0.307414,0 0.797356,-0.163315 1.104768,-0.6244346 l 9.222413,-13.5454191 c 0.307414,-0.461121 0.134494,-0.893421 -0.480334,-1.200835 l -1.537069,-1.104768 c -0.153706,-0.07685 -0.393873,-0.08646 -0.624434,-0.04803 z"
+     id="path4-7-5"
+     sodipodi:nodetypes="scccscscsccccs"
+     inkscape:export-xdpi="60"
+     inkscape:export-ydpi="60" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 12.919645,-45.0413 c -2.745454,0 -4.9999998,2.254545 -4.9999998,5 l 0,13.999999 c 0,2.745455 2.2545458,5 4.9999998,5 l 14.000001,0 c 2.745455,0 5,-2.254545 5,-5 l 0,-13.999999 c 0,-2.745455 -2.254545,-5 -5,-5 z m 0,2 14.000001,0 c 1.654545,0 3,1.345454 3,3 l 0,13.999999 c 0,1.654545 -1.345455,3 -3,3 l -14.000001,0 c -1.654545,0 -2.9999999,-1.345455 -2.9999999,-3 l 0,-13.999999 c 0,-1.654546 1.3454549,-3 2.9999999,-3 z"
+     id="path4-6-3"
+     sodipodi:nodetypes="ssssssssssssssssss"
+     inkscape:export-xdpi="60"
+     inkscape:export-ydpi="60" />
+  <path
+     inkscape:connector-curvature="0"
+     d="m 15.591461,-16.225818 c -2.745454,0 -5,2.254545 -5,5 l 0,13.9999993 c 0,2.745455 2.254546,5 5,5 l 14.000001,0 c 2.745455,0 5,-2.254545 5,-5 l 0,-13.9999993 c 0,-2.745455 -2.254545,-5 -5,-5 z m 0,2 14.000001,0 c 1.654545,0 3,1.345454 3,3 l 0,13.9999993 c 0,1.654545 -1.345455,3 -3,3 l -14.000001,0 c -1.654545,0 -3,-1.345455 -3,-3 l 0,-13.9999993 c 0,-1.654546 1.345455,-3 3,-3 z"
+     id="path4-6-3-5"
+     sodipodi:nodetypes="ssssssssssssssssss"
+     inkscape:export-xdpi="60"
+     inkscape:export-ydpi="60" />
+</svg>
