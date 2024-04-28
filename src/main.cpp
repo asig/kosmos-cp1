@@ -6,10 +6,12 @@
 #include "emulation/dataport.h"
 #include "emulation/intel8049.h"
 #include "emulation/intel8155.h"
+#include "executorthread.h"
 
 using kosmos_cp1::emulation::DataPort;
 using kosmos_cp1::emulation::Intel8049;
 using kosmos_cp1::emulation::Intel8155;
+using kosmos_cp1::ExecutorThread;
 
 int main(int argc, char *argv[])
 {
@@ -38,9 +40,6 @@ int main(int argc, char *argv[])
     QObject::connect(p2.get(), &DataPort::bit6Written, &pid, &Intel8155::onPinResetWritten);
     QObject::connect(p2.get(), &DataPort::bit7Written, &pid, &Intel8155::onPinIOWritten);
 
-//    ExecutorThread executorThread = new ExecutorThread(cpu, pid, pidExtension);
-
-
     // Connect the relevant pins to the CP5 Memory Extension's 8155
     QObject::connect(&cpu, &Intel8049::pinALEWritten, &pidExtension, &Intel8155::onPinALEWritten);
     QObject::connect(&cpu, &Intel8049::pinRDLowActiveWritten, &pidExtension, &Intel8155::onPinRDLowActiveWritten);
@@ -49,7 +48,6 @@ int main(int argc, char *argv[])
     QObject::connect(p2.get(), &DataPort::bit5Written, &pidExtension, &Intel8155::onPinCELowActiveWritten);
     QObject::connect(p2.get(), &DataPort::bit6Written, &pidExtension, &Intel8155::onPinResetWritten);
     QObject::connect(p2.get(), &DataPort::bit7Written, &pidExtension, &Intel8155::onPinIOWritten);
-
 
     // Now, reset the CPU
     cpu.reset();
@@ -66,8 +64,9 @@ int main(int argc, char *argv[])
 
 //    cpuWindow.open();
 //    panelWindow.open();
-//    executorThread.start();
-//    executorThread.postCommand(ExecutorThread.Command.START);
+    ExecutorThread executorThread(&cpu, &pid, &pidExtension);
+    executorThread.start();
+    executorThread.postCommand(ExecutorThread::Command::START);
 
 //    Display display = Display.getDefault();
 //    while (windowManager.getOpenCount() > 0) {
@@ -85,5 +84,8 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
-    return a.exec();
+    int res = a.exec();
+    executorThread.postCommand(ExecutorThread::Command::QUIT);
+    executorThread.join();
+    return res;
 }

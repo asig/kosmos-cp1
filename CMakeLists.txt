@@ -46,11 +46,16 @@ add_subdirectory(deps/fmt)
 # Main
 #
 set(PROJECT_SOURCES
-        src/executionthread.h
-        src/executionthread.cpp
+        src/executorthread.h
+        src/executorthread.cpp
         src/main.cpp
         src/mainwindow.cpp
         src/mainwindow.h
+        src/performancemeasurer.h
+        src/performancemeasurer.cpp
+        src/throttler.cpp
+        src/throttler.h
+        src/throttler.cpp
         src/emulation/dataport.h
         src/emulation/dataport.cpp
         src/emulation/intel8049.h

@@ -17,7 +17,7 @@ public:
     void registerExecution(uint32_t cycles);
     bool isUpdateDue();
 
-    double getPerformance() const;
+    double getPerformance();
 
 private:
     uint64_t startNanos_;
