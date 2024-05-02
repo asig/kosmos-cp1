@@ -35,43 +35,6 @@ public:
 
     void reset();
 
-public slots:
-    void onPinALEWritten(uint8_t val);
-    void onPinRDLowActiveWritten(uint8_t val);
-    void onPinWRLowActiveWritten(uint8_t val);
-    void onPinIOWritten(uint8_t val);
-    void onPinResetWritten(uint8_t val);
-    void onPinCELowActiveWritten(uint8_t val);
-
-signals:
-    void commandRegisterWritten();
-    void portWritten(Port port, uint8_t value);
-    void memoryWritten();
-    void pinsChanged();
-    void resetExecuted();
-
-private:
-    std::string name_;
-    std::shared_ptr<DataPort> bus_;
-    std::vector<uint8_t> ram_;
-
-    uint8_t addressLatch_;
-    bool ioValue_;
-    bool ceValue_;
-    bool aleValue_;
-    bool rdValue_;
-    bool wrValue_;
-
-    PortMode paMode_ = PortMode::INPUT;
-    PortMode pbMode_ = PortMode::INPUT;
-    PortCMode pcMode_ = PortCMode::ALT1;
-    bool paInterruptEnabled_ = false;
-    bool pbInterruptEnabled_ = false;
-
-    uint8_t paValue_;
-    uint8_t pbValue_;
-    uint8_t pcValue_;
-
     bool ioValue() const {
         return ioValue_;
     }
@@ -85,7 +48,7 @@ private:
     bool rdValue() const {
         return rdValue_;
     }
-        
+
     bool wrValue() const {
         return wrValue_;
     }
@@ -122,6 +85,42 @@ private:
         return pcValue_;
     }
 
+public slots:
+    void onPinALEWritten(uint8_t val);
+    void onPinRDLowActiveWritten(uint8_t val);
+    void onPinWRLowActiveWritten(uint8_t val);
+    void onPinIOWritten(uint8_t val);
+    void onPinResetWritten(uint8_t val);
+    void onPinCELowActiveWritten(uint8_t val);
+
+signals:
+    void commandRegisterWritten();
+    void portWritten(Port port, uint8_t value);
+    void memoryWritten();
+    void pinsChanged();
+    void resetExecuted();
+
+private:
+    std::string name_;
+    std::shared_ptr<DataPort> bus_;
+    std::vector<uint8_t> ram_;
+
+    uint8_t addressLatch_;
+    bool ioValue_;
+    bool ceValue_;
+    bool aleValue_;
+    bool rdValue_;
+    bool wrValue_;
+
+    PortMode paMode_ = PortMode::INPUT;
+    PortMode pbMode_ = PortMode::INPUT;
+    PortCMode pcMode_ = PortCMode::ALT1;
+    bool paInterruptEnabled_ = false;
+    bool pbInterruptEnabled_ = false;
+
+    uint8_t paValue_;
+    uint8_t pbValue_;
+    uint8_t pcValue_;
 };
 
 } // namespace

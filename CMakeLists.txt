@@ -62,6 +62,12 @@ set(PROJECT_SOURCES
         src/emulation/intel8049.cpp
         src/emulation/intel8155.h
         src/emulation/intel8155.cpp
+        src/ui/cp1panelwidget.h
+        src/ui/cp1panelwidget.cpp
+        src/ui/cp5panelwidget.h
+        src/ui/cp5panelwidget.cpp
+        src/ui/panelwindow.h
+        src/ui/panelwindow.cpp
         resources/resources.qrc
 )
 
@@ -69,7 +75,10 @@ qt_add_executable(kosmos-cp1-cpp
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
 )
-include_directories(deps/fmt/include)
+include_directories(
+    deps/fmt/include
+    src
+)
 
 target_link_libraries(kosmos-cp1-cpp
     PRIVATE

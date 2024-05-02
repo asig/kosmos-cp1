@@ -47,6 +47,10 @@ public:
         reset();
     }
 
+    std::shared_ptr<DataPort> port(int i) {
+        return ports_[i];
+    }
+
     void reset();
 
     const State& state() const {
