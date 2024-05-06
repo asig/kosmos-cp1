@@ -51,9 +51,9 @@ void generate_7segment(const std::string& basename, int mask, bool dot) {
     QTextStream in(&f);
     QString content = in.readAll();
 
-    // replace all segment cols
+    // replace all segment cols    
     for (int i = 0; i < 8; i++) {
-        QColor segCol = (mask && (1 << i)) ? kosmos_cp1::generator::SEGMENT_ON : kosmos_cp1::generator::SEGMENT_OFF;
+        QColor segCol = (mask & (1 << i)) ? kosmos_cp1::generator::SEGMENT_ON : kosmos_cp1::generator::SEGMENT_OFF;
         if (i == 7 && !dot) {
             segCol = kosmos_cp1::generator::SEGMENT_BG;
         }
