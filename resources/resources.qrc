@@ -532,5 +532,6 @@
         <file>listings/listing3.asm</file>
         <file>listings/listing2.asm</file>
         <file>listings/listing1.asm</file>
+        <file>ui/kosmos-logo.svg</file>
     </qresource>
 </RCC>
