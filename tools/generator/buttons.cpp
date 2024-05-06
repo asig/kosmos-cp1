@@ -55,10 +55,12 @@ void generate_button(double scale, const char *text, const char *subtext, bool i
     painter.setPen(fg);
 
     painter.setBrush(QColor(255,255,255));
-    painter.drawRoundedRect(0,0,w,h, r,r,Qt::AbsoluteSize);
+    // See https://stackoverflow.com/questions/29196610/qt-drawing-a-filled-rounded-rectangle-with-border
+    // for why QRectF with .5 offets is used.
+    painter.drawRoundedRect(QRectF(0.5,0.5,w-1,h-1), r,r,Qt::AbsoluteSize);
 
     painter.setBrush(QColor(255,255,255));
-    painter.drawRoundedRect(3,3,w-6,h-6,r,r,Qt::AbsoluteSize);
+    painter.drawRoundedRect(QRectF(3.5,3.5,w-7,h-7),r,r,Qt::AbsoluteSize);
 
     painter.setFont(largeFont);
     auto br = largeFontM.boundingRect(text);
