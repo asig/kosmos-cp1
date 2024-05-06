@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QWindow>
 
 #include "executorthread.h"
 #include "emulation/intel8049.h"
@@ -42,14 +43,13 @@ private:
 
     ExecutorThread *executorThread_;
 
-    CP1PanelWidget *cp1Panel;
-    CP5PanelWidget *cp5Panel;
+    CP1PanelWidget *cp1Panel_;
+    CP5PanelWidget *cp5Panel_;
 
     QAction* loadStateAction_;
     QAction* saveStateAction_;
 
     void createActions();
-    void updateUiState();
     void createToolBar();
     void createMenuBar();
     void createMainUI();

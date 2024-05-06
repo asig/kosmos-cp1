@@ -2,13 +2,27 @@
 
 #include "fmt/format.h"
 
+#include <QVBoxLayout>
+#include <QPushButton>
+
+#include "ui/cp1colors.h"
+
 namespace kosmos_cp1::ui {
+
+namespace {
+constexpr const std::string WINDOW_TITLE("Kosmos CP1");
+}
 
 using ::kosmos_cp1::emulation::Port;
 
 PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, QWidget *parent)
     : cpu_(cpu), pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), QMainWindow{parent}
 {
+    createActions();
+    createToolBar();
+    createMenuBar();
+    createMainUI();
+
     pinProgValue_ = 0;
     inPort1ValueChange_ = false;
 
@@ -19,24 +33,60 @@ PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension
     // send its data to the port.
     connect(cpu_, &Intel8049::pinPROGWritten, this, &PanelWindow::onPinProgWritten);
 
-    connect(executorThread_, &ExecutorThread::executionStarted, [=] { updateWindowTitle("running"); } );
-    connect(executorThread_, &ExecutorThread::executionStopped, [=] { updateWindowTitle("stopped"); } );
-    connect(executorThread_, &ExecutorThread::breakpointHit, [=] { updateWindowTitle("stopped"); } );
-    connect(executorThread_, &ExecutorThread::performanceUpdate, [=](double performance) {
+    connect(executorThread_, &ExecutorThread::executionStarted, [this] { updateWindowTitle("running"); } );
+    connect(executorThread_, &ExecutorThread::executionStopped, [this] { updateWindowTitle("stopped"); } );
+    connect(executorThread_, &ExecutorThread::breakpointHit, [this] { updateWindowTitle("stopped"); } );
+    connect(executorThread_, &ExecutorThread::performanceUpdate, [this](double performance) {
         updateWindowTitle(fmt::format("{:d}%", (int)(performance*100+.5)));
     });
 
     connect(cpu_->port(1).get(), &DataPort::valueChange, this, &PanelWindow::onPort1ValueChanged);
 
-    connect(pid_, &Intel8155::portWritten, [=](Port port, uint8_t val) {
+    connect(pid_, &Intel8155::portWritten, [this](Port port, uint8_t val) {
         if (port != Port::B) return;
         cp5Panel_->writeLeds(val);
     });
+    connect(cp5Panel_, &CP5PanelWidget::switchesChanged, [this](uint8_t val) {
+        cpu_->port(1)->write(val);
+    });
+
+    updateWindowTitle("stopped");
+}
+
+void PanelWindow::createMainUI() {
+
+    QWidget *mainWidget = new QWidget();
+    QPalette pal = QPalette();
+    pal.setColor(QPalette::Window, CP1Color::GREEN);
+
+    mainWidget->setAutoFillBackground(true);
+    mainWidget->setPalette(pal);
+
+    cp1Panel_ = new CP1PanelWidget(pid_, mainWidget);
+
+    cp5Panel_ = new CP5PanelWidget(mainWidget);
+    cp5Panel_->writeLeds(pid_->paValue());
+    cpu_->port(1)->write(cp5Panel_->readSwitches());
+
+
+    QPushButton *btn = new QPushButton();
+    btn->setText("FOOBAR");
+
+//    CP1Display *d = new CP1Display(pid_, mainWidget);
+    QVBoxLayout *layout = new QVBoxLayout(mainWidget);
+    layout->addWidget(btn);
+    layout->addWidget(cp1Panel_);
+    layout->addWidget(cp5Panel_);
+
+//    d->display("C12127");
+
+    setCentralWidget(mainWidget);
+
 }
 
 void PanelWindow::updateWindowTitle(const std::string& state) {
-    // FIXME
-    // shell.setText(WINDOW_TITLE + " (" + status + ")");
+    std::string title = WINDOW_TITLE + " (" + state + ")";
+    setWindowTitle(QString(title.c_str()));
 }
 
 void PanelWindow::onPinProgWritten(uint8_t val) {
@@ -61,8 +111,8 @@ void PanelWindow::onPinProgWritten(uint8_t val) {
             break;
         }
     }
-    uint8_t keyMask = cp1Panel_->cp1Keyboard()->keyMask(row);
-    cpu_->port(2)->write(keyMask, 0x0f); // only the lower 4 bits of the port are connected to the key matrix. DO NOT TOUCH the upper nibble, as this is connected to the 8155s.
+//    uint8_t keyMask = cp1Panel_->cp1Keyboard()->keyMask(row);
+//    cpu_->port(2)->write(keyMask, 0x0f); // only the lower 4 bits of the port are connected to the key matrix. DO NOT TOUCH the upper nibble, as this is connected to the 8155s.
 }
 
 void PanelWindow::onPort1ValueChanged(uint8_t oldVal, uint8_t newVal) {
@@ -89,109 +139,116 @@ void PanelWindow::createActions() {
     a->setToolTip(a->text() + " (" + tr("Ctrl+S") + ")");
     saveStateAction_ = a;
     connect(saveStateAction_, &QAction::triggered, this, &PanelWindow::onSaveStateClicked);
-
-        a = new QAction(Resources::loadColoredIcon(kCol1, ":/images/codicons/debug-disconnect.svg"), tr("Disonnect"));
-
 }
 
-
-
-/**
-     * Open the window.
-     */
-public void open() {
-    createShell();
-    createActions();
-    createContent();
-
-    executorThread.addListener(executionListener);
-    cpu.getPort(1).addListener(port1Listener);
-    pid.addListener(pidListener);
-    shell.addDisposeListener(ev -> {
-        executorThread.removeListener(executionListener);
-        cpu.getPort(1).removeListener(port1Listener);
-        pid.removeListener(pidListener);
-    });
-
-    shell.setMenuBar(createMenuBar());
-    shell.open();
-    shell.layout();
-    shell.pack();
-    fireWindowOpened();
+void PanelWindow::createToolBar() {
 }
 
-@Override
-    protected Shell getShell() {
-    return shell;
+void PanelWindow::createMenuBar() {
 }
 
-public boolean isDisposed() {
-    return shell.isDisposed();
+void PanelWindow::onLoadStateClicked() {
 }
 
-private void createShell() {
-    shell = new Shell((Display)null, SWT.SHELL_TRIM | SWT.CENTER);
-    updateWindowTitle("stopped");
-    shell.setLayout(new FillLayout(SWT.HORIZONTAL));
-    Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
-    shell.setImage(icon);
-    shell.addDisposeListener(disposeEvent -> fireWindowClosed());
+void PanelWindow::onSaveStateClicked() {
 }
 
-private void createActions() {
-    loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
-    saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
-}
+///**
+//     * Open the window.
+//     */
+//public void open() {
+//    createShell();
+//    createActions();
+//    createContent();
 
-/**
-     * Create contents of the window.
-     * @wbp.parser.entryPoint
-     */
-private void createContent() {
-    Composite composite = new Composite(shell, SWT.NONE);
-    GridLayout gl_composite = new GridLayout(1, false);
-    gl_composite.marginTop = 0;
-    gl_composite.marginBottom = 0;
-    gl_composite.marginRight = 0;
-    gl_composite.marginLeft = 0;
-    composite.setLayout(gl_composite);
-    composite.setBackground(CP1Colors.GREEN);
+//    executorThread.addListener(executionListener);
+//    cpu.getPort(1).addListener(port1Listener);
+//    pid.addListener(pidListener);
+//    shell.addDisposeListener(ev -> {
+//        executorThread.removeListener(executionListener);
+//        cpu.getPort(1).removeListener(port1Listener);
+//        pid.removeListener(pidListener);
+//    });
 
-    cp5 = new CP5Panel(composite, SWT.NONE);
-    cp5.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-    cp5.writeLeds(pid.getPaValue());
-    cpu.getPort(1).write(cp5.readSwitches());
-    cp5.addSwitchesListener(() -> {
-        cpu.getPort(1).write(cp5.readSwitches());
-    });
+//    shell.setMenuBar(createMenuBar());
+//    shell.open();
+//    shell.layout();
+//    shell.pack();
+//    fireWindowOpened();
+//}
+
+//@Override
+//    protected Shell getShell() {
+//    return shell;
+//}
+
+//public boolean isDisposed() {
+//    return shell.isDisposed();
+//}
+
+//private void createShell() {
+//    shell = new Shell((Display)null, SWT.SHELL_TRIM | SWT.CENTER);
+//    updateWindowTitle("stopped");
+//    shell.setLayout(new FillLayout(SWT.HORIZONTAL));
+//    Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
+//    shell.setImage(icon);
+//    shell.addDisposeListener(disposeEvent -> fireWindowClosed());
+//}
+
+//private void createActions() {
+//    loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
+//    saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
+//}
+
+///**
+//     * Create contents of the window.
+//     * @wbp.parser.entryPoint
+//     */
+//private void createContent() {
+//    Composite composite = new Composite(shell, SWT.NONE);
+//    GridLayout gl_composite = new GridLayout(1, false);
+//    gl_composite.marginTop = 0;
+//    gl_composite.marginBottom = 0;
+//    gl_composite.marginRight = 0;
+//    gl_composite.marginLeft = 0;
+//    composite.setLayout(gl_composite);
+//    composite.setBackground(CP1Colors.GREEN);
+
+//    cp5 = new CP5Panel(composite, SWT.NONE);
+//    cp5.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+//    cp5.writeLeds(pid.getPaValue());
+//    cpu.getPort(1).write(cp5.readSwitches());
+//    cp5.addSwitchesListener(() -> {
+//        cpu.getPort(1).write(cp5.readSwitches());
+//    });
 
     //        Label spacer1 = new Label(composite, SWT.NONE);
     //        spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
     //        spacer1.setBackground(CP1Colors.GREEN);
 
-    cp1 = new CP1Panel(composite, SWT.NONE);
-    cp1.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-    cp1.getCP1Display().setPid(pid);
+//    cp1 = new CP1Panel(composite, SWT.NONE);
+//    cp1.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+//    cp1.getCP1Display().setPid(pid);
+//}
+
+//private Menu createMenuBar() {
+//    Menu menu = new Menu(shell, SWT.BAR);
+
+//    createFileMenu(menu);
+
+//    Menu stateMenu = new Menu(menu);
+//    new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
+//    new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
+
+//    MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
+//    stateItem.setText("&State");
+//    stateItem.setMenu(stateMenu);
+
+//    createWindowMenu(menu);
+//    createHelpMenu(menu);
+
+//    return menu;
+//}
+
 }
 
-private Menu createMenuBar() {
-    Menu menu = new Menu(shell, SWT.BAR);
-
-    createFileMenu(menu);
-
-    Menu stateMenu = new Menu(menu);
-    new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
-    new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
-
-    MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
-    stateItem.setText("&State");
-    stateItem.setMenu(stateMenu);
-
-    createWindowMenu(menu);
-    createHelpMenu(menu);
-
-    return menu;
-}
-}
-
-}

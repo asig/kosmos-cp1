@@ -27,6 +27,7 @@ find_package(QT
         Core
         Network
         Svg
+        SvgWidgets
         Test
         Widgets
 )
@@ -36,6 +37,7 @@ find_package(Qt6
         Core
         Network
         Svg
+        SvgWidgets
         Test
         Widgets
 )
@@ -62,8 +64,18 @@ set(PROJECT_SOURCES
         src/emulation/intel8049.cpp
         src/emulation/intel8155.h
         src/emulation/intel8155.cpp
+        src/ui/cp1colors.h
+        src/ui/cp1colors.cpp
         src/ui/cp1panelwidget.h
         src/ui/cp1panelwidget.cpp
+        src/ui/cp1button.h
+        src/ui/cp1button.cpp
+        src/ui/cp1display.h
+        src/ui/cp1display.cpp
+        src/ui/cp1keyboard.h
+        src/ui/cp1keyboard.cpp
+        src/ui/cp1sevensegmentwidget.h
+        src/ui/cp1sevensegmentwidget.cpp
         src/ui/cp5panelwidget.h
         src/ui/cp5panelwidget.cpp
         src/ui/panelwindow.h
@@ -84,6 +96,7 @@ target_link_libraries(kosmos-cp1-cpp
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Network
+        Qt${QT_VERSION_MAJOR}::SvgWidgets
         Qt${QT_VERSION_MAJOR}::Widgets
         fmt
 )
