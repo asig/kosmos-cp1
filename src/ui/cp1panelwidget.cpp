@@ -39,7 +39,7 @@ CP1PanelWidget::CP1PanelWidget(Intel8155 *pid, QWidget *parent)
     layout->setContentsMargins(50,50,50,50);
 
     layout->addWidget(display_, 0, 0);
-    layout->addWidget(logo,0,1);
+    layout->addWidget(logo,0,1,Qt::AlignRight);
     layout->addWidget(keyboard_,1,0,1,2);
 
     setLayout(layout);

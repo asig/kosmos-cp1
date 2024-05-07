@@ -2,23 +2,18 @@
 
 #include <QWidget>
 
+#include "ui/cp1button.h"
+
 namespace kosmos_cp1 {
 namespace ui {
 
-class CP1Keyboard : public QWidget
-{
-    Q_OBJECT
-public:
-    explicit CP1Keyboard(QWidget *parent = nullptr);
+namespace {
 
-signals:
+constexpr const int BUTTON_HEIGHT = 50;
+constexpr const int MARGIN_WIDTH = 10;
+constexpr const int ARC_WIDTH = 30;
 
-};
-
-} // namespace ui
-} // namespace kosmos_cp1
-
-
+}
 
 /**
  * Keyboard matrix according to the schematics:
@@ -48,36 +43,62 @@ signals:
  * Therefore, we use row 0 for CAS and row 1 for CAL.
  */
 
+class CP1Keyboard : public QWidget
+{
+    Q_OBJECT
+
+private:
+    enum {
+        BTN_0    = 0,
+        BTN_1    = 1,
+        BTN_2    = 2,
+        BTN_3    = 3,
+        BTN_4    = 4,
+        BTN_5    = 5,
+        BTN_6    = 6,
+        BTN_7    = 7,
+        BTN_8    = 8,
+        BTN_9    = 9,
+        BTN_OUT  = 10,
+        BTN_INP  = 11,
+        BTN_CAL  = 12,
+        BTN_STEP = 13,
+        BTN_STP  = 14,
+        BTN_RUN  = 15,
+        BTN_CAS  = 16,
+        BTN_CLR  = 17,
+        BTN_PC   = 18,
+        BTN_ACC  = 19,
+        BTNS_SIZE = 20,
+    };
+
+public:
+    explicit CP1Keyboard(QWidget *parent = nullptr);
+
+public slots:
+    void onKeyPressed(CP1Button *btn);
+    void onKeyReleased(CP1Button *btn);
+
+signals:
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
+private:
+    CP1Button *makeBtn(const QString& str, int row, int col, int btnCode = -1);
+
+    uint8_t keyMask_[6];
+    CP1Button *buttons_[BTNS_SIZE];
+};
+
+} // namespace ui
+} // namespace kosmos_cp1
+
+
+
 
 //public class CP1Keyboard extends Composite {
 
-//private static final int BTN_0    = 0;
-//private static final int BTN_1    = 1;
-//private static final int BTN_2    = 2;
-//private static final int BTN_3    = 3;
-//private static final int BTN_4    = 4;
-//private static final int BTN_5    = 5;
-//private static final int BTN_6    = 6;
-//private static final int BTN_7    = 7;
-//private static final int BTN_8    = 8;
-//private static final int BTN_9    = 9;
-//private static final int BTN_OUT  = 10;
-//private static final int BTN_INP  = 11;
-//private static final int BTN_CAL  = 12;
-//private static final int BTN_STEP = 13;
-//private static final int BTN_STP  = 14;
-//private static final int BTN_RUN  = 15;
-//private static final int BTN_CAS  = 16;
-//private static final int BTN_CLR  = 17;
-//private static final int BTN_PC   = 18;
-//private static final int BTN_ACC  = 19;
-//private static final int BTNS_SIZE = 20;
-
-//private static final Logger logger = Logger.getLogger(CP1Keyboard.class.getName());
-
-//private static final int BUTTON_HEIGHT = 50;
-//private static final int MARGIN_WIDTH = 10;
-//private static final int ARC_WIDTH = 30;
 
 //private int keyMask[] = new int[6];
 
