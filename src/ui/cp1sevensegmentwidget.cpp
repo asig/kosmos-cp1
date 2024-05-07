@@ -31,7 +31,7 @@ CP1SevenSegmentWidget::CP1SevenSegmentWidget(bool showDot, QWidget *parent)
         imagesInitialized = true;
     }
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    setFixedSize(sizeHint());
+    setFixedSize(DIGITS_DOT[0].size());
 }
 
 QSize CP1SevenSegmentWidget::sizeHint() const {
