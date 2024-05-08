@@ -137,85 +137,18 @@ private:
 
 
     void handleInterrupts();
-
-
-    uint8_t readReg(uint8_t reg) {
-        uint16_t base = (state_.psw && (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
-        return ram_[base + reg];
-    }
-
-    void writeReg(uint8_t reg, uint8_t val) {
-        uint16_t base = (state_.psw && (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
-        ram_[base + reg] = val;
-    }
-
-    uint8_t fetch() {
-        return rom_[state_.pc++];
-    }
-
-    void push() {
-        uint8_t sp = state_.psw & 0x7;
-        ram_[8+2*sp] = static_cast<uint8_t>(state_.pc & 0xff);
-        ram_[9+2*sp] = static_cast<uint8_t>(state_.psw & 0xf0 | (state_.pc >> 8) & 0xff );
-        state_.psw = static_cast<uint8_t>(state_.psw & 0xf8 | (sp + 1) & 0x7);
-    }
-
-    void pop(bool restoreState) {
-        uint8_t sp = (state_.psw - 1) & 0x7;
-        state_.pc = static_cast<uint16_t>(ram_[9+2*sp] & 0xf) << 8 | static_cast<uint16_t>(ram_[8+2*sp]);
-        if (restoreState) {
-            state_.psw = static_cast<uint8_t>(ram_[9+2*sp] & 0xf0 | 0x8 | (sp & 0x7));
-            state_.inInterrupt = false;
-        } else {
-            state_.psw = state_.psw & 0xf0 | 0x8 | (sp & 0x7);
-        }
-    }
-
-    void incCounter() {
-        state_.tf = state_.tf || state_.t == 0xff;
-        state_.timerInterruptRequested = state_.timerInterruptRequested || state_.t == 0xff;
-        state_.t = state_.t++;
-    }
-
-    void tick() {
-        // "executes" another cycle, and performs some periodic stuff (e.g. counting after a STRT T)
-        if (state_.timerRunning) {
-            state_.cyclesUntilCount--;
-            if (state_.cyclesUntilCount == 0) {
-                state_.cyclesUntilCount = 32;
-                incCounter();
-            }
-        }
-    }
-
-    uint8_t getBit(uint16_t val, uint8_t bit) {
-        uint16_t mask = 1 << bit;
-        return (val & mask) > 0 ? 1 : 0;
-    }
-
-    uint16_t setBit(uint16_t val, uint8_t bit, uint8_t bitVal) {
-        uint16_t mask = 1 << bit;
-        val &= ~mask;
-        val |= bitVal * mask;
-        return val;
-    }
-
-    void setCarry(bool carry) {
-        state_.psw = setBit(state_.psw, CY_BIT, carry ? 1 : 0);
-    }
-
-    void setAuxCarry(bool carry) {
-        state_.psw = setBit(state_.psw, AC_BIT, carry ? 1 : 0);
-    }
-
-    void addToAcc(uint8_t value) {
-        uint8_t oldA = state_.a;
-        uint8_t oldLoNibble = state_.a & 0xf;
-        state_.a = state_.a + value;
-        uint8_t loNibble = state_.a & 0xf;
-        setCarry(oldA > state_.a);
-        setAuxCarry(oldLoNibble > loNibble);
-    }
+    uint8_t readReg(uint8_t reg);
+    void writeReg(uint8_t reg, uint8_t val);
+    uint8_t fetch();
+    void push();
+    void pop(bool restoreState);
+    void incCounter();
+    void tick();
+    uint8_t getBit(uint16_t val, uint8_t bit);
+    uint16_t setBit(uint16_t val, uint8_t bit, uint8_t bitVal);
+    void setCarry(bool carry);
+    void setAuxCarry(bool carry);
+    void addToAcc(uint8_t value);
 
     std::vector<uint8_t> rom_;
     std::vector<uint8_t> ram_;
