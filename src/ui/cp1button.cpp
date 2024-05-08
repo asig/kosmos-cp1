@@ -20,8 +20,6 @@ CP1Button::CP1Button(const QString& str, int row, int col, QWidget *parent)
 
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFixedSize(img_.size());
-
-//    setMouseTracking(true);
 }
 
 void CP1Button::mousePressEvent(QMouseEvent *event) {
