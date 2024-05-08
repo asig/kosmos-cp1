@@ -54,17 +54,6 @@ CP1Display::CP1Display(Intel8155 *pid, QWidget *parent)
     layout->setContentsMargins(MARGIN_WIDTH,MARGIN_WIDTH,MARGIN_WIDTH,MARGIN_WIDTH);
     layout->setSpacing(0);
 
-//    GridLayout gridLayout = new GridLayout(8, false);
-//    gridLayout.marginTop = MARGIN_WIDTH;
-//    gridLayout.marginRight = MARGIN_WIDTH;
-//    gridLayout.marginLeft = MARGIN_WIDTH;
-//    gridLayout.marginBottom = MARGIN_WIDTH;
-//    gridLayout.horizontalSpacing = 0;
-//    gridLayout.verticalSpacing = 0;
-//    gridLayout.marginWidth = 0;
-//    gridLayout.marginHeight = 0;
-//    setLayout(gridLayout);
-
     layout->addWidget(digits_[0]);
     layout->addSpacing(SPACER_WIDTH);
     layout->addWidget(digits_[1]);
