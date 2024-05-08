@@ -78,8 +78,6 @@ void PanelWindow::createMainUI() {
     layout->addWidget(cp1Panel_);
     layout->addWidget(cp5Panel_);
 
-//    d->display("C12127");
-
     setCentralWidget(mainWidget);
 
 }
@@ -111,8 +109,8 @@ void PanelWindow::onPinProgWritten(uint8_t val) {
             break;
         }
     }
-//    uint8_t keyMask = cp1Panel_->cp1Keyboard()->keyMask(row);
-//    cpu_->port(2)->write(keyMask, 0x0f); // only the lower 4 bits of the port are connected to the key matrix. DO NOT TOUCH the upper nibble, as this is connected to the 8155s.
+    uint8_t keyMask = cp1Panel_->cp1Keyboard()->keyMask(row);
+    cpu_->port(2)->write(keyMask, 0x0f); // only the lower 4 bits of the port are connected to the key matrix. DO NOT TOUCH the upper nibble, as this is connected to the 8155s.
 }
 
 void PanelWindow::onPort1ValueChanged(uint8_t oldVal, uint8_t newVal) {
