@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPalette>
+#include <QKeyEvent>
 
 #include "ui/cp1colors.h"
 
@@ -93,14 +94,9 @@ CP1Keyboard::CP1Keyboard(QWidget *parent)
     topLayout->setContentsMargins(MARGIN_WIDTH,MARGIN_WIDTH,MARGIN_WIDTH,MARGIN_WIDTH);
     topLayout->setSpacing(40);
 
-
     setLayout(topLayout);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-//    QPalette pal = QPalette();
-//    pal.setColor(QPalette::Window, CP1Color::PANEL_BACKGROUND);
-//    setAutoFillBackground(true);
-//    setPalette(pal);
+    setFocusPolicy(Qt::FocusPolicy::StrongFocus);
 }
 
 CP1Button* CP1Keyboard::makeBtn(const QString& str, int row, int col, int btnCode) {
@@ -113,7 +109,13 @@ CP1Button* CP1Keyboard::makeBtn(const QString& str, int row, int col, int btnCod
     return btn;
 }
 
+void CP1Keyboard::onKeyPressed(CP1Button *btn) {
+    keyMask_[btn->row()] |= (1 << btn->col());
+}
 
+void CP1Keyboard::onKeyReleased(CP1Button *btn) {
+    keyMask_[btn->row()] &= ~(1 << btn->col());
+}
 
 void CP1Keyboard::paintEvent(QPaintEvent *) {
     QPainter painter(this);
@@ -150,460 +152,68 @@ void CP1Keyboard::paintEvent(QPaintEvent *) {
     painter.drawRoundedRect(x+MARGIN_WIDTH/2, y+MARGIN_WIDTH/2, w-MARGIN_WIDTH, h-MARGIN_WIDTH, ARC_WIDTH, ARC_WIDTH);
 }
 
-void CP1Keyboard::onKeyPressed(CP1Button *btn) {
-    keyMask_[btn->row()] |= (1 << btn->col());
+void CP1Keyboard::keyPressEvent(QKeyEvent *event) {
+    if (handleKey(event, true)) return;
+    QWidget::keyPressEvent(event);
 }
 
-void CP1Keyboard::onKeyReleased(CP1Button *btn) {
-    keyMask_[btn->row()] &= ~(1 << btn->col());
+void CP1Keyboard::keyReleaseEvent(QKeyEvent *event) {
+    if (handleKey(event, false)) return;
+    QWidget::keyPressEvent(event);
 }
 
-
-
-
-
-
-    //        super(parent, style);
-    //        GridLayout gridLayout = new GridLayout(2, false);
-    //        gridLayout.marginRight = MARGIN_WIDTH;
-    //        gridLayout.marginTop = MARGIN_WIDTH;
-    //        gridLayout.marginLeft = MARGIN_WIDTH;
-    //        gridLayout.marginBottom = MARGIN_WIDTH;
-    //        gridLayout.horizontalSpacing = 40;
-    //        setLayout(gridLayout);
-    //        this.setBackground(CP1Colors.PANEL_BACKGROUND);
-    //        this.addPaintListener(this::paint);
-
-    //        Composite composite = new Composite(this, SWT.NONE);
-    //        composite.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-    //        GridLayout gl_composite = new GridLayout(10, true);
-    //        gl_composite.horizontalSpacing = 10;
-    //        composite.setLayout(gl_composite);
-    //        composite.setBackground(CP1Colors.PANEL_BACKGROUND);
-    //        {
-    //        }
-
-
-    //        Composite rh_composite = new Composite(this, SWT.NONE);
-    //        rh_composite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-    //        GridLayout rh_gl_composite = new GridLayout(3, false);
-    //        rh_gl_composite.horizontalSpacing = 10;
-
-    //        rh_composite.setLayout(rh_gl_composite);
-    //        rh_composite.setBackground(CP1Colors.PANEL_BACKGROUND);
-
-    //        Composite composite_1 = new Composite(this, SWT.NONE);
-    //        composite_1.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-    //        GridLayout gl_composite_1 = new GridLayout(4, true);
-    //        gl_composite_1.horizontalSpacing = 10;
-    //        composite_1.setLayout(gl_composite_1);
-    //        composite_1.setBackground(CP1Colors.PANEL_BACKGROUND);
-
-    //        Composite rh_composite_1 = new Composite(this, SWT.NONE);
-    //        GridLayout rh_gl_composite_1 = new GridLayout(3, false);
-    //        rh_gl_composite_1.horizontalSpacing = 10;
-    //        rh_composite_1.setLayout(rh_gl_composite_1);
-    //        rh_composite_1.setBackground(CP1Colors.PANEL_BACKGROUND);
-
-
-    //        Composite composite_2 = new Composite(this, SWT.NONE);
-    //        composite_2.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-    //        GridLayout gl_composite_2 = new GridLayout(3, false);
-    //        gl_composite_2.horizontalSpacing = 10;
-    //        composite_2.setLayout(gl_composite_2);
-    //        composite_2.setBackground(CP1Colors.PANEL_BACKGROUND);
-
-    //        Composite rh_composite_2 = new Composite(this, SWT.NONE);
-    //        GridLayout rh_gl_composite_2 = new GridLayout(3, false);
-    //        rh_gl_composite_2.horizontalSpacing = 10;
-    //        rh_composite_2.setLayout(rh_gl_composite_2);
-    //        rh_composite_2.setBackground(CP1Colors.PANEL_BACKGROUND);
-
-
-    //        Composite composite_3 = new Composite(this, SWT.NONE);
-    //        composite_3.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-    //        GridLayout gl_composite_3 = new GridLayout(3, false);
-    //        gl_composite_3.horizontalSpacing = 10;
-    //        composite_3.setLayout(gl_composite_3);
-    //        composite_3.setBackground(CP1Colors.PANEL_BACKGROUND);
-
-    //        Composite rh_composite_3 = new Composite(this, SWT.NONE);
-    //        GridLayout rh_gl_composite_3 = new GridLayout(3, false);
-    //        rh_gl_composite_3.horizontalSpacing = 10;
-    //        rh_composite_3.setLayout(rh_gl_composite_3);
-    //        rh_composite_3.setBackground(CP1Colors.PANEL_BACKGROUND);
-    //        new Label(rh_composite_3, SWT.NONE);
-    //        new Label(rh_composite_3, SWT.NONE);
-
-    //        this.addKeyListener(new KeyAdapter() {
-    //            @Override
-    //                public void keyPressed(KeyEvent e) {
-    //                if (!handleKey(e, true)) {
-    //                    super.keyPressed(e);
-    //                }
-    //            }
-
-    //            @Override
-    //                public void keyReleased(KeyEvent e) {
-    //                if (!handleKey(e, false)) {
-    //                    super.keyReleased(e);
-    //                };
-    //            }
-
-    //        private boolean handleKey(KeyEvent e, boolean pressState) {
-    //                CP1Button btn = null;
-    //                switch(e.character) {
-    //                case '0':
-    //                case '1':
-    //                case '2':
-    //                case '3':
-    //                case '4':
-    //                case '5':
-    //                case '6':
-    //                case '7':
-    //                case '8':
-    //                case '9':
-    //                    btn = buttons[e.character - '0'];
-    //                    break;
-    //                case 'o':
-    //                    btn = buttons[BTN_OUT];
-    //                    break;
-    //                case '\n':
-    //                case '\r':
-    //                    btn = buttons[BTN_INP];
-    //                    break;
-    //                case 'l':
-    //                    btn = buttons[BTN_CAL];
-    //                    break;
-    //                case 't':
-    //                    btn = buttons[BTN_STEP];
-    //                    break;
-    //                case '.':
-    //                    btn = buttons[BTN_STP];
-    //                    break;
-    //                case 'r':
-    //                    btn = buttons[BTN_RUN];
-    //                    break;
-    //                case 's':
-    //                    btn = buttons[BTN_CAS];
-    //                    break;
-    //                case '\b':
-    //                case 0x7f:
-    //                    btn = buttons[BTN_CLR];
-    //                    break;
-    //                case 'p':
-    //                    btn = buttons[BTN_PC];
-    //                    break;
-    //                case 'a':
-    //                    btn = buttons[BTN_ACC];
-    //                    break;
-    //                }
-    //                if (btn != null) {
-    //                    e.doit = false;
-    //                    btn.setPressed(pressState);
-    //                }
-    //                return btn != null;
-    //            }
-    //        });
+bool CP1Keyboard::handleKey(QKeyEvent *e, bool pressed) {
+    CP1Button *btn = nullptr;
+    int key = e->key();
+    switch(key) {
+    case Qt::Key_0:
+    case Qt::Key_1:
+    case Qt::Key_2:
+    case Qt::Key_3:
+    case Qt::Key_4:
+    case Qt::Key_5:
+    case Qt::Key_6:
+    case Qt::Key_7:
+    case Qt::Key_8:
+    case Qt::Key_9:
+        btn = buttons_[key - Qt::Key_0];
+        break;
+    case Qt::Key_O:
+        btn = buttons_[BTN_OUT];
+        break;
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
+        btn = buttons_[BTN_INP];
+        break;
+    case Qt::Key_L:
+        btn = buttons_[BTN_CAL];
+        break;
+    case Qt::Key_T:
+        btn = buttons_[BTN_STEP];
+        break;
+    case Qt::Key_R:
+        btn = buttons_[BTN_RUN];
+        break;
+    case Qt::Key_S:
+        btn = buttons_[BTN_CAS];
+        break;
+    case Qt::Key_Delete:
+    case Qt::Key_Clear:
+        btn = buttons_[BTN_CLR];
+        break;
+    case Qt::Key_P:
+        btn = buttons_[BTN_PC];
+        break;
+    case Qt::Key_A:
+        btn = buttons_[BTN_ACC];
+        break;
+    }
+    if (btn) {
+        btn ->setPressed(pressed);
+    }
+    return btn != nullptr;
+}
 
 
 } // namespace ui
 } // namespace kosmos_cp1
-
-
-//private static final int BTNS_SIZE = 20;
-
-//private static final Logger logger = Logger.getLogger(CP1Keyboard.class.getName());
-
-//private static final int BUTTON_HEIGHT = 50;
-//private static final int MARGIN_WIDTH = 10;
-//private static final int ARC_WIDTH = 30;
-
-//private int keyMask[] = new int[6];
-//private CP1Button buttons[] = new CP1Button[BTNS_SIZE];
-
-//private class KeyListener implements CP1Button.KeyListener {
-//    private final int row;
-//    private final int col;
-
-//    public KeyListener(int row, int col) {
-//            this.row = row;
-//            this.col = col;
-//        }
-
-//        @Override
-//            public void keyPressed(CP1Button btn) {
-//            keyMask[row] |= (1 << col);
-//            logger.finest(String.format("Key pressed: row %d, col %d", row, col));
-//            System.out.println(String.format("Key pressed: row %d, col %d", row, col));
-//            System.out.flush();
-//        }
-
-//        @Override
-//            public void keyReleased(CP1Button btn) {
-//            keyMask[row] &= ~(1 << col);
-//            logger.finest(String.format("Key released: row %d, col %d", row, col));
-//            System.out.println(String.format("Key released: row %d, col %d", row, col));
-//            System.out.flush();
-//        }
-//    }
-
-//    /**
-//     * Create the composite.
-//     * @param parent
-//     * @param style
-//     */
-//public CP1Keyboard(Composite parent, int style) {
-//        super(parent, style);
-//        GridLayout gridLayout = new GridLayout(2, false);
-//        gridLayout.marginRight = MARGIN_WIDTH;
-//        gridLayout.marginTop = MARGIN_WIDTH;
-//        gridLayout.marginLeft = MARGIN_WIDTH;
-//        gridLayout.marginBottom = MARGIN_WIDTH;
-//        gridLayout.horizontalSpacing = 40;
-//        setLayout(gridLayout);
-//        this.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        this.addPaintListener(this::paint);
-
-//        Composite composite = new Composite(this, SWT.NONE);
-//        composite.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-//        GridLayout gl_composite = new GridLayout(10, true);
-//        gl_composite.horizontalSpacing = 10;
-//        composite.setLayout(gl_composite);
-//        composite.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-
-
-//        Composite rh_composite = new Composite(this, SWT.NONE);
-//        rh_composite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-//        GridLayout rh_gl_composite = new GridLayout(3, false);
-//        rh_gl_composite.horizontalSpacing = 10;
-
-//        rh_composite.setLayout(rh_gl_composite);
-//        rh_composite.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-//            CP1Button btn = new CP1Button(rh_composite, "7w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(3, 3));
-//            buttons[BTN_7] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(rh_composite, "8w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(2, 0));
-//            buttons[BTN_8] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(rh_composite, "9w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(2, 1));
-//            buttons[BTN_9] = btn;
-//        }
-
-//        Composite composite_1 = new Composite(this, SWT.NONE);
-//        composite_1.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-//        GridLayout gl_composite_1 = new GridLayout(4, true);
-//        gl_composite_1.horizontalSpacing = 10;
-//        composite_1.setLayout(gl_composite_1);
-//        composite_1.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-//            CP1Button btn = new CP1Button(composite_1, "step", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(1, 1));
-//            buttons[BTN_STEP] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(composite_1, "stp", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(1, 2));
-//            buttons[BTN_STP] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(composite_1, "run", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(1, 3));
-//            buttons[BTN_RUN] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(composite_1, "cal", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(1, 0));
-//            buttons[BTN_CAL] = btn;
-//        }
-
-//        Composite rh_composite_1 = new Composite(this, SWT.NONE);
-//        GridLayout rh_gl_composite_1 = new GridLayout(3, false);
-//        rh_gl_composite_1.horizontalSpacing = 10;
-//        rh_composite_1.setLayout(rh_gl_composite_1);
-//        rh_composite_1.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-//            CP1Button btn = new CP1Button(rh_composite_1, "4w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(3, 0));
-//            buttons[BTN_4] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(rh_composite_1, "5w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(3, 1));
-//            buttons[BTN_5] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(rh_composite_1, "6w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(3, 2));
-//            buttons[BTN_6] = btn;
-//        }
-
-
-//        Composite composite_2 = new Composite(this, SWT.NONE);
-//        composite_2.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-//        GridLayout gl_composite_2 = new GridLayout(3, false);
-//        gl_composite_2.horizontalSpacing = 10;
-//        composite_2.setLayout(gl_composite_2);
-//        composite_2.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-//            CP1Button btn = new CP1Button(composite_2, "clr", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(0, 1));
-//            buttons[BTN_CLR] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(composite_2, "acc", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(0, 3));
-//            buttons[BTN_ACC] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(composite_2, "cas", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(0, 0));
-//            buttons[BTN_CAS] = btn;
-//        }
-
-//        Composite rh_composite_2 = new Composite(this, SWT.NONE);
-//        GridLayout rh_gl_composite_2 = new GridLayout(3, false);
-//        rh_gl_composite_2.horizontalSpacing = 10;
-//        rh_composite_2.setLayout(rh_gl_composite_2);
-//        rh_composite_2.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-//            CP1Button btn = new CP1Button(rh_composite_2, "1w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(4, 1));
-//            buttons[BTN_1] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(rh_composite_2, "2w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(4, 2));
-//            buttons[BTN_2] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(rh_composite_2, "3w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(4, 3));
-//            buttons[BTN_3] = btn;
-//        }
-
-
-//        Composite composite_3 = new Composite(this, SWT.NONE);
-//        composite_3.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-//        GridLayout gl_composite_3 = new GridLayout(3, false);
-//        gl_composite_3.horizontalSpacing = 10;
-//        composite_3.setLayout(gl_composite_3);
-//        composite_3.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-//            CP1Button btn = new CP1Button(composite_3, "pc", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(0, 2));
-//            buttons[BTN_PC] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(composite_3, "out", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(2, 2));
-//            buttons[BTN_OUT] = btn;
-//        }
-//        {
-//            CP1Button btn = new CP1Button(composite_3, "inp", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(2, 3));
-//            buttons[BTN_INP] = btn;
-//        }
-
-//        Composite rh_composite_3 = new Composite(this, SWT.NONE);
-//        GridLayout rh_gl_composite_3 = new GridLayout(3, false);
-//        rh_gl_composite_3.horizontalSpacing = 10;
-//        rh_composite_3.setLayout(rh_gl_composite_3);
-//        rh_composite_3.setBackground(CP1Colors.PANEL_BACKGROUND);
-//        {
-//            CP1Button btn = new CP1Button(rh_composite_3, "0w", SWT.NONE);
-//            btn.addKeyListener(new KeyListener(4, 0));
-//            buttons[BTN_0] = btn;
-//        }
-//        new Label(rh_composite_3, SWT.NONE);
-//        new Label(rh_composite_3, SWT.NONE);
-
-//        this.addKeyListener(new KeyAdapter() {
-//            @Override
-//                public void keyPressed(KeyEvent e) {
-//                if (!handleKey(e, true)) {
-//                    super.keyPressed(e);
-//                }
-//            }
-
-//            @Override
-//                public void keyReleased(KeyEvent e) {
-//                if (!handleKey(e, false)) {
-//                    super.keyReleased(e);
-//                };
-//            }
-
-//        private boolean handleKey(KeyEvent e, boolean pressState) {
-//                CP1Button btn = null;
-//                switch(e.character) {
-//                case '0':
-//                case '1':
-//                case '2':
-//                case '3':
-//                case '4':
-//                case '5':
-//                case '6':
-//                case '7':
-//                case '8':
-//                case '9':
-//                    btn = buttons[e.character - '0'];
-//                    break;
-//                case 'o':
-//                    btn = buttons[BTN_OUT];
-//                    break;
-//                case '\n':
-//                case '\r':
-//                    btn = buttons[BTN_INP];
-//                    break;
-//                case 'l':
-//                    btn = buttons[BTN_CAL];
-//                    break;
-//                case 't':
-//                    btn = buttons[BTN_STEP];
-//                    break;
-//                case '.':
-//                    btn = buttons[BTN_STP];
-//                    break;
-//                case 'r':
-//                    btn = buttons[BTN_RUN];
-//                    break;
-//                case 's':
-//                    btn = buttons[BTN_CAS];
-//                    break;
-//                case '\b':
-//                case 0x7f:
-//                    btn = buttons[BTN_CLR];
-//                    break;
-//                case 'p':
-//                    btn = buttons[BTN_PC];
-//                    break;
-//                case 'a':
-//                    btn = buttons[BTN_ACC];
-//                    break;
-//                }
-//                if (btn != null) {
-//                    e.doit = false;
-//                    btn.setPressed(pressState);
-//                }
-//                return btn != null;
-//            }
-//        });
-//    }
-
-//public int getKeyMask(int row) {
-//        return keyMask[row];
-//    }
-
-
-//    @Override
-//        protected void checkSubclass() {
-//        // Disable the check that prevents subclassing of SWT components
-//    }
-//}
