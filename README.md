@@ -38,6 +38,13 @@ You can find scans of all the manuals at http://www.retrozone.ch/cp1/
 
 ## Building and running
 
+### Dependencies
+```
+sudo apt install build-essential cmake qt6-base-dev qt6-svg-dev nsis
+```
+
+### Building
+
 On the command line: `cmake . -B build && cd build && make -j$(nproc)`
 
 
