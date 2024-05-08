@@ -27,6 +27,7 @@ public:
     void setPressed(bool pressed) {
         if (pressed == pressed_) return;
         pressed_ = pressed;
+        update();
         if (pressed_) {
             emit keyPressed(this);
         } else {
