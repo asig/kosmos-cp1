@@ -34,21 +34,21 @@ int main(int argc, char *argv[])
     Intel8155 pidExtension("extension", bus);
 
     // Connect the relevant pins to the main unit's 8155
-    QObject::connect(&cpu, &Intel8049::pinALEWritten, &pid, &Intel8155::onPinALEWritten);
-    QObject::connect(&cpu, &Intel8049::pinRDLowActiveWritten, &pid, &Intel8155::onPinRDLowActiveWritten);
-    QObject::connect(&cpu, &Intel8049::pinWRLowActiveWritten, &pid, &Intel8155::onPinWRLowActiveWritten);
-    QObject::connect(p2.get(), &DataPort::bit4Written, &pid, &Intel8155::onPinCELowActiveWritten);
-    QObject::connect(p2.get(), &DataPort::bit6Written, &pid, &Intel8155::onPinResetWritten);
-    QObject::connect(p2.get(), &DataPort::bit7Written, &pid, &Intel8155::onPinIOWritten);
+    QObject::connect(&cpu, &Intel8049::pinALEWritten, &pid, &Intel8155::onPinALEWritten, Qt::DirectConnection);
+    QObject::connect(&cpu, &Intel8049::pinRDLowActiveWritten, &pid, &Intel8155::onPinRDLowActiveWritten, Qt::DirectConnection);
+    QObject::connect(&cpu, &Intel8049::pinWRLowActiveWritten, &pid, &Intel8155::onPinWRLowActiveWritten, Qt::DirectConnection);
+    QObject::connect(p2.get(), &DataPort::bit4Written, &pid, &Intel8155::onPinCELowActiveWritten, Qt::DirectConnection);
+    QObject::connect(p2.get(), &DataPort::bit6Written, &pid, &Intel8155::onPinResetWritten, Qt::DirectConnection);
+    QObject::connect(p2.get(), &DataPort::bit7Written, &pid, &Intel8155::onPinIOWritten, Qt::DirectConnection);
 
     // Connect the relevant pins to the CP5 Memory Extension's 8155
-    QObject::connect(&cpu, &Intel8049::pinALEWritten, &pidExtension, &Intel8155::onPinALEWritten);
-    QObject::connect(&cpu, &Intel8049::pinRDLowActiveWritten, &pidExtension, &Intel8155::onPinRDLowActiveWritten);
-    QObject::connect(&cpu, &Intel8049::pinWRLowActiveWritten, &pidExtension, &Intel8155::onPinWRLowActiveWritten);
+    QObject::connect(&cpu, &Intel8049::pinALEWritten, &pidExtension, &Intel8155::onPinALEWritten, Qt::DirectConnection);
+    QObject::connect(&cpu, &Intel8049::pinRDLowActiveWritten, &pidExtension, &Intel8155::onPinRDLowActiveWritten, Qt::DirectConnection);
+    QObject::connect(&cpu, &Intel8049::pinWRLowActiveWritten, &pidExtension, &Intel8155::onPinWRLowActiveWritten, Qt::DirectConnection);
 
-    QObject::connect(p2.get(), &DataPort::bit5Written, &pidExtension, &Intel8155::onPinCELowActiveWritten);
-    QObject::connect(p2.get(), &DataPort::bit6Written, &pidExtension, &Intel8155::onPinResetWritten);
-    QObject::connect(p2.get(), &DataPort::bit7Written, &pidExtension, &Intel8155::onPinIOWritten);
+    QObject::connect(p2.get(), &DataPort::bit5Written, &pidExtension, &Intel8155::onPinCELowActiveWritten, Qt::DirectConnection);
+    QObject::connect(p2.get(), &DataPort::bit6Written, &pidExtension, &Intel8155::onPinResetWritten, Qt::DirectConnection);
+    QObject::connect(p2.get(), &DataPort::bit7Written, &pidExtension, &Intel8155::onPinIOWritten, Qt::DirectConnection);
 
     // Now, reset the CPU
     cpu.reset();
@@ -73,6 +73,6 @@ int main(int argc, char *argv[])
     w.show();
     int res = a.exec();
     executorThread.postCommand(ExecutorThread::Command::QUIT);
-    executorThread.join();
+    executorThread.wait();
     return res;
 }

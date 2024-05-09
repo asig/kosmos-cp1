@@ -67,7 +67,7 @@ CP1Display::CP1Display(Intel8155 *pid, QWidget *parent)
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFixedSize(sizeHint());
 
-    connect(pid_, &Intel8155::portWritten, this, &CP1Display::onPidPortWritten);
+    connect(pid_, &Intel8155::portWritten, this, &CP1Display::onPidPortWritten, Qt::DirectConnection);
 }
 
 void CP1Display::onPidPortWritten(Port port, uint8_t value) {

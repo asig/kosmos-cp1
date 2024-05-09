@@ -31,7 +31,7 @@ PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension
     // pull PROG to 0 when the address is valid on the lower 4 pins of port 2,
     // so we connect that pin to the panel to allow it to pick this up and then
     // send its data to the port.
-    connect(cpu_, &Intel8049::pinPROGWritten, this, &PanelWindow::onPinProgWritten);
+    connect(cpu_, &Intel8049::pinPROGWritten, this, &PanelWindow::onPinProgWritten, Qt::DirectConnection);
 
     connect(executorThread_, &ExecutorThread::executionStarted, [this] { updateWindowTitle("running"); } );
     connect(executorThread_, &ExecutorThread::executionStopped, [this] { updateWindowTitle("stopped"); } );
@@ -40,7 +40,7 @@ PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension
         updateWindowTitle(fmt::format("{:d}%", (int)(performance*100+.5)));
     });
 
-    connect(cpu_->port(1).get(), &DataPort::valueChange, this, &PanelWindow::onPort1ValueChanged);
+    connect(cpu_->port(1).get(), &DataPort::valueChange, this, &PanelWindow::onPort1ValueChanged, Qt::DirectConnection);
 
     connect(pid_, &Intel8155::portWritten, [this](Port port, uint8_t val) {
         if (port != Port::B) return;
