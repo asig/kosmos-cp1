@@ -84,6 +84,10 @@ void CP1Display::onPidPortWritten(Port port, uint8_t value) {
         // in the ROM port A is cleared, then the line is selected by writing to
         // Port C, and only then the new value is written, so a digit is empty at
         // 5/6th of the time...
+        if (activeDigit_ > 5) {
+            qDebug() << "activeDigit_ == " << activeDigit_ << " is out of range!";
+            std::abort();
+        }
         CP1SevenSegmentWidget *digit = digits_[5 - activeDigit_];
         digit->setSegments(value);
         update();
