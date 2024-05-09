@@ -1,12 +1,12 @@
 #pragma once
 
 #include <deque>
-#include <thread>
 #include <cstdint>
 #include <set>
 #include <condition_variable>
 
 #include <QObject>
+#include <QThread>
 
 #include "emulation/intel8049.h"
 #include "emulation/intel8155.h"
@@ -21,7 +21,7 @@ using emulation::Intel8155;
 
 using std::uint16_t;
 
-class ExecutorThread : public QObject {
+class ExecutorThread : public QThread {
     Q_OBJECT
 
 public:
@@ -37,8 +37,6 @@ public:
 
     explicit ExecutorThread(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, QObject *parent = nullptr);
 
-    void start();
-    void join();
     void postCommand(Command cmd);
 
 signals:
@@ -48,11 +46,13 @@ signals:
     void breakpointHit(uint16_t addr);
     void performanceUpdate(double performance);
 
+protected:
+    void run() override;
+
 private:
     std::mutex commandsMutex_;
     std::condition_variable commandsCv_;
     std::deque<Command> commands_;
-    std::thread thread_;
 
     bool breakOnMovx_;
     bool isThrottled_;
@@ -65,8 +65,6 @@ private:
     Intel8049 *cpu_;
     Intel8155 *pid_;
     Intel8155 *pidExtension_;
-
-    void threadLoop();
 
     Command fetchCommand();
 

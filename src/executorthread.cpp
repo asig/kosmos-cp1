@@ -14,18 +14,10 @@ namespace {
 namespace kosmos_cp1 {
 
 ExecutorThread::ExecutorThread(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, QObject *parent)
-    : QObject{parent},
+    : QThread{parent},
     cpu_(cpu),  pid_(pid), pidExtension_(pidExtension), breakOnMovx_(false), isThrottled_(true), isRunning_(false), interruptsSeen_(0), throttler_(THROTTLE_INTERVAL_MS)
 {
-}
-
-
-void ExecutorThread::start() {
-    thread_ = std::thread(&ExecutorThread::threadLoop, this);
-}
-
-void ExecutorThread::join() {
-    thread_.join();
+    setObjectName("ExecutorThread");
 }
 
 void ExecutorThread::postCommand(Command cmd) {
@@ -34,7 +26,7 @@ void ExecutorThread::postCommand(Command cmd) {
     commandsCv_.notify_one();
 }
 
-void ExecutorThread::threadLoop() {
+void ExecutorThread::run() {
     for(;;) {
         Command command = fetchCommand();
         switch(command) {
