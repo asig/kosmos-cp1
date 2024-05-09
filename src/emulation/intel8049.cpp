@@ -3,6 +3,8 @@
 #include <iostream>
 #include "fmt/format.h"
 
+#include <QDebug>
+
 namespace kosmos_cp1::emulation {
 
 void Intel8049::reset() {
@@ -36,6 +38,9 @@ void Intel8049::reset() {
 }
 
 int Intel8049::executeSingleInstr() {
+    Disassembler::Line l = disassembler_.disassembleSingleLine(state_.pc);
+//    qDebug() << "Executing @ " << fmt::format("${:04x}", state_.pc).c_str() << ": " << l.disassembly().c_str();
+
     int cycles = 1;
     uint8_t op = fetch();
     tick();
@@ -837,7 +842,7 @@ int Intel8049::executeSingleInstr() {
     case 0xe1:
     case 0xe2:
     case 0xf3:
-        std::cerr << fmt::format("Illegal op-code 0x{:02x} at {:04x}", op, state_.pc - 1);
+        std::cerr << fmt::format("Illegal op-code 0x{:02x} at {:04x}", op, state_.pc - 1) << std::endl;
         break;
     }
     handleInterrupts();
@@ -852,16 +857,20 @@ void Intel8049::execute(int cycles) {
 }
 
 uint8_t Intel8049::readReg(uint8_t reg) {
-    uint16_t base = (state_.psw && (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
+    uint16_t base = (state_.psw & (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
     return ram_[base + reg];
 }
 
 void Intel8049::writeReg(uint8_t reg, uint8_t val) {
-    uint16_t base = (state_.psw && (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
+    uint16_t base = (state_.psw & (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
     ram_[base + reg] = val;
 }
 
 uint8_t Intel8049::fetch() {
+    if (state_.pc >= rom_.size()) {
+        std::cerr << fmt::format("PC {:04x} out of range!", state_.pc) << std::endl;
+        abort();
+    }
     return rom_[state_.pc++];
 }
 

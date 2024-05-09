@@ -4,12 +4,15 @@
 
 #include <QObject>
 
-#include "dataport.h"
+#include "emulation/dataport.h"
+#include "util/disassembler.h"
 
 namespace kosmos_cp1::emulation {
 
 using std::uint8_t;
 using std::uint16_t;
+
+using ::kosmos_cp1::util::Disassembler;
 
 // TODO(asigner):
 // - ALE should happen once per cycle. This is currently not the case, but done in MOVX directly
@@ -42,7 +45,7 @@ public:
     };
 
     Intel8049(const std::vector<uint8_t>& rom, std::shared_ptr<DataPort> bus, std::shared_ptr<DataPort> p1, std::shared_ptr<DataPort> p2) :
-        rom_(rom), ram_(1024,0) {
+        rom_(rom), ram_(1024,0), disassembler_(rom) {
         ports_ = {bus, p1, p2};
         reset();
     }
@@ -57,56 +60,56 @@ public:
         return state_;
     }
 
-    void setT(uint8_t t) {
-        if (t != state_.t) {
-            state_.t = t;
-            emit stateChanged(state_);
-        }
-    }
+//    void setT(uint8_t t) {
+//        if (t != state_.t) {
+//            state_.t = t;
+//            emit stateChanged(state_);
+//        }
+//    }
 
-    void setA(uint8_t a) {
-        if (a != state_.a) {
-            state_.a = a;
-            emit stateChanged(state_);
-        }
-    }
+//    void setA(uint8_t a) {
+//        if (a != state_.a) {
+//            state_.a = a;
+//            emit stateChanged(state_);
+//        }
+//    }
 
-    void setPC(uint16_t pc) {
-        if (pc != state_.pc) {
-            state_.pc = pc;
-            emit stateChanged(state_);
-        }
-    }
+//    void setPC(uint16_t pc) {
+//        if (pc != state_.pc) {
+//            state_.pc = pc;
+//            emit stateChanged(state_);
+//        }
+//    }
 
-    void setPSW(uint8_t psw) {
-        if (psw != state_.psw) {
-            state_.psw = psw;
-            emit stateChanged(state_);
-        }
-    }
+//    void setPSW(uint8_t psw) {
+//        if (psw != state_.psw) {
+//            state_.psw = psw;
+//            emit stateChanged(state_);
+//        }
+//    }
 
-    void setDBF(uint8_t dbf) {
-        if (dbf != state_.dbf) {
-            state_.psw = dbf;
-            emit stateChanged(state_);
-        }
-    }
+//    void setDBF(uint8_t dbf) {
+//        if (dbf != state_.dbf) {
+//            state_.psw = dbf;
+//            emit stateChanged(state_);
+//        }
+//    }
 
-    void setF1(uint8_t f1) {
-        if (f1 != state_.f1) {
-            state_.psw = f1;
-            emit stateChanged(state_);
-        }
-    }
+//    void setF1(uint8_t f1) {
+//        if (f1 != state_.f1) {
+//            state_.psw = f1;
+//            emit stateChanged(state_);
+//        }
+//    }
 
-    void writeT1(bool t1) {
-        bool oldT1 = state_.t1;
-        state_.t1 = t1;
-        if (state_.counterRunning && oldT1 && !state_.t1) {
-            // high -> low: count
-            incCounter();
-        }
-    }
+//    void writeT1(bool t1) {
+//        bool oldT1 = state_.t1;
+//        state_.t1 = t1;
+//        if (state_.counterRunning && oldT1 && !state_.t1) {
+//            // high -> low: count
+//            incCounter();
+//        }
+//    }
 
     uint8_t peek() {
         return rom_[state_.pc];
@@ -154,7 +157,7 @@ private:
     std::vector<uint8_t> ram_;
     std::vector<std::shared_ptr<DataPort>> ports_;
     State state_;
-//    Disassembler disassembler_;
+    Disassembler disassembler_;
 
 };
 
