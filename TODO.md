@@ -4,6 +4,9 @@ TODO
 - [ ] Assembler window
 - [ ] CPU debugger window
 - [ ] CP5 component
+- [ ] Installer
+      - [ ] for Windows
+      - [ ] for Debian
 
 BUGS
 ====
