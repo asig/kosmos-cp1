@@ -42,11 +42,21 @@ public:
         bool timerRunning;
         uint8_t cyclesUntilCount;
         bool inInterrupt;
+
+        std::string toString() {
+            return fmt::format("State("
+                               "tf={}, notInt={}, timerInterruptRequested={}, "
+                               "t0={}, t1={}, t={}, a={}, pc={}, psw={}, dbf={}, "
+                               "f1={}, extIE={}, tcntIE={}, counterRunning={}, timerRunning={}, cyclesUntilCount={}, inInterrupt={})",
+                               tf, notInt, timerInterruptRequested, t0, t1, t, a, pc, psw, dbf,
+                               f1, externalInterruptsEnabled, tcntInterruptsEnabled, counterRunning, timerRunning, cyclesUntilCount, inInterrupt);
+        }
     };
 
     Intel8049(const std::vector<uint8_t>& rom, std::shared_ptr<DataPort> bus, std::shared_ptr<DataPort> p1, std::shared_ptr<DataPort> p2) :
         rom_(rom), ram_(1024,0), disassembler_(rom) {
         ports_ = {bus, p1, p2};
+        state_.t = 0; // T is not affected by reset, need to be initialized explicitly
         reset();
     }
 
