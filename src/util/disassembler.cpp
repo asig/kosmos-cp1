@@ -12,7 +12,7 @@ std::string formatAddr(uint16_t addr) {
 }
 
 std::string formatConst(uint8_t val) {
-    return fmt::format("${:02x}", val);
+    return fmt::format("#${:02x}", val);
 }
 
 }

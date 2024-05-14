@@ -25,15 +25,17 @@ public:
         std::string disassembly() {
             std::string hexDump = "";
             for (int i = 0; i < bytes.size(); i++) {
+                hexDump += (i > 0 ? " " : "");
                 hexDump += fmt::format("{:02x}", bytes[i]);
             }
-            while (hexDump.size() < 3 * 3) {
+            while (hexDump.size() < 2*3 + 2) {
                 hexDump += " ";
             }
 
-            std::string res = "<" + hexDump + "> " + opcode;
+            std::string res = "[ " + hexDump + " ]" + opcode;
+            res = fmt::format("{: <4} ", opcode);
             for (int i = 0; i < args.size(); i++) {
-                res += (i == 0 ? " " : ",");
+                res += (i == 0 ? "" : ", ");
                 res += args[i];
             }
             return res;
