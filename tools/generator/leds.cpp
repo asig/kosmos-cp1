@@ -25,12 +25,11 @@ void generate_led(const std::string& basename, const std::string& svgName, const
     QTextStream in(&f);
     QString content = in.readAll();
 
-
-    // Now, draw segments to image
     QSvgRenderer renderer(content.toUtf8());
     QImage image(w, h, QImage::Format_RGB32);
     QPainter painter(&image);
     painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.fillRect(image.rect(), kosmos_cp1::generator::GREEN);
     renderer.render(&painter);
 
     std::string filename = basename + "/" + pngName;
