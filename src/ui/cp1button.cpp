@@ -40,7 +40,6 @@ void CP1Button::mouseReleaseEvent(QMouseEvent *event) {
 
 void CP1Button::mouseMoveEvent(QMouseEvent *event) {
     QPoint pt = event->pos();
-    qDebug() << "under mouse: " << underMouse() << " coords: " << pt << " in rect: " << (rect().contains(pt));
     bool newPressed = rect().contains(pt);
     if (newPressed != pressed_) {
         pressed_ = newPressed;
