@@ -8,6 +8,8 @@
 
 #include "buttons.h"
 #include "seven_segment.h"
+#include "leds.h"
+#include "switches.h"
 
 int main(int argc, char **argv)
 {
@@ -33,6 +35,8 @@ int main(int argc, char **argv)
 
     kosmos_cp1::generator::generate_buttons(root + "/buttons");
     kosmos_cp1::generator::generate_7segment(root + "/digits");
+    kosmos_cp1::generator::generate_leds(root + "/");
+    kosmos_cp1::generator::generate_switches(root + "/");
 
     return 0;
 }
