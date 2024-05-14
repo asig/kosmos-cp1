@@ -76,10 +76,18 @@ set(PROJECT_SOURCES
         src/ui/cp1keyboard.cpp
         src/ui/cp1sevensegmentwidget.h
         src/ui/cp1sevensegmentwidget.cpp
+        src/ui/cp5leds.h
+        src/ui/cp5leds.cpp
         src/ui/cp5panelwidget.h
         src/ui/cp5panelwidget.cpp
+        src/ui/cp5switches.h
+        src/ui/cp5switches.cpp
+        src/ui/cp5switch.h
+        src/ui/cp5switch.cpp
         src/ui/panelwindow.h
         src/ui/panelwindow.cpp
+        src/util/disassembler.h
+        src/util/disassembler.cpp
         resources/resources.qrc
 )
 
@@ -126,10 +134,14 @@ set(TOOLS_GENERATOR_SOURCES
     tools/generator/buttons.h
     tools/generator/colors.cpp
     tools/generator/colors.h
+    tools/generator/leds.cpp
+    tools/generator/leds.h
     tools/generator/save.cpp
     tools/generator/save.h
     tools/generator/seven_segment.cpp
     tools/generator/seven_segment.h
+    tools/generator/switches.h
+    tools/generator/switches.cpp
 )
 
 qt_add_executable(generator
