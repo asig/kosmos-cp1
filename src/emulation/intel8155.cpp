@@ -8,8 +8,13 @@ namespace kosmos_cp1::emulation {
 
 Intel8155::Intel8155(const std::string& name, std::shared_ptr<DataPort> bus)
     : name_(name),
-    ram_(256,0),
     bus_(bus),
+    ram_(256,0),
+    ioValue_(false),
+    ceValue_(false),
+    aleValue_(false),
+    rdValue_(false),
+    wrValue_(false),
     paMode_(PortMode::INPUT),
     pbMode_(PortMode::INPUT),
     pcMode_(PortCMode::ALT1),

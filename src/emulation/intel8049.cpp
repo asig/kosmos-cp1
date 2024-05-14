@@ -25,6 +25,7 @@ void Intel8049::reset() {
     state_.counterRunning = false;
     state_.timerRunning = false;
     state_.inInterrupt = false;
+    state_.cyclesUntilCount = 0;
 
     ports_[0]->write(0x00);
     ports_[1]->write(0xff);
@@ -38,8 +39,8 @@ void Intel8049::reset() {
 }
 
 int Intel8049::executeSingleInstr() {
-    Disassembler::Line l = disassembler_.disassembleSingleLine(state_.pc);
-//    qDebug() << "Executing @ " << fmt::format("${:04x}", state_.pc).c_str() << ": " << l.disassembly().c_str();
+//    Disassembler::Line l = disassembler_.disassembleSingleLine(state_.pc);
+//    qDebug() << fmt::format("${:04x}", state_.pc).c_str() << ":" << l.disassembly().c_str() << state_.toString().c_str();
 
     int cycles = 1;
     uint8_t op = fetch();
@@ -505,7 +506,7 @@ int Intel8049::executeSingleInstr() {
         cycles++;
         tick();
         uint8_t data = fetch();
-        ports_[p]->write((ports_[p]->read() | data) & 0xff);
+        ports_[p]->write(ports_[p]->read() | data);
     }
     break;
 
