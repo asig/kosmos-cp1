@@ -525,8 +525,6 @@
         <file>ui/icon-128x128.png</file>
         <file>ui/icon.ico</file>
         <file>ui/kosmos-logo.svg</file>
-        <file>ui/led_off.png</file>
-        <file>ui/led_on.png</file>
         <file>ui/switch_off.png</file>
         <file>ui/switch_off_pressed.png</file>
         <file>ui/switch_on.png</file>
@@ -534,5 +532,7 @@
         <file>ui/widgets/bullet_red.png</file>
         <file>ui/widgets/checkbox-checked.png</file>
         <file>ui/widgets/checkbox-unchecked.png</file>
+        <file>ui/led_off.png</file>
+        <file>ui/led_on.png</file>
     </qresource>
 </RCC>
