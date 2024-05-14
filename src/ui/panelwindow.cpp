@@ -62,21 +62,17 @@ void PanelWindow::createMainUI() {
     mainWidget->setAutoFillBackground(true);
     mainWidget->setPalette(pal);
 
-    cp1Panel_ = new CP1PanelWidget(pid_, mainWidget);
+    cp1Panel_ = new CP1PanelWidget(pid_);
 
-    cp5Panel_ = new CP5PanelWidget(mainWidget);
+    cp5Panel_ = new CP5PanelWidget();
     cp5Panel_->writeLeds(pid_->paValue());
     cpu_->port(1)->write(cp5Panel_->readSwitches());
 
-
-    QPushButton *btn = new QPushButton();
-    btn->setText("FOOBAR");
-
-//    CP1Display *d = new CP1Display(pid_, mainWidget);
-    QVBoxLayout *layout = new QVBoxLayout(mainWidget);
-    layout->addWidget(btn);
-    layout->addWidget(cp1Panel_);
+    QVBoxLayout *layout = new QVBoxLayout();
     layout->addWidget(cp5Panel_);
+    layout->addSpacing(50);
+    layout->addWidget(cp1Panel_);
+    mainWidget->setLayout(layout);
 
     setCentralWidget(mainWidget);
 

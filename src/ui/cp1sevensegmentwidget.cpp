@@ -34,10 +34,6 @@ CP1SevenSegmentWidget::CP1SevenSegmentWidget(bool showDot, QWidget *parent)
     setFixedSize(DIGITS_DOT[0].size());
 }
 
-QSize CP1SevenSegmentWidget::sizeHint() const {
-    return DIGITS_DOT[0].size();
-}
-
 void CP1SevenSegmentWidget::paintEvent(QPaintEvent *) {
     QImage *imgs = showDot_ ? DIGITS_DOT : DIGITS_NODOT;
 

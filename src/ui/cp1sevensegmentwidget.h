@@ -39,8 +39,6 @@ public:
         update();
     }
 
-    QSize sizeHint() const override;
-
 signals:
 
 protected:

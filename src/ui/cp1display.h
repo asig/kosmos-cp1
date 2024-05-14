@@ -22,8 +22,6 @@ class CP1Display : public QWidget
 public:
     explicit CP1Display(Intel8155 *pid, QWidget *parent = nullptr);
 
-    QSize sizeHint() const override;
-
     void display(const std::string& str);
 
 public slots:

@@ -4,6 +4,10 @@
 
 #include <QWidget>
 
+#include "ui/cp5leds.h"
+#include "ui/cp5switches.h"
+
+
 namespace kosmos_cp1 {
 namespace ui {
 
@@ -20,6 +24,10 @@ public:
 
 signals:
     void switchesChanged(uint8_t val);
+
+private:
+    CP5Leds *leds_;
+    CP5Switches *switches_;
 
 };
 

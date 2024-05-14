@@ -2,18 +2,11 @@
 
 #include <QWidget>
 
+#include "fmt/format.h"
 #include "ui/cp1button.h"
 
 namespace kosmos_cp1 {
 namespace ui {
-
-namespace {
-
-constexpr const int BUTTON_HEIGHT = 50;
-constexpr const int MARGIN_WIDTH = 10;
-constexpr const int ARC_WIDTH = 30;
-
-}
 
 /**
  * Keyboard matrix according to the schematics:
@@ -72,10 +65,15 @@ private:
         BTNS_SIZE = 20,
     };
 
+    enum {
+        kRows = 6,
+    };
+
 public:
     explicit CP1Keyboard(QWidget *parent = nullptr);
 
     uint8_t keyMask(int row) const {
+        // qDebug() << fmt::format("keyMask[{}] == {:02x}",row, keyMask_[row]).c_str();
         return keyMask_[row];
     }
 
@@ -94,7 +92,7 @@ private:
     CP1Button *makeBtn(const QString& str, int row, int col, int btnCode = -1);
     bool handleKey(QKeyEvent *e, bool pressed);
 
-    uint8_t keyMask_[6];
+    uint8_t keyMask_[kRows];
     CP1Button *buttons_[BTNS_SIZE];
 };
 

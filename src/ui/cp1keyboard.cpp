@@ -12,6 +12,14 @@
 namespace kosmos_cp1 {
 namespace ui {
 
+namespace {
+
+constexpr const int BUTTON_HEIGHT = 50;
+constexpr const int MARGIN_WIDTH = 10;
+constexpr const int ARC_WIDTH = 30;
+
+}
+
 CP1Keyboard::CP1Keyboard(QWidget *parent)
     : QWidget{parent}
 {
@@ -97,6 +105,10 @@ CP1Keyboard::CP1Keyboard(QWidget *parent)
     setLayout(topLayout);
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+
+    for (int i = 0; i < kRows; i++) {
+        keyMask_[i] = 0;
+    }
 }
 
 CP1Button* CP1Keyboard::makeBtn(const QString& str, int row, int col, int btnCode) {
@@ -206,6 +218,9 @@ bool CP1Keyboard::handleKey(QKeyEvent *e, bool pressed) {
         break;
     case Qt::Key_A:
         btn = buttons_[BTN_ACC];
+        break;
+    case Qt::Key_Period:
+        btn = buttons_[BTN_STP];
         break;
     }
     if (btn) {

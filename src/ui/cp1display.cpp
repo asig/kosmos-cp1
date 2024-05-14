@@ -64,8 +64,11 @@ CP1Display::CP1Display(Intel8155 *pid, QWidget *parent)
     layout->addWidget(digits_[5]);
     setLayout(layout);
 
+    QSize sz = digits_[0]->size();
+    sz = QSize( 6 * sz.width() + 2 * SPACER_WIDTH + 2 * MARGIN_WIDTH, sz.height() + 2 * MARGIN_WIDTH);
+
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    setFixedSize(sizeHint());
+    setFixedSize(sz);
 
     connect(pid_, &Intel8155::portWritten, this, &CP1Display::onPidPortWritten, Qt::DirectConnection);
 }
@@ -93,12 +96,6 @@ void CP1Display::onPidPortWritten(Port port, uint8_t value) {
         update();
     }
     lastPortWritten_ = port;
-}
-
-QSize CP1Display::sizeHint() const {
-    QSize sz = digits_[0]->sizeHint();
-    sz = QSize( 6 * sz.width() + 2 * SPACER_WIDTH + 2 * MARGIN_WIDTH, sz.height() + 2 * MARGIN_WIDTH);
-    return sz;
 }
 
 void CP1Display::display(const std::string& str) {

@@ -89,26 +89,6 @@ private:
 //                  );
 //        setBackground(CP1Colors.GREEN);
 
-//        Composite composite_1 = new Composite(this, SWT.NONE);
-//        composite_1.setBackground(CP1Colors.GREEN);
-//        composite_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
-//        composite_1.setLayout(GridLayoutFactory.fillDefaults()
-//                                  .numColumns(2)
-//                                  .equalWidth(false)
-//                                  .spacing(0, 0)
-//                                  .margins(0, 0)
-//                                  .create()
-//                              );
-
-//        display = new CP1Display(composite_1, SWT.NONE);
-//        GridData gd_p1Display = GridDataFactory.swtDefaults().create();
-//        display.setLayoutData(gd_p1Display);
-//        display.display("C12127");
-
-//        KosmosLogoComposite kosmosLogo = new KosmosLogoComposite(composite_1, SWT.NONE);
-//        GridData gd_kosmosLogo = new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1);
-//        gd_kosmosLogo.heightHint = 100;
-//        kosmosLogo.setLayoutData(gd_kosmosLogo);
 
 //        Label spacer2 = new Label(this, SWT.NONE);
 //        spacer2.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
