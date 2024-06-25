@@ -25,19 +25,14 @@ class ExecutorThread : public QThread {
     Q_OBJECT
 
 public:
-
-    enum class Command {
-        NIL,
-        SINGLE_STEP,
-        START,
-        STOP,
-        RESET,
-        QUIT
-    };
-
     explicit ExecutorThread(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, QObject *parent = nullptr);
 
-    void postCommand(Command cmd);
+    void singleStep();
+    void startExecution();
+    void stopExectuion();
+    void reset();
+    void quit();
+    void enableBreakpoint(uint16_t addr, bool enabled);
 
 signals:
     void executionStarted();
@@ -50,6 +45,22 @@ protected:
     void run() override;
 
 private:
+    enum class Op {
+        NIL,
+        SINGLE_STEP,
+        START,
+        STOP,
+        RESET,
+        QUIT,
+        ADD_BP,
+        REMOVE_BP,
+    };
+
+    struct Command {
+        Op op;
+        uint32_t param;
+    };
+
     std::mutex commandsMutex_;
     std::condition_variable commandsCv_;
     std::deque<Command> commands_;
@@ -66,15 +77,14 @@ private:
     Intel8155 *pid_;
     Intel8155 *pidExtension_;
 
+    void postCommand(Command cmd);
     Command fetchCommand();
 
-    void startExecution();
-    void stopExecution();
-    void singleStep();
-    uint32_t executeInstr();
-        void reset();
-
-
+    void doStartExecution();
+    void doStopExecution();
+    void doSingleStep();
+    uint32_t doExecuteInstr();
+    void doReset();
 };
 
 } // namespace

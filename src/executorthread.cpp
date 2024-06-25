@@ -20,6 +20,33 @@ ExecutorThread::ExecutorThread(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExt
     setObjectName("ExecutorThread");
 }
 
+void ExecutorThread::singleStep() {
+    postCommand(Command{ .op = Op::SINGLE_STEP });
+}
+
+void ExecutorThread::startExecution() {
+    postCommand(Command{ .op = Op::START });
+}
+
+void ExecutorThread::stopExectuion() {
+    postCommand(Command{ .op = Op::STOP });
+}
+
+void ExecutorThread::reset() {
+    postCommand(Command{ .op = Op::RESET });
+}
+
+void ExecutorThread::quit() {
+    postCommand(Command{ .op = Op::QUIT });
+}
+
+void ExecutorThread::enableBreakpoint(uint16_t addr, bool enabled) {
+    postCommand(Command{
+                    .op = enabled ? Op::ADD_BP : Op::REMOVE_BP,
+                    .param = addr,
+                });
+}
+
 void ExecutorThread::postCommand(Command cmd) {
     std::unique_lock<std::mutex> lock(commandsMutex_);
     commands_.push_back(cmd);
@@ -29,10 +56,10 @@ void ExecutorThread::postCommand(Command cmd) {
 void ExecutorThread::run() {
     for(;;) {
         Command command = fetchCommand();
-        switch(command) {
-        case Command::NIL: {
+        switch(command.op) {
+        case Op::NIL: {
             bool wasInInterrupt = cpu_->state().inInterrupt;
-            uint32_t executed = executeInstr();
+            uint32_t executed = doExecuteInstr();
             bool isInInterrupt = cpu_->state().inInterrupt;
             performanceMeasurer_.registerExecution(executed);
             if (!wasInInterrupt && isInInterrupt) {
@@ -51,32 +78,38 @@ void ExecutorThread::run() {
             }
         }
             break;
-        case Command::SINGLE_STEP:
-            singleStep();
+        case Op::SINGLE_STEP:
+            doSingleStep();
             break;
-        case Command::START:
-            startExecution();
+        case Op::START:
+            doStartExecution();
             break;
-        case Command::STOP:
-            stopExecution();
+        case Op::STOP:
+            doStopExecution();
             break;
-        case Command::RESET:
-            reset();
+        case Op::RESET:
+            doReset();
             break;
-        case Command::QUIT:
+        case Op::QUIT:
             return;
+        case Op::ADD_BP:
+            breakpoints_.insert(command.param);
+            break;
+        case Op::REMOVE_BP:
+            breakpoints_.erase(command.param);
+            break;
         default:
             break;
         }
     }
 }
 
-void ExecutorThread::singleStep() {
-    stopExecution();
-    executeInstr();
+void ExecutorThread::doSingleStep() {
+    doStopExecution();
+    doExecuteInstr();
 }
 
-void ExecutorThread::startExecution() {
+void ExecutorThread::doStartExecution() {
     if (!isRunning_) {
         interruptsSeen_ = 0;
         isRunning_ = true;
@@ -84,15 +117,15 @@ void ExecutorThread::startExecution() {
         emit executionStarted();    }
 }
 
-void ExecutorThread::stopExecution() {
+void ExecutorThread::doStopExecution() {
     if (isRunning_) {
         isRunning_ = false;
         emit executionStopped();
     }
 }
 
-void ExecutorThread::reset() {
-    stopExecution();
+void ExecutorThread::doReset() {
+    doStopExecution();
     // TODO(asigner): Reset should be done by setting the reset line.
     cpu_->reset();
     pid_->reset();
@@ -101,7 +134,7 @@ void ExecutorThread::reset() {
 }
 
 ExecutorThread::Command ExecutorThread::fetchCommand() {
-    Command command = Command::NIL;
+    Command command{.op = Op::NIL};
     std::unique_lock<std::mutex> lock(commandsMutex_);
 
     if (isRunning_) {
@@ -118,7 +151,7 @@ ExecutorThread::Command ExecutorThread::fetchCommand() {
     return command;
 }
 
-uint32_t ExecutorThread::executeInstr() {
+uint32_t ExecutorThread::doExecuteInstr() {
     uint32_t cycles = cpu_->executeSingleInstr();
     if (breakOnMovx_) {
         int op = cpu_->peek();
