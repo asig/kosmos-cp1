@@ -22,15 +22,15 @@ Disassembler::Disassembler(const std::vector<uint8_t>& rom, QObject *parent)
 {
 }
 
-Disassembler::Line Disassembler::disassembleSingleLine(uint16_t start) {
+Disassembler::Line Disassembler::disassembleSingleLine(uint16_t start) const {
     return disassemble(start, start + 1)[0];
 }
 
-std::vector<Disassembler::Line> Disassembler::disassemble() {
+std::vector<Disassembler::Line> Disassembler::disassemble() const {
     return disassemble(0, rom_.size());
 }
 
-std::vector<Disassembler::Line> Disassembler::disassemble(uint16_t from, uint16_t to) {
+std::vector<Disassembler::Line> Disassembler::disassemble(uint16_t from, uint16_t to) const {
     std::vector<Line> lines;
     uint16_t pos = from;
     while (pos < to) {
@@ -535,15 +535,15 @@ std::vector<Disassembler::Line> Disassembler::disassemble(uint16_t from, uint16_
     return lines;
 }
 
-Disassembler::Line Disassembler::line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg) {
+Disassembler::Line Disassembler::line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg) const {
     return line(curPos, bytes, op, std::vector<std::string>{arg});
 }
 
-Disassembler::Line Disassembler::line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg1, const std::string& arg2) {
+Disassembler::Line Disassembler::line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg1, const std::string& arg2) const {
     return line(curPos, bytes, op, std::vector<std::string>{arg1, arg2});
 }
 
-Disassembler::Line Disassembler::line(uint16_t curPos, int bytes, const std::string& op, const std::vector<std::string>& args) {
+Disassembler::Line Disassembler::line(uint16_t curPos, int bytes, const std::string& op, const std::vector<std::string>& args) const {
     Line l;
 
     for (int i = 0; i < bytes; i++) {

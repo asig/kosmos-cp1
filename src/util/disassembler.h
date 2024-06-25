@@ -22,18 +22,17 @@ public:
         std::string opcode;
         std::vector<std::string> args;
 
-        std::string disassembly() {
+        std::string disassembly() const {
             std::string hexDump = "";
             for (int i = 0; i < bytes.size(); i++) {
                 hexDump += (i > 0 ? " " : "");
                 hexDump += fmt::format("{:02x}", bytes[i]);
             }
-            while (hexDump.size() < 2*3 + 2) {
+            while (hexDump.size() < 2*2 + 1) {
                 hexDump += " ";
             }
 
-            std::string res = "[ " + hexDump + " ]" + opcode;
-            res = fmt::format("{: <4} ", opcode);
+            std::string res = "[ " + hexDump + " ] " + fmt::format("{: <4} ", opcode);
             for (int i = 0; i < args.size(); i++) {
                 res += (i == 0 ? "" : ", ");
                 res += args[i];
@@ -44,16 +43,16 @@ public:
 
     explicit Disassembler(const std::vector<uint8_t>& rom, QObject *parent = nullptr);
 
-    std::vector<Line> disassemble();
-    std::vector<Line> disassemble(uint16_t from, uint16_t to);
-    Line disassembleSingleLine(uint16_t start);
+    std::vector<Line> disassemble() const;
+    std::vector<Line> disassemble(uint16_t from, uint16_t to) const;
+    Line disassembleSingleLine(uint16_t start) const;
 
 private:
     const std::vector<uint8_t> rom_;
 
-    Line line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg);
-    Line line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg1, const std::string& arg2);
-    Line line(uint16_t curPos, int bytes, const std::string& op, const std::vector<std::string>& args);
+    Line line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg) const;
+    Line line(uint16_t curPos, int bytes, const std::string& op, const std::string& arg1, const std::string& arg2) const;
+    Line line(uint16_t curPos, int bytes, const std::string& op, const std::vector<std::string>& args) const;
 
 };
 
