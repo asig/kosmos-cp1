@@ -64,6 +64,8 @@ set(PROJECT_SOURCES
         src/emulation/intel8049.cpp
         src/emulation/intel8155.h
         src/emulation/intel8155.cpp
+        src/emulation/ram.h
+        src/emulation/ram.cpp
         src/ui/cp1colors.h
         src/ui/cp1colors.cpp
         src/ui/cp1panelwidget.h
@@ -84,8 +86,24 @@ set(PROJECT_SOURCES
         src/ui/cp5switches.cpp
         src/ui/cp5switch.h
         src/ui/cp5switch.cpp
+        src/ui/cpuwindow.h
+        src/ui/cpuwindow.cpp
         src/ui/panelwindow.h
         src/ui/panelwindow.cpp
+        src/ui/windowmanager.h
+        src/ui/windowmanager.cpp
+        src/ui/checkboxaction.h
+        src/ui/checkboxaction.cpp
+        src/ui/i8049disassemblywidget.h
+        src/ui/i8049disassemblywidget.cpp
+        src/ui/i8049statuswidget.h
+        src/ui/i8049statuswidget.cpp
+        src/ui/i8155statuswidget.h
+        src/ui/i8155statuswidget.cpp
+        src/ui/memorywidget.h
+        src/ui/memorywidget.cpp
+        src/ui/resources.h
+        src/ui/resources.cpp
         src/util/disassembler.h
         src/util/disassembler.cpp
         resources/resources.qrc
