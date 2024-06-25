@@ -6,16 +6,16 @@
 #include "emulation/intel8155.h"
 #include "executorthread.h"
 #include "ui/windowmanager.h"
-#include "ui/panelwindow.h"
-#include "ui/cpuwindow.h"
+#include "ui/panel/panelwindow.h"
+#include "ui/cpu/cpuwindow.h"
 #include "ui/resources.h"
 
 using kosmos_cp1::emulation::DataPort;
 using kosmos_cp1::emulation::Intel8049;
 using kosmos_cp1::emulation::Intel8155;
 using kosmos_cp1::ExecutorThread;
-using kosmos_cp1::ui::PanelWindow;
-using kosmos_cp1::ui::CpuWindow;
+using kosmos_cp1::ui::panel::PanelWindow;
+using kosmos_cp1::ui::cpu::CpuWindow;
 using kosmos_cp1::ui::WindowManager;
 
 int main(int argc, char *argv[])

@@ -66,42 +66,42 @@ set(PROJECT_SOURCES
         src/emulation/intel8155.cpp
         src/emulation/ram.h
         src/emulation/ram.cpp
-        src/ui/cp1colors.h
-        src/ui/cp1colors.cpp
-        src/ui/cp1panelwidget.h
-        src/ui/cp1panelwidget.cpp
-        src/ui/cp1button.h
-        src/ui/cp1button.cpp
-        src/ui/cp1display.h
-        src/ui/cp1display.cpp
-        src/ui/cp1keyboard.h
-        src/ui/cp1keyboard.cpp
-        src/ui/cp1sevensegmentwidget.h
-        src/ui/cp1sevensegmentwidget.cpp
-        src/ui/cp5leds.h
-        src/ui/cp5leds.cpp
-        src/ui/cp5panelwidget.h
-        src/ui/cp5panelwidget.cpp
-        src/ui/cp5switches.h
-        src/ui/cp5switches.cpp
-        src/ui/cp5switch.h
-        src/ui/cp5switch.cpp
-        src/ui/cpuwindow.h
-        src/ui/cpuwindow.cpp
-        src/ui/panelwindow.h
-        src/ui/panelwindow.cpp
+        src/ui/panel/cp1colors.h
+        src/ui/panel/cp1colors.cpp
+        src/ui/panel/cp1panelwidget.h
+        src/ui/panel/cp1panelwidget.cpp
+        src/ui/panel/cp1button.h
+        src/ui/panel/cp1button.cpp
+        src/ui/panel/cp1display.h
+        src/ui/panel/cp1display.cpp
+        src/ui/panel/cp1keyboard.h
+        src/ui/panel/cp1keyboard.cpp
+        src/ui/panel/cp1sevensegmentwidget.h
+        src/ui/panel/cp1sevensegmentwidget.cpp
+        src/ui/panel/cp5leds.h
+        src/ui/panel/cp5leds.cpp
+        src/ui/panel/cp5panelwidget.h
+        src/ui/panel/cp5panelwidget.cpp
+        src/ui/panel/cp5switches.h
+        src/ui/panel/cp5switches.cpp
+        src/ui/panel/cp5switch.h
+        src/ui/panel/cp5switch.cpp
+        src/ui/panel/panelwindow.h
+        src/ui/panel/panelwindow.cpp
+        src/ui/cpu/cpuwindow.h
+        src/ui/cpu/cpuwindow.cpp
+        src/ui/cpu/checkboxaction.h
+        src/ui/cpu/checkboxaction.cpp
+        src/ui/cpu/i8049disassemblywidget.h
+        src/ui/cpu/i8049disassemblywidget.cpp
+        src/ui/cpu/i8049statuswidget.h
+        src/ui/cpu/i8049statuswidget.cpp
+        src/ui/cpu/i8155statuswidget.h
+        src/ui/cpu/i8155statuswidget.cpp
+        src/ui/cpu/memorywidget.h
+        src/ui/cpu/memorywidget.cpp
         src/ui/windowmanager.h
         src/ui/windowmanager.cpp
-        src/ui/checkboxaction.h
-        src/ui/checkboxaction.cpp
-        src/ui/i8049disassemblywidget.h
-        src/ui/i8049disassemblywidget.cpp
-        src/ui/i8049statuswidget.h
-        src/ui/i8049statuswidget.cpp
-        src/ui/i8155statuswidget.h
-        src/ui/i8155statuswidget.cpp
-        src/ui/memorywidget.h
-        src/ui/memorywidget.cpp
         src/ui/resources.h
         src/ui/resources.cpp
         src/util/disassembler.h
