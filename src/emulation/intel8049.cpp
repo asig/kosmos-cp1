@@ -31,9 +31,7 @@ void Intel8049::reset() {
     ports_[1]->write(0xff);
     ports_[2]->write(0xff);
 
-    for (int i = 0; i < ram_.size(); i++) {
-        ram_[i] = 0x00;
-    }
+    ram_.clear();
 
     emit resetExecuted();
 }
@@ -117,7 +115,7 @@ int Intel8049::executeSingleInstr() {
     case 0x10: case 0x11: { // INC @Rr
         uint8_t r = op & 0x1;
         uint16_t pos = readReg(r) & 0x7f;
-        ram_[pos]++;
+        ram_.write(pos, ram_.read(pos)+1);
     }
     break;
 
@@ -185,8 +183,8 @@ int Intel8049::executeSingleInstr() {
     case 0x20: case 0x21: { // XCH A, @Rr
         uint8_t pos = readReg(op & 0x1);
         uint8_t tmp = state_.a;
-        state_.a = ram_[pos];
-        ram_[pos] = tmp;
+        state_.a = ram_.read(pos);
+        ram_.write(pos, tmp);
     }
     break;
 
@@ -231,8 +229,8 @@ int Intel8049::executeSingleInstr() {
     case 0x30: case 0x31: { // XCHD A, @R
         uint8_t r = op & 0x1;
         uint8_t pos = readReg(r) & 0x7f;
-        uint8_t tmp = ram_[pos] & 0xf;
-        ram_[pos] = ram_[pos] & 0xf0 | state_.a & 0x0f;
+        uint8_t tmp = ram_.read(pos) & 0xf;
+        ram_.write(pos, ram_.read(pos) & 0xf0 | state_.a & 0x0f);
         state_.a = state_.a & 0xf0 | tmp;
     }
     break;
@@ -288,7 +286,7 @@ int Intel8049::executeSingleInstr() {
 
     case 0x40: case 0x41: { // ORL A, @Rr
         uint16_t pos = readReg(op & 0x1) & 0x7f;
-        state_.a |= ram_[pos];
+        state_.a |= ram_.read(pos);
     }
     break;
 
@@ -338,7 +336,7 @@ int Intel8049::executeSingleInstr() {
 
     case 0x50: case 0x51: { // ANL A, @Rr
         uint8_t pos = readReg(op & 0x1) & 0x7f;
-        state_.a &= ram_[pos];
+        state_.a &= ram_.read(pos);
     }
     break;
 
@@ -389,7 +387,7 @@ int Intel8049::executeSingleInstr() {
 
     case 0x60: case 0x61: { // ADD A, @Rr
         uint8_t pos = readReg(op & 0x1);
-        addToAcc(ram_[pos]);
+        addToAcc(ram_.read(pos));
     }
     break;
 
@@ -421,7 +419,7 @@ int Intel8049::executeSingleInstr() {
     case 0x70: case 0x71: { // ADDC A, @Rr
         uint8_t pos = readReg(op & 0x1) & 0x7f;
         uint8_t carry = getBit(state_.psw, CY_BIT);
-        addToAcc(carry + ram_[pos]);
+        addToAcc(carry + ram_.read(pos));
     }
     break;
 
@@ -604,7 +602,7 @@ int Intel8049::executeSingleInstr() {
     case 0xa0: case 0xa1: { // MOV @Rr, A
         uint8_t r = op & 0x1;
         uint8_t pos = readReg(r) & 0x7f;
-        ram_[pos] = state_.a;
+        ram_.write(pos, state_.a);
     }
     break;
 
@@ -637,14 +635,14 @@ int Intel8049::executeSingleInstr() {
         uint8_t data = fetch();
         cycles++;
         tick();
-        ram_[readReg(r)] = data;
+        ram_.write(readReg(r), data);
     }
     break;
 
     case 0xb3: { // JMPP @A
         cycles++;
         tick();
-        state_.pc = (state_.pc & 0xff00 ) | rom_[state_.pc & 0xff00] | state_.a;
+        state_.pc = (state_.pc & 0xff00 ) | rom_[ (state_.pc & 0xff00) | state_.a ];
     }
     break;
 
@@ -705,7 +703,7 @@ int Intel8049::executeSingleInstr() {
     case 0xd0: case 0xd1: { // XRL A, @Rr
         int r = op & 0x1;
         int pos = readReg(r) & 0x7f;
-        state_.a = state_.a ^ ram_[pos];
+        state_.a = state_.a ^ ram_.read(pos);
     }
     break;
 
@@ -781,7 +779,7 @@ int Intel8049::executeSingleInstr() {
     case 0xf0: case 0xf1: { // MOV A, @Rr
         uint8_t r = op & 0x1;
         uint8_t pos = readReg(r) & 0x7f;
-        state_.a = ram_[pos];
+        state_.a = ram_.read(pos);
     }
     break;
 
@@ -859,12 +857,12 @@ void Intel8049::execute(int cycles) {
 
 uint8_t Intel8049::readReg(uint8_t reg) {
     uint16_t base = (state_.psw & (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
-    return ram_[base + reg];
+    return ram_.read(base + reg);
 }
 
 void Intel8049::writeReg(uint8_t reg, uint8_t val) {
     uint16_t base = (state_.psw & (1<<BS_BIT)) == 0 ? REGISTER_BANK_0_BASE : REGISTER_BANK_1_BASE;
-    ram_[base + reg] = val;
+    ram_.write(base + reg, val);
 }
 
 uint8_t Intel8049::fetch() {
@@ -877,16 +875,16 @@ uint8_t Intel8049::fetch() {
 
 void Intel8049::push() {
     uint8_t sp = state_.psw & 0x7;
-    ram_[8+2*sp] = static_cast<uint8_t>(state_.pc & 0xff);
-    ram_[9+2*sp] = static_cast<uint8_t>(state_.psw & 0xf0 | (state_.pc >> 8) & 0xff );
+    ram_.write(8+2*sp, static_cast<uint8_t>(state_.pc & 0xff));
+    ram_.write(9+2*sp, static_cast<uint8_t>(state_.psw & 0xf0 | (state_.pc >> 8) & 0xff ));
     state_.psw = static_cast<uint8_t>(state_.psw & 0xf8 | (sp + 1) & 0x7);
 }
 
 void Intel8049::pop(bool restoreState) {
     uint8_t sp = (state_.psw - 1) & 0x7;
-    state_.pc = static_cast<uint16_t>(ram_[9+2*sp] & 0xf) << 8 | static_cast<uint16_t>(ram_[8+2*sp]);
+    state_.pc = static_cast<uint16_t>(ram_.read(9+2*sp) & 0xf) << 8 | static_cast<uint16_t>(ram_.read(8+2*sp));
     if (restoreState) {
-        state_.psw = static_cast<uint8_t>(ram_[9+2*sp] & 0xf0 | 0x8 | (sp & 0x7));
+        state_.psw = static_cast<uint8_t>(ram_.read(9+2*sp) & 0xf0 | 0x8 | (sp & 0x7));
         state_.inInterrupt = false;
     } else {
         state_.psw = state_.psw & 0xf0 | 0x8 | (sp & 0x7);

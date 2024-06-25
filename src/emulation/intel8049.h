@@ -5,14 +5,14 @@
 #include <QObject>
 
 #include "emulation/dataport.h"
-#include "util/disassembler.h"
+#include "emulation/ram.h"
+
+#include "fmt/format.h"
 
 namespace kosmos_cp1::emulation {
 
 using std::uint8_t;
 using std::uint16_t;
-
-using ::kosmos_cp1::util::Disassembler;
 
 // TODO(asigner):
 // - ALE should happen once per cycle. This is currently not the case, but done in MOVX directly
@@ -54,7 +54,7 @@ public:
     };
 
     Intel8049(const std::vector<uint8_t>& rom, std::shared_ptr<DataPort> bus, std::shared_ptr<DataPort> p1, std::shared_ptr<DataPort> p2) :
-        rom_(rom), ram_(1024,0), disassembler_(rom) {
+        rom_(rom), ram_(128) {
         ports_ = {bus, p1, p2};
         state_.t = 0; // T is not affected by reset, need to be initialized explicitly
         reset();
@@ -121,6 +121,14 @@ public:
 //        }
 //    }
 
+    const std::vector<std::uint8_t>& rom() {
+        return rom_;
+    }
+
+    const Ram *ram() {
+        return &ram_;
+    }
+
     uint8_t peek() {
         return rom_[state_.pc];
     }
@@ -164,11 +172,9 @@ private:
     void addToAcc(uint8_t value);
 
     std::vector<uint8_t> rom_;
-    std::vector<uint8_t> ram_;
+    Ram ram_;
     std::vector<std::shared_ptr<DataPort>> ports_;
     State state_;
-    Disassembler disassembler_;
-
 };
 
 }
