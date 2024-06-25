@@ -65,7 +65,7 @@ void PanelWindow::createMainUI() {
     cp1Panel_ = new CP1PanelWidget(pid_);
 
     cp5Panel_ = new CP5PanelWidget();
-    cp5Panel_->writeLeds(pid_->paValue());
+    cp5Panel_->writeLeds(pid_->pbValue());
     cpu_->port(1)->write(cp5Panel_->readSwitches());
 
     QVBoxLayout *layout = new QVBoxLayout();
