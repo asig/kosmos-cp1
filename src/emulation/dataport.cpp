@@ -34,9 +34,7 @@ void DataPort::write(uint8_t value, uint8_t mask) {
             if (((1 << bit) & mask) > 0) {
                 uint8_t oldBit = (oldVal & (1 << bit)) > 0 ? 1 : 0;
                 uint8_t newBit = (value_ & (1 << bit)) > 0 ? 1 : 0;
-                if (oldBit != newBit) {
-                    (*this.*bitSignals[bit])(newBit);
-                }
+                (*this.*bitSignals[bit])(newBit);
             }
         }
     }
