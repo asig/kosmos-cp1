@@ -5,17 +5,23 @@
 #include "emulation/intel8049.h"
 #include "emulation/intel8155.h"
 #include "executorthread.h"
+#include "ui/windowmanager.h"
 #include "ui/panelwindow.h"
+#include "ui/cpuwindow.h"
+#include "ui/resources.h"
 
 using kosmos_cp1::emulation::DataPort;
 using kosmos_cp1::emulation::Intel8049;
 using kosmos_cp1::emulation::Intel8155;
 using kosmos_cp1::ExecutorThread;
 using kosmos_cp1::ui::PanelWindow;
+using kosmos_cp1::ui::CpuWindow;
+using kosmos_cp1::ui::WindowManager;
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    kosmos_cp1::ui::Resources::init();
     a.setWindowIcon(QIcon(":/ui/icon-128x128.png"));
 
     // Load ROM
@@ -65,14 +71,23 @@ int main(int argc, char *argv[])
 
 //    cpuWindow.open();
 //    panelWindow.open();
+
+    WindowManager windowManager;
+
     ExecutorThread executorThread(&cpu, &pid, &pidExtension);
     executorThread.start();
-    executorThread.postCommand(ExecutorThread::Command::START);
 
     PanelWindow w(&cpu, &pid, &pidExtension, &executorThread);
     w.show();
+    windowManager.addWindow(&w);
+
+    CpuWindow cpuWindow(&cpu, &pid, &pidExtension, &executorThread);
+    cpuWindow.show();
+    windowManager.addWindow(&cpuWindow);
+
+    executorThread.startExecution();
     int res = a.exec();
-    executorThread.postCommand(ExecutorThread::Command::QUIT);
+    executorThread.quit();
     executorThread.wait();
     return res;
 }
