@@ -6,6 +6,10 @@
 #include <QLabel>
 #include <QTextEdit>
 
+#include "ui/resources.h"
+#include "fmt/format.h"
+
+
 namespace kosmos_cp1::ui::cpu {
 
 namespace {
@@ -13,6 +17,7 @@ namespace {
 QLabel *makeLabel(const QString& t) {
     QLabel *lbl = new QLabel(t);
     lbl->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+    lbl->setFont(Resources::dejaVuSansFont());
     return lbl;
 }
 
@@ -21,7 +26,7 @@ QLabel *makeLabel(const QString& t) {
 I8049StatusWidget::I8049StatusWidget(const QString& title, Intel8049 *cpu, QWidget *parent)
     : cpu_(cpu), QGroupBox(title, parent)
 {
-    QFontMetrics fm{font()};
+    QFontMetrics fm{Resources::dejaVuSansFont()};
     int minWidth = fm.horizontalAdvance("XXXXX");
 
 
@@ -41,12 +46,16 @@ I8049StatusWidget::I8049StatusWidget(const QString& title, Intel8049 *cpu, QWidg
     t_ = makeLabel("$00");
     pc_ = makeLabel("$000");
 
-    layout->addWidget(new QLabel("CY"), 0, 0);
-    layout->addWidget(new QLabel("AC"), 0, 1);
-    layout->addWidget(new QLabel("F0"), 0, 2);
-    layout->addWidget(new QLabel("BS"), 0, 3);
-    layout->addWidget(new QLabel("SP"), 0, 4);
-    layout->addWidget(new QLabel("Memory"), 0, 5);
+    bus_ = makeLabel("$ff (b00000000)");
+    port1_ = makeLabel("$ff (b00000000)");
+    port2_ = makeLabel("$ff (b00000000)");
+
+    layout->addWidget(new QLabel("CY"), 0, 0, Qt::AlignTop );
+    layout->addWidget(new QLabel("AC"), 0, 1, Qt::AlignTop );
+    layout->addWidget(new QLabel("F0"), 0, 2, Qt::AlignTop );
+    layout->addWidget(new QLabel("BS"), 0, 3, Qt::AlignTop );
+    layout->addWidget(new QLabel("SP"), 0, 4, Qt::AlignTop );
+    layout->addWidget(new QLabel("Memory"), 0, 5, Qt::AlignTop );
 
     layout->setColumnMinimumWidth(0,minWidth);
     layout->setColumnMinimumWidth(1,minWidth);
@@ -54,24 +63,33 @@ I8049StatusWidget::I8049StatusWidget(const QString& title, Intel8049 *cpu, QWidg
     layout->setColumnMinimumWidth(3,minWidth);
     layout->setColumnMinimumWidth(4,minWidth);
 
-    layout->addWidget(cy_, 1, 0);
-    layout->addWidget(ac_, 1, 1);
-    layout->addWidget(f0_, 1, 2);
-    layout->addWidget(bs_, 1, 3);
-    layout->addWidget(sp_, 1, 4);
-    layout->addWidget(memory_, 1, 5, 6, 1);
+    layout->addWidget(cy_, 1, 0, Qt::AlignTop);
+    layout->addWidget(ac_, 1, 1, Qt::AlignTop);
+    layout->addWidget(f0_, 1, 2, Qt::AlignTop);
+    layout->addWidget(bs_, 1, 3, Qt::AlignTop);
+    layout->addWidget(sp_, 1, 4, Qt::AlignTop);
+    layout->addWidget(memory_, 1, 5, 6, 1, Qt::AlignTop);
 
-    layout->addWidget(new QLabel("DBF"), 2, 0);
-    layout->addWidget(new QLabel("F1"), 2, 1);
-    layout->addWidget(new QLabel("A"), 2, 2);
-    layout->addWidget(new QLabel("T"), 2, 3);
-    layout->addWidget(new QLabel("PC"), 2, 4);
+    layout->addWidget(new QLabel("DBF"), 2, 0, Qt::AlignTop);
+    layout->addWidget(new QLabel("F1"), 2, 1, Qt::AlignTop);
+    layout->addWidget(new QLabel("A"), 2, 2, Qt::AlignTop);
+    layout->addWidget(new QLabel("T"), 2, 3, Qt::AlignTop);
+    layout->addWidget(new QLabel("PC"), 2, 4, Qt::AlignTop);
 
-    layout->addWidget(dbf_, 3, 0);
-    layout->addWidget(f1_, 3, 1);
-    layout->addWidget(a_, 3, 2);
-    layout->addWidget(t_, 3, 3);
-    layout->addWidget(pc_, 3, 4);
+    layout->addWidget(dbf_, 3, 0, Qt::AlignTop);
+    layout->addWidget(f1_, 3, 1, Qt::AlignTop);
+    layout->addWidget(a_, 3, 2, Qt::AlignTop);
+    layout->addWidget(t_, 3, 3, Qt::AlignTop);
+    layout->addWidget(pc_, 3, 4, Qt::AlignTop);
+
+    layout->addWidget(new QLabel("Bus"), 4, 0, Qt::AlignTop);
+    layout->addWidget(bus_, 4, 1, 1, 4, Qt::AlignTop);
+
+    layout->addWidget(new QLabel("Port 1"), 5, 0, Qt::AlignTop);
+    layout->addWidget(port1_, 5, 1, 1, 4, Qt::AlignTop);
+
+    layout->addWidget(new QLabel("Port 2"), 6, 0, Qt::AlignTop);
+    layout->addWidget(port2_, 6, 1, 1, 4, Qt::AlignTop);
 
     setLayout(layout);
 
@@ -93,25 +111,14 @@ void I8049StatusWidget::updateState() {
     pc_->setText(QString::asprintf("$%03x", state.pc));
     f1_->setText(QString::asprintf("%d", state.f1));
 
+    auto val = cpu_->port(0)->read();
+    bus_->setText(fmt::format("${:02x} (b{:08b})",val,val).c_str());
 
-//    int bus = cpu.getPort(0).read();
-//    if (this.bus != bus) {
-//        this.bus = bus;
-//        this.busWidget.setValue(bus);
-//    }
+    val = cpu_->port(1)->read();
+    port1_->setText(fmt::format("${:02x} (b{:08b})",val,val).c_str());
 
-//    int p1 = cpu.getPort(1).read();
-//    if (this.p1 != p1) {
-//        this.p1 = p1;
-//        this.p1Widget.setValue(p1);
-//    }
-
-//    int p2 = cpu.getPort(2).read();
-//    if (this.p2 != p2) {
-//        this.p2 = p2;
-//        this.p2Widget.setValue(p2);
-//    }
-
+    val = cpu_->port(2)->read();
+    port2_->setText(fmt::format("${:02x} (b{:08b})",val,val).c_str());
 }
 
 } // namespace kosmos_cp1::ui::cpu
