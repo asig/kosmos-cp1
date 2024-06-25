@@ -5,7 +5,8 @@
 
 #include <QObject>
 
-#include "dataport.h"
+#include "emulation/dataport.h"
+#include "emulation/ram.h"
 
 namespace kosmos_cp1::emulation {
 
@@ -85,6 +86,10 @@ public:
         return pcValue_;
     }
 
+    const Ram *ram() {
+        return &ram_;
+    }
+
 public slots:
     void onPinALEWritten(uint8_t val);
     void onPinRDLowActiveWritten(uint8_t val);
@@ -96,14 +101,14 @@ public slots:
 signals:
     void commandRegisterWritten();
     void portWritten(Port port, uint8_t value);
-    void memoryWritten();
+    void memoryWritten(uint16_t addr, uint8_t value);
     void pinsChanged();
     void resetExecuted();
 
 private:
     std::string name_;
     std::shared_ptr<DataPort> bus_;
-    std::vector<uint8_t> ram_;
+    Ram ram_;
 
     uint8_t addressLatch_;
     bool ioValue_;

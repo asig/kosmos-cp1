@@ -85,7 +85,7 @@ void Intel8155::onPinRDLowActiveWritten(uint8_t cur) {
                     std::cerr << fmt::format("{}: Unhandled IO write to address ${:02x}", name_, addressLatch_);
                 }
             } else {
-                uint8_t data = ram_[addressLatch_];
+                uint8_t data = ram_.read(addressLatch_);
 //                log(Level.FINEST, () -> String.format("mem[$%02x] -> bus: $%02x", addressLatch, data));
                 bus_->write(data);
             }
@@ -152,8 +152,7 @@ void Intel8155::onPinWRLowActiveWritten(uint8_t cur) {
 
                 }
             } else {
-                ram_[addressLatch_] = data;
-                emit memoryWritten();
+                ram_.write(addressLatch_, data);
 //                log(Level.FINEST, () -> String.format("bus -> mem[%02x]: $%02x", addressLatch, data));
             }
         }
