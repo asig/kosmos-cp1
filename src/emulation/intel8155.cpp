@@ -18,6 +18,9 @@ Intel8155::Intel8155(const std::string& name, std::shared_ptr<DataPort> bus)
     paMode_(PortMode::INPUT),
     pbMode_(PortMode::INPUT),
     pcMode_(PortCMode::ALT1),
+    paValue_(0),
+    pbValue_(0),
+    pcValue_(0),
     paInterruptEnabled_(false),
     pbInterruptEnabled_(false)
 {
@@ -29,14 +32,14 @@ void Intel8155::reset() {
     pbMode_ = PortMode::INPUT;
     pcMode_ = PortCMode::ALT1;
     paInterruptEnabled_ = false;
-        pbInterruptEnabled_ = false;
-        paValue_ = 0;
-        pbValue_ = 0;
-        pcValue_ = 0;
+    pbInterruptEnabled_ = false;
+    paValue_ = 0;
+    pbValue_ = 0;
+    pcValue_ = 0;
 
-        ram_.clear();
+    ram_.clear();
 
-        emit resetExecuted();
+    emit resetExecuted();
 }
 
 void Intel8155::onPinALEWritten(uint8_t cur) {
