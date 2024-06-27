@@ -47,6 +47,10 @@ void ExecutorThread::enableBreakpoint(uint16_t addr, bool enabled) {
                 });
 }
 
+bool ExecutorThread::isRunning() const {
+    return isRunning_;
+}
+
 void ExecutorThread::postCommand(Command cmd) {
     std::unique_lock<std::mutex> lock(commandsMutex_);
     commands_.push_back(cmd);

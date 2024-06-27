@@ -34,6 +34,8 @@ public:
     void quit();
     void enableBreakpoint(uint16_t addr, bool enabled);
 
+    bool isRunning() const;
+
 signals:
     void executionStarted();
     void executionStopped();

@@ -19,25 +19,25 @@ CpuWindow::CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, Ex
     createMenuBar();
     createMainUI();
 
-    connect(cpu_->port(0).get(), &DataPort::valueChange, this, [this]{ if(traceExecution_) status8049_->updateState();} );
-    connect(cpu_->port(1).get(), &DataPort::valueChange, this, [this]{if(traceExecution_) status8049_->updateState();});
-    connect(cpu_->port(2).get(), &DataPort::valueChange, this, [this]{if(traceExecution_) status8049_->updateState();});
+    connect(cpu_->port(0).get(), &DataPort::valueChange, this, &CpuWindow::onCpuStateChanged);
+    connect(cpu_->port(1).get(), &DataPort::valueChange, this, &CpuWindow::onCpuStateChanged);
+    connect(cpu_->port(2).get(), &DataPort::valueChange, this, &CpuWindow::onCpuStateChanged);
 
     connect(cpu_, &Intel8049::stateChanged, this, &CpuWindow::onCpuStateChanged);
     connect(cpu_, &Intel8049::instructionExecuted, this, &CpuWindow::onInstructionExecuted);
     connect(cpu_, &Intel8049::resetExecuted, this, &CpuWindow::onResetExecuted);
 
     connect(pid_, &Intel8155::resetExecuted, this, &CpuWindow::onResetExecuted);
-    connect(pid_, &Intel8155::commandRegisterWritten, this, [this] { update8155(); } );
-    connect(pid_, &Intel8155::portWritten, this, [this] { update8155(); } );
-    connect(pid_, &Intel8155::memoryWritten, this, [this] { update8155(); } );
-    connect(pid_, &Intel8155::pinsChanged, this, [this] { update8155(); } );
+    connect(pid_, &Intel8155::commandRegisterWritten, this, &CpuWindow::update8155);
+    connect(pid_, &Intel8155::portWritten, this, &CpuWindow::update8155);
+    connect(pid_->ram(), &Ram::memoryWritten, this, &CpuWindow::update8155);
+    connect(pid_, &Intel8155::pinsChanged, this, &CpuWindow::update8155);
 
     connect(pidExtension_, &Intel8155::resetExecuted, this, &CpuWindow::onResetExecuted);
-    connect(pidExtension_, &Intel8155::commandRegisterWritten, [this] { update8155(); } );
-    connect(pidExtension_, &Intel8155::portWritten, [this] { update8155(); } );
-    connect(pidExtension_, &Intel8155::memoryWritten, [this] { update8155(); } );
-    connect(pidExtension_, &Intel8155::pinsChanged, [this] { update8155(); } );
+    connect(pidExtension_, &Intel8155::commandRegisterWritten, this, &CpuWindow::update8155);
+    connect(pidExtension_, &Intel8155::portWritten, this, &CpuWindow::update8155);
+    connect(pidExtension_->ram(), &Ram::memoryWritten, this, &CpuWindow::update8155);
+    connect(pidExtension_, &Intel8155::pinsChanged, this, &CpuWindow::update8155);
 
     connect(executorThread_, &ExecutorThread::executionStarted, this, &CpuWindow::onExecutionStarted);
     connect(executorThread_, &ExecutorThread::executionStopped, this, &CpuWindow::onExecutionStopped);
@@ -88,9 +88,10 @@ void CpuWindow::onExecutionStopped() {
 
 void CpuWindow::onResetExecuted() {
     updateView();
-    singleStepAction_->setEnabled(true);
-    stopAction_->setEnabled(false);
-    runAction_->setEnabled(true);
+    bool isRunning = executorThread_->isRunning();
+    singleStepAction_->setEnabled(!isRunning);
+    stopAction_->setEnabled(isRunning);
+    runAction_->setEnabled(!isRunning);
     status8049_->updateState();
     update8155States();
 }
@@ -113,8 +114,8 @@ void CpuWindow::update8155States() {
 void CpuWindow::createMainUI() {
     disassembly_ = new I8049DisassemblyWidget(cpu_->rom(), executorThread_);
     status8049_ = new I8049StatusWidget("8049 (Main unit)", cpu_);
-    status8155_ = new I8155StatusWidget("8155 (Main unit)", pid_->ram());
-    status8155Extension_ = new I8155StatusWidget("8155 (CP3 memory extensions)", pidExtension_->ram());
+    status8155_ = new I8155StatusWidget("8155 (Main unit)", pid_);
+    status8155Extension_ = new I8155StatusWidget("8155 (CP3 memory extensions)", pidExtension_);
 
     QWidget *leftSide = new QWidget();
     QVBoxLayout *leftSideLayout = new QVBoxLayout();
