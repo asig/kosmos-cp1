@@ -1,12 +1,13 @@
 #pragma once
 
-#include <unordered_map>
+#include <vector>
 
 #include <QObject>
-#include <QMainWindow>
 
-namespace kosmos_cp1 {
-namespace ui {
+
+namespace kosmos_cp1::ui {
+
+class BaseWindow;
 
 class WindowManager : public QObject
 {
@@ -15,14 +16,16 @@ public:
     explicit WindowManager(QObject *parent = nullptr);
     virtual ~WindowManager();
 
-    void addWindow(QMainWindow* w);
+    void addWindow(BaseWindow* w);
+    void closeAllWindows();
+
+    const std::vector<BaseWindow*>& windows() const;
 
 signals:
 
 private:
-    std::unordered_map<WId, QMainWindow*> windows_;
+    std::vector<BaseWindow*> windows_;
 };
 
-} // namespace ui
-} // namespace kosmos_cp1
+} // namespace kosmos_cp1::ui
 

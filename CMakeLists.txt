@@ -11,7 +11,6 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
 #
 # Prevent building in the source directory
 #
@@ -51,8 +50,6 @@ set(PROJECT_SOURCES
         src/executorthread.h
         src/executorthread.cpp
         src/main.cpp
-        src/mainwindow.cpp
-        src/mainwindow.h
         src/performancemeasurer.h
         src/performancemeasurer.cpp
         src/throttler.cpp
@@ -66,6 +63,8 @@ set(PROJECT_SOURCES
         src/emulation/intel8155.cpp
         src/emulation/ram.h
         src/emulation/ram.cpp
+        src/ui/basewindow.h
+        src/ui/basewindow.cpp
         src/ui/panel/cp1colors.h
         src/ui/panel/cp1colors.cpp
         src/ui/panel/cp1panelwidget.h
@@ -108,6 +107,9 @@ set(PROJECT_SOURCES
         src/util/disassembler.cpp
         resources/resources.qrc
 )
+
+#add_compile_options(-fsanitize=address)
+#add_link_options(-fsanitize=address)
 
 qt_add_executable(kosmos-cp1-cpp
     MANUAL_FINALIZATION

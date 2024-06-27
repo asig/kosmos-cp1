@@ -7,10 +7,15 @@
 #include "emulation/intel8049.h"
 #include "emulation/intel8155.h"
 #include "emulation/dataport.h"
+#include "ui/basewindow.h"
+#include "ui/windowmanager.h"
 #include "ui/panel/cp1panelwidget.h"
 #include "ui/panel/cp5panelwidget.h"
 
 namespace kosmos_cp1::ui::panel {
+
+using kosmos_cp1::ui::BaseWindow;
+using kosmos_cp1::ui::WindowManager;
 
 using ::kosmos_cp1::ExecutorThread;
 
@@ -18,13 +23,17 @@ using ::kosmos_cp1::emulation::Intel8155;
 using ::kosmos_cp1::emulation::Intel8049;
 using ::kosmos_cp1::emulation::DataPort;
 
-class PanelWindow : public QMainWindow
+class PanelWindow : public BaseWindow
 {
     Q_OBJECT
 public:
-    explicit PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, QWidget *parent = nullptr);
+    explicit PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, WindowManager *windowManager, QWidget *parent = nullptr);
+
+    void createWindow() override;
+    QString windowName() override;
 
 signals:
+    void requestTitleChange(const QString& newState);
 
 public slots:
     void onPinProgWritten(uint8_t val);
@@ -51,10 +60,9 @@ private:
 
     void createActions();
     void createToolBar();
-    void createMenuBar();
     void createMainUI();
 
-    void updateWindowTitle(const std::string& state);
+    void updateWindowTitle(const QString& state);
 };
 
 }

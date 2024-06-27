@@ -10,14 +10,17 @@
 namespace kosmos_cp1::ui::panel {
 
 namespace {
-constexpr const std::string WINDOW_TITLE("Kosmos CP1");
+constexpr const char *WINDOW_TITLE = "Kosmos CP1";
 }
 
 using ::kosmos_cp1::emulation::Port;
 
-PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, QWidget *parent)
-    : cpu_(cpu), pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), QMainWindow{parent}
+PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, WindowManager *windowManager, QWidget *parent)
+    : cpu_(cpu), pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), BaseWindow{windowManager, parent}
 {
+}
+
+void PanelWindow::createWindow() {
     createActions();
     createToolBar();
     createMenuBar();
@@ -33,11 +36,16 @@ PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension
     // send its data to the port.
     connect(cpu_, &Intel8049::pinPROGWritten, this, &PanelWindow::onPinProgWritten, Qt::DirectConnection);
 
-    connect(executorThread_, &ExecutorThread::executionStarted, [this] { updateWindowTitle("running"); } );
-    connect(executorThread_, &ExecutorThread::executionStopped, [this] { updateWindowTitle("stopped"); } );
-    connect(executorThread_, &ExecutorThread::breakpointHit, [this] { updateWindowTitle("stopped"); } );
+    // Allow window title changes in the window's UI thread
+    connect(this, &PanelWindow::requestTitleChange, this, &PanelWindow::updateWindowTitle);
+
+    // Looks like Lambdas are always executed in the emitter's thread, therefore we just emit another signal
+    // to will be handled in the window's UI thread.
+    connect(executorThread_, &ExecutorThread::executionStarted, [this] { emit requestTitleChange("running"); } );
+    connect(executorThread_, &ExecutorThread::executionStopped, [this] { emit requestTitleChange("stopped"); } );
+    connect(executorThread_, &ExecutorThread::breakpointHit, [this] { emit requestTitleChange("stopped"); } );
     connect(executorThread_, &ExecutorThread::performanceUpdate, [this](double performance) {
-        updateWindowTitle(fmt::format("{:d}%", (int)(performance*100+.5)));
+        emit requestTitleChange(QString::fromStdString(fmt::format("{:d}%", (int)(performance*100+.5))));
     });
 
     connect(cpu_->port(1).get(), &DataPort::valueChange, this, &PanelWindow::onPort1ValueChanged, Qt::DirectConnection);
@@ -51,6 +59,10 @@ PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension
     });
 
     updateWindowTitle("stopped");
+}
+
+QString PanelWindow::windowName() {
+    return "Panel";
 }
 
 void PanelWindow::createMainUI() {
@@ -78,9 +90,9 @@ void PanelWindow::createMainUI() {
 
 }
 
-void PanelWindow::updateWindowTitle(const std::string& state) {
-    std::string title = WINDOW_TITLE + " (" + state + ")";
-    setWindowTitle(QString(title.c_str()));
+void PanelWindow::updateWindowTitle(const QString& state) {
+    QString title = QString(WINDOW_TITLE) + " (" + state + ")";
+    setWindowTitle(title);
 }
 
 void PanelWindow::onPinProgWritten(uint8_t val) {
@@ -136,9 +148,6 @@ void PanelWindow::createActions() {
 }
 
 void PanelWindow::createToolBar() {
-}
-
-void PanelWindow::createMenuBar() {
 }
 
 void PanelWindow::onLoadStateClicked() {

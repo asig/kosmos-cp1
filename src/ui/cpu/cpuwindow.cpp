@@ -9,9 +9,12 @@
 namespace kosmos_cp1::ui::cpu {
 
 
-CpuWindow::CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, QWidget *parent)
-    : cpu_(cpu), pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), QMainWindow{parent}
+CpuWindow::CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, WindowManager *windowManager, QWidget *parent)
+    : cpu_(cpu), pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), BaseWindow{windowManager, parent}
 {
+}
+
+void CpuWindow::createWindow() {
     traceExecution_ = false;
 
     createActions();
@@ -44,6 +47,10 @@ CpuWindow::CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, Ex
     connect(executorThread_, &ExecutorThread::breakpointHit, this, &CpuWindow::onBreakpointHit);
 
     setWindowTitle("Intel MCS-48 Emulator");
+}
+
+QString CpuWindow::windowName() {
+    return "CPU";
 }
 
 void CpuWindow::update8155() {
@@ -181,9 +188,6 @@ void CpuWindow::createToolBar() {
     tb->addAction(traceExecutionAction_);
 
     addToolBar(tb);
-}
-
-void CpuWindow::createMenuBar() {
 }
 
 //    private void createActions() {

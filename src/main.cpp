@@ -77,13 +77,13 @@ int main(int argc, char *argv[])
     ExecutorThread executorThread(&cpu, &pid, &pidExtension);
     executorThread.start();
 
-    PanelWindow w(&cpu, &pid, &pidExtension, &executorThread);
-    w.show();
-    windowManager.addWindow(&w);
+    PanelWindow panelWindow(&cpu, &pid, &pidExtension, &executorThread, &windowManager);
+    CpuWindow cpuWindow(&cpu, &pid, &pidExtension, &executorThread, &windowManager);
 
-    CpuWindow cpuWindow(&cpu, &pid, &pidExtension, &executorThread);
-    cpuWindow.show();
-    windowManager.addWindow(&cpuWindow);
+    for(auto *w : windowManager.windows()) {
+        w->createWindow();
+        w->show();
+    }
 
     executorThread.startExecution();
     int res = a.exec();

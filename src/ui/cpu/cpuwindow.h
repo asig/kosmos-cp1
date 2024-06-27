@@ -7,11 +7,16 @@
 #include "emulation/intel8049.h"
 #include "emulation/intel8155.h"
 #include "emulation/dataport.h"
+#include "ui/basewindow.h"
+#include "ui/windowmanager.h"
 #include "ui/cpu/i8049disassemblywidget.h"
 #include "ui/cpu/i8049statuswidget.h"
 #include "ui/cpu/i8155statuswidget.h"
 
 namespace kosmos_cp1::ui::cpu {
+
+using kosmos_cp1::ui::BaseWindow;
+using kosmos_cp1::ui::WindowManager;
 
 using ::kosmos_cp1::ExecutorThread;
 
@@ -19,11 +24,14 @@ using ::kosmos_cp1::emulation::Intel8155;
 using ::kosmos_cp1::emulation::Intel8049;
 using ::kosmos_cp1::emulation::DataPort;
 
-class CpuWindow : public QMainWindow
+class CpuWindow : public BaseWindow
 {
     Q_OBJECT
 public:
-    explicit CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, QWidget *parent = nullptr);
+    explicit CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, WindowManager *windowManager, QWidget *parent = nullptr);
+
+    void createWindow() override;
+    QString windowName() override;
 
 signals:
 
@@ -71,7 +79,6 @@ private:
 
     void createActions();
     void createToolBar();
-    void createMenuBar();
     void createMainUI();
 
     void update8155();
