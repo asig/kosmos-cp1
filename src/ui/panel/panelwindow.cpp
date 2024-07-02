@@ -27,7 +27,7 @@ void PanelWindow::createWindow() {
     createMainUI();
 
     pinProgValue_ = 0;
-    inPort1ValueChange_ = false;
+    inPort1ValueWritten_ = false;
 
     // Hook up the 8049's PROG to the Panel. CP1's ROM uses MOVD A, P4 to
     // read the keyboard state from the lower nibble of P2. MOVD will
@@ -48,7 +48,7 @@ void PanelWindow::createWindow() {
         emit requestTitleChange(QString::fromStdString(fmt::format("{:d}%", (int)(performance*100+.5))));
     });
 
-    connect(cpu_->port(1).get(), &DataPort::valueChange, this, &PanelWindow::onPort1ValueChanged, Qt::DirectConnection);
+    connect(cpu_->port(1).get(), &DataPort::valueWritten, this, &PanelWindow::onPort1ValueWritten, Qt::DirectConnection);
 
     connect(pid_, &Intel8155::portWritten, [this](Port port, uint8_t val) {
         if (port != Port::B) return;
@@ -121,16 +121,16 @@ void PanelWindow::onPinProgWritten(uint8_t val) {
     cpu_->port(2)->write(keyMask, 0x0f); // only the lower 4 bits of the port are connected to the key matrix. DO NOT TOUCH the upper nibble, as this is connected to the 8155s.
 }
 
-void PanelWindow::onPort1ValueChanged(uint8_t oldVal, uint8_t newVal) {
-    if (inPort1ValueChange_) {
+void PanelWindow::onPort1ValueWritten(uint8_t newVal) {
+    if (inPort1ValueWritten_) {
         // Called by our own write. Bail out.
         return;
     }
 
     // CPU wrote to the port to prepare the pins for input. Write switch settings
-    inPort1ValueChange_ = true;
+    inPort1ValueWritten_ = true;
     cpu_->port(1)->write(cp5Panel_->readSwitches());
-    inPort1ValueChange_ = false;
+    inPort1ValueWritten_ = false;
 }
 
 void PanelWindow::createActions() {

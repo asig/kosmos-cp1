@@ -22,9 +22,9 @@ void CpuWindow::createWindow() {
     createMenuBar();
     createMainUI();
 
-    connect(cpu_->port(0).get(), &DataPort::valueChange, this, &CpuWindow::onCpuStateChanged);
-    connect(cpu_->port(1).get(), &DataPort::valueChange, this, &CpuWindow::onCpuStateChanged);
-    connect(cpu_->port(2).get(), &DataPort::valueChange, this, &CpuWindow::onCpuStateChanged);
+    connect(cpu_->port(0).get(), &DataPort::valueWritten, this, &CpuWindow::onCpuStateChanged);
+    connect(cpu_->port(1).get(), &DataPort::valueWritten, this, &CpuWindow::onCpuStateChanged);
+    connect(cpu_->port(2).get(), &DataPort::valueWritten, this, &CpuWindow::onCpuStateChanged);
 
     connect(cpu_, &Intel8049::stateChanged, this, &CpuWindow::onCpuStateChanged);
     connect(cpu_, &Intel8049::instructionExecuted, this, &CpuWindow::onInstructionExecuted);

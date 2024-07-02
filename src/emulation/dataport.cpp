@@ -23,19 +23,14 @@ uint8_t DataPort::read() const {
 }
 
 void DataPort::write(uint8_t value, uint8_t mask) {
-    value = value & mask;
-    if (value != (value_ & mask)) {
-        uint8_t oldVal = value_;
-        value_ = (value_ & ~mask) | value;
-        emit valueChange(oldVal, value_);
+    value_ = (value_ & ~mask) | value;
+    emit valueWritten(value_);
 
-        // Send single bits to pins, if necessary
-        for (int bit = 0; bit < 8; bit++) {
-            if (((1 << bit) & mask) > 0) {
-                uint8_t oldBit = (oldVal & (1 << bit)) > 0 ? 1 : 0;
-                uint8_t newBit = (value_ & (1 << bit)) > 0 ? 1 : 0;
-                (*this.*bitSignals[bit])(newBit);
-            }
+    // Send single bits to pins, if necessary
+    for (int bit = 0; bit < 8; bit++) {
+        if (((1 << bit) & mask) > 0) {
+            uint8_t newBit = (value_ & (1 << bit)) > 0 ? 1 : 0;
+            (*this.*bitSignals[bit])(newBit);
         }
     }
 }

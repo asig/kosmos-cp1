@@ -37,7 +37,7 @@ signals:
 
 public slots:
     void onPinProgWritten(uint8_t val);
-    void onPort1ValueChanged(uint8_t oldVal, uint8_t newVal);
+    void onPort1ValueWritten(uint8_t newVal);
 
     void onLoadStateClicked();
     void onSaveStateClicked();
@@ -48,7 +48,7 @@ private:
     Intel8155 *pidExtension_;
 
     uint8_t pinProgValue_;
-    bool inPort1ValueChange_;
+    bool inPort1ValueWritten_;
 
     ExecutorThread *executorThread_;
 

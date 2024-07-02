@@ -28,7 +28,7 @@ signals:
     void bit6Written(uint8_t val);
     void bit7Written(uint8_t val);
 
-    void valueChange(uint8_t oldValue, uint8_t newValue);
+    void valueWritten(uint8_t newValue);
 
 private:
     std::string name_;
