@@ -22,8 +22,8 @@ void CP5PanelWidget::writeLeds(uint8_t leds) {
     leds_->setValue(leds);
 }
 
-uint8_t CP5PanelWidget::readSwitches() {
-    return 0;
+uint8_t CP5PanelWidget::readSwitches() const {
+    return switches_->value();
 }
 
 } // namespace kosmos_cp1::ui::panel

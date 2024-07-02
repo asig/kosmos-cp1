@@ -22,12 +22,16 @@ CP5Switches::CP5Switches(QWidget *parent)
     pal.setColor(QPalette::Window, CP1Color::SWITCH_BG);
     setAutoFillBackground(true);
     setPalette(pal);
+}
 
-//    QSize sz = switches_[0]->size();
-//    sz = QSize( 8 * sz.width() + 7 * layout->spacing() + 2 * 3, sz.height());
-//    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-//    setFixedSize(sz);
-
+std::uint8_t CP5Switches::value() {
+    std::uint8_t value = 0;
+    for (int i = 0; i < 8; i++) {
+        if (switches_[7-i]->value()) {
+            value |= 1 << i;
+        }
+    }
+    return value;
 }
 
 } // namespace kosmos_cp1::ui::panel

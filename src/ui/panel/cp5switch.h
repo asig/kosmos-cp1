@@ -29,6 +29,10 @@ public:
         }
     }
 
+    std::uint8_t value() const {
+        return val_;
+    }
+
 signals:
     void valueChanged(uint8_t newValue);
 

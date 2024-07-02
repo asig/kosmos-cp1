@@ -6,7 +6,7 @@
 namespace kosmos_cp1::ui::panel {
 
 CP5Switch::CP5Switch(QWidget *parent)
-    : QWidget{parent}
+    : val_(0), pressed_(false), QWidget{parent}
 {
     switchOn_.load(":/ui/switch_on.png");
     switchOff_.load(":/ui/switch_off.png");

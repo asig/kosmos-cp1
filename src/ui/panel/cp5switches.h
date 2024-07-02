@@ -12,6 +12,8 @@ class CP5Switches : public QWidget
 public:
     explicit CP5Switches(QWidget *parent = nullptr);
 
+    std::uint8_t value();
+
 signals:
 
 private:

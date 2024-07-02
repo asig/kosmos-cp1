@@ -19,7 +19,7 @@ public:
     explicit CP5PanelWidget(QWidget *parent = nullptr);
 
     void writeLeds(uint8_t leds);
-    uint8_t readSwitches();
+    uint8_t readSwitches() const;
 
 signals:
     void switchesChanged(uint8_t val);
