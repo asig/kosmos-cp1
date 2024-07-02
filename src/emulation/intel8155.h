@@ -86,7 +86,7 @@ public:
         return pcValue_;
     }
 
-    const Ram *ram() {
+    Ram *ram() {
         return &ram_;
     }
 

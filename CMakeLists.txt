@@ -47,6 +47,8 @@ add_subdirectory(deps/fmt)
 # Main
 #
 set(PROJECT_SOURCES
+        src/assembler.h
+        src/assembler.cpp
         src/executorthread.h
         src/executorthread.cpp
         src/main.cpp
@@ -87,6 +89,8 @@ set(PROJECT_SOURCES
         src/ui/panel/cp5switch.cpp
         src/ui/panel/panelwindow.h
         src/ui/panel/panelwindow.cpp
+        src/ui/assembler/assemblerwindow.h
+        src/ui/assembler/assemblerwindow.cpp
         src/ui/cpu/cpuwindow.h
         src/ui/cpu/cpuwindow.cpp
         src/ui/cpu/checkboxaction.h

@@ -8,6 +8,7 @@
 #include "ui/windowmanager.h"
 #include "ui/panel/panelwindow.h"
 #include "ui/cpu/cpuwindow.h"
+#include "ui/assembler/assemblerwindow.h"
 #include "ui/resources.h"
 
 using kosmos_cp1::emulation::DataPort;
@@ -15,6 +16,7 @@ using kosmos_cp1::emulation::Intel8049;
 using kosmos_cp1::emulation::Intel8155;
 using kosmos_cp1::ExecutorThread;
 using kosmos_cp1::ui::panel::PanelWindow;
+using kosmos_cp1::ui::assembler::AssemblerWindow;
 using kosmos_cp1::ui::cpu::CpuWindow;
 using kosmos_cp1::ui::WindowManager;
 
@@ -79,11 +81,14 @@ int main(int argc, char *argv[])
 
     PanelWindow panelWindow(&cpu, &pid, &pidExtension, &executorThread, &windowManager);
     CpuWindow cpuWindow(&cpu, &pid, &pidExtension, &executorThread, &windowManager);
+    AssemblerWindow assemblerWindow(&pid, &pidExtension, &executorThread, &windowManager);
 
     for(auto *w : windowManager.windows()) {
         w->createWindow();
-        w->show();
     }
+
+    panelWindow.show();
+    cpuWindow.show();
 
     executorThread.startExecution();
     int res = a.exec();
