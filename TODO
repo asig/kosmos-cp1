@@ -1,6 +1,12 @@
 TODO
 ====
 
+[ ] "CAL" button not handled
+
+
+
+Old Java stuff:
+
 [ ] Switch to a simple event bus, get rid of all the listeners
 [ ] more breakpoint types?
 [X] menu bar
