@@ -46,7 +46,7 @@ CP1Keyboard::CP1Keyboard(QWidget *parent)
     leftRow1->addWidget(makeBtn("step", 1, 1, BTN_STEP));
     leftRow1->addWidget(makeBtn("stp", 1, 2, BTN_STP));
     leftRow1->addWidget(makeBtn("run", 1, 3, BTN_RUN));
-    leftRow1->addWidget(makeBtn("cal", 1, 9, BTN_CAL));
+    leftRow1->addWidget(makeBtn("cal", 1, 0, BTN_CAL));
     leftRow1->addStretch();
     leftLayout->addLayout(leftRow1);
 
