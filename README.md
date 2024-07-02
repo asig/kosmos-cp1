@@ -43,6 +43,12 @@ You can find scans of all the manuals at http://www.retrozone.ch/cp1/
 sudo apt install build-essential cmake qt6-base-dev qt6-svg-dev nsis
 ```
 
+Optionally, if you're using a Gnome desktop:
+
+```
+sudo apt install qt6-gtk-platformtheme adwaita-qt6
+```
+
 ### Building
 
 On the command line: `cmake . -B build && cd build && make -j$(nproc)`
