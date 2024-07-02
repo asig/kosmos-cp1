@@ -1,7 +1,18 @@
 TODO
 ====
 
-[ ] "CAL" button not handled
+- [X] Assembler window
+- [X] CPU debugger window
+- [ ] CP5 component
+- [ ] Installer
+      - [ ] for Windows
+      - [ ] for Debian
+
+
+BUGS
+====
+- [X] cross-thread-connections: Don't use "Auto"
+- [X] cross-thread-connections: When not using "Auto", UI updates must be executed in the UI thread. Use signals/slots?
 
 
 
