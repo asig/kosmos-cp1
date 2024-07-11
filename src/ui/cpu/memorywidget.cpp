@@ -1,6 +1,7 @@
 #include "ui/cpu/memorywidget.h"
 
 #include <QPainter>
+#include <QPaintEvent>
 
 #include "ui/resources.h"
 
@@ -12,10 +13,12 @@ constexpr const int kBytesPerLine = 16;
 
 QColor kBg = QColor(Qt::white);
 QColor kBgSelected = QColor(Qt::red);
+QColor kBgDisabled = QColor(Qt::lightGray).lighter(120);
 
 
 QColor kFg = QColor(Qt::black);
 QColor kFgSelected = QColor(Qt::yellow);
+QColor kFgDisabled = QColor(Qt::lightGray).lighter(80);
 
 }
 
@@ -24,11 +27,6 @@ MemoryWidget::MemoryWidget(const Ram* ram, QWidget *parent)
 {  
     ram_ = ram;
     lastWritten_ = -1;
-
-    QPalette pal = QPalette();
-    pal.setColor(QPalette::Window, kBg);
-    setAutoFillBackground(true);
-    setPalette(pal);
 
     setFont(Resources::dejaVuSansFont());
 
@@ -51,22 +49,21 @@ MemoryWidget::MemoryWidget(const Ram* ram, QWidget *parent)
 }
 
 void MemoryWidget::paintEvent(QPaintEvent* event) {
-    QPainter painter(this);
+    QPainter painter(this);    
     painter.setFont(Resources::dejaVuSansFont());
     painter.setBackgroundMode(Qt::OpaqueMode);
 
-    painter.setPen(kFg);
-    painter.setBackground(kBg);
+    painter.setPen(isEnabled() ? kFg : kFgDisabled);
+    painter.setBackground(isEnabled() ? kBg : kBgDisabled);
 
-//    painter.fillRect(this->rect(), Qt::red);
+    painter.fillRect(event->rect(), painter.background());
     for (int i = 0; i < lines_; i++) {
         paintLine(painter, i);
     }
-
 }
 
 void MemoryWidget::paintLine(QPainter& painter, int lineIdx) {
-
+    bool enabled = isEnabled();
     int y =  lineIdx * lineH_;
 
     // address
@@ -76,7 +73,7 @@ void MemoryWidget::paintLine(QPainter& painter, int lineIdx) {
     for (int i = 0; i < kBytesPerLine; i++) {
         int pos = lineIdx * kBytesPerLine + i;
         bool resetPen = false;
-        if (pos == lastWritten_) {
+        if (enabled && pos == lastWritten_) {
             resetPen = true;
             painter.setPen(kFgSelected);
             painter.setBackground(kBgSelected);
@@ -86,7 +83,6 @@ void MemoryWidget::paintLine(QPainter& painter, int lineIdx) {
         if (resetPen) {
             painter.setPen(kFg);
             painter.setBackground(kBg);
-
         }
     }
 }
