@@ -60,20 +60,14 @@ private:
     QAction* stopAction_;
     QAction* singleStepAction_;
     QAction* resetAction_;
-    QAction* traceExecutionAction_;
+    QAction* breakOnMovXAction_;
     QAction* throttleExecutionAction_;
-    QAction* quitAction_;
-
-    bool traceExecution_;
 
     I8049DisassemblyWidget *disassembly_;
     I8155StatusWidget *status8155_;
     I8155StatusWidget *status8155Extension_;
     I8049StatusWidget *status8049_;
 
-//    private BreakOnMovxAction breakOnMovxAction;
-//    private LoadAction loadAction;
-//    private SaveAction saveAction;
 //    private AboutAction aboutAction;
 //    private CoolBarManager coolBarManager;
 
@@ -84,6 +78,8 @@ private:
     void update8155();
     void updateView();
     void update8155States();
+
+    void enableChildren(bool enabled);
 };
 
 } // namespace kosmos_cp1::ui::cpu

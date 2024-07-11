@@ -15,8 +15,6 @@ CpuWindow::CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, Ex
 }
 
 void CpuWindow::createWindow() {
-    traceExecution_ = false;
-
     createActions();
     createToolBar();
     createMenuBar();
@@ -54,7 +52,7 @@ QString CpuWindow::windowName() {
 }
 
 void CpuWindow::update8155() {
-    if (!traceExecution_) {
+    if (executorThread_->isRunning()) { // Only update in single-step mode
         return;
     }
     status8155_->updateState();
@@ -62,7 +60,7 @@ void CpuWindow::update8155() {
 }
 
 void CpuWindow::onCpuStateChanged() {
-    if (!traceExecution_) {
+    if (executorThread_->isRunning()) { // Only update in single-step mode
         return;
     }
     updateView();
@@ -71,7 +69,7 @@ void CpuWindow::onCpuStateChanged() {
 }
 
 void CpuWindow::onInstructionExecuted() {
-    if (!traceExecution_) {
+    if (executorThread_->isRunning()) { // Only update in single-step mode
         return;
     }
     updateView();
@@ -82,6 +80,8 @@ void CpuWindow::onExecutionStarted() {
     singleStepAction_->setEnabled(false);
     stopAction_->setEnabled(true);
     runAction_->setEnabled(false);
+
+    enableChildren(false);
 }
 
 void CpuWindow::onExecutionStopped() {
@@ -91,6 +91,8 @@ void CpuWindow::onExecutionStopped() {
     runAction_->setEnabled(true);
     status8049_->updateState();
     update8155States();
+
+    enableChildren(true);
 }
 
 void CpuWindow::onResetExecuted() {
@@ -101,12 +103,16 @@ void CpuWindow::onResetExecuted() {
     runAction_->setEnabled(!isRunning);
     status8049_->updateState();
     update8155States();
+
+    enableChildren(!isRunning);
 }
 
 void CpuWindow::onBreakpointHit() {
     status8049_->updateState();
     update8155States();
     updateView();
+
+    enableChildren(true);
 }
 
 void CpuWindow::updateView() {
@@ -142,6 +148,8 @@ void CpuWindow::createMainUI() {
     splitter->addWidget(rightSide);
 
     setCentralWidget(splitter);
+
+    enableChildren(false);
 }
 
 void CpuWindow::createActions() {
@@ -149,10 +157,10 @@ void CpuWindow::createActions() {
     stopAction_ = new QAction(QIcon(":/ui/actions/control-stop-square.png"), tr("Stop"));
     singleStepAction_ = new QAction(QIcon(":/ui/actions/arrow-step-over.png"), tr("Step"));
     resetAction_ = new QAction(QIcon(":/ui/actions/arrow-circle-135-left.png"), tr("Reset"));
-    traceExecutionAction_ = new CheckboxAction("Trace execution", true);
+    breakOnMovXAction_ = new CheckboxAction("Break on MOVX", false);
 
     connect(runAction_, &QAction::triggered, [this] {
-        executorThread_->startExecution();
+        executorThread_->startExecution();        
     } );
 
     connect(stopAction_, &QAction::triggered, [this] {
@@ -167,9 +175,8 @@ void CpuWindow::createActions() {
         executorThread_->reset();
     });
 
-    traceExecution_ = traceExecutionAction_->isChecked();
-    connect(traceExecutionAction_, &QAction::toggled, [this] {
-        traceExecution_ = traceExecutionAction_->isChecked();
+    connect(breakOnMovXAction_, &QAction::toggled, [this] {
+        executorThread_->setBreakOnMovX(breakOnMovXAction_->isChecked());
     });
 
 }
@@ -185,9 +192,16 @@ void CpuWindow::createToolBar() {
     tb->addAction(stopAction_);
     tb->addAction(resetAction_);
     tb->addSeparator();
-    tb->addAction(traceExecutionAction_);
+    tb->addAction(breakOnMovXAction_);
 
     addToolBar(tb);
+}
+
+void CpuWindow::enableChildren(bool enabled) {
+    disassembly_->setEnabled(enabled);
+    status8049_->setEnabled(enabled);
+    status8155_->setEnabled(enabled);
+    status8155Extension_->setEnabled(enabled);
 }
 
 //    private void createActions() {
