@@ -231,10 +231,6 @@ void DisassemblyContent::paintLine(QPainter& painter, const QRect& updateRect, i
 DisassemblyContent::~DisassemblyContent() {
 }
 
-void DisassemblyContent::enableControls(bool enable) {
-    setEnabled(enable);
-}
-
 void DisassemblyContent::highlightLine(int line) {
     highlightedLine_ = line;
 
