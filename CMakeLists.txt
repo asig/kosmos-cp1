@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(kosmos-cp1-cpp VERSION 0.1 LANGUAGES CXX)
+project(
+    kosmos-cp1
+    VERSION 0.1
+    LANGUAGES CXX
+)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -115,6 +119,8 @@ set(PROJECT_SOURCES
 #add_compile_options(-fsanitize=address)
 #add_link_options(-fsanitize=address)
 
+configure_file(src/config.h.in config.h)
+
 qt_add_executable(kosmos-cp1-cpp
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
@@ -122,6 +128,7 @@ qt_add_executable(kosmos-cp1-cpp
 include_directories(
     deps/fmt/include
     src
+    ${PROJECT_BINARY_DIR} # for config.h
 )
 
 target_link_libraries(kosmos-cp1-cpp
