@@ -88,7 +88,6 @@ int main(int argc, char *argv[])
     }
 
     panelWindow.show();
-    cpuWindow.show();
 
     executorThread.startExecution();
     int res = a.exec();
