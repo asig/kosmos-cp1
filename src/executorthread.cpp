@@ -47,6 +47,13 @@ void ExecutorThread::enableBreakpoint(uint16_t addr, bool enabled) {
                 });
 }
 
+void ExecutorThread::setBreakOnMovX(bool brk) {
+    postCommand(Command{
+                    .op = Op::BREAK_ON_MOVX,
+                    .param = brk,
+                });
+}
+
 bool ExecutorThread::isRunning() const {
     return isRunning_;
 }
@@ -101,6 +108,9 @@ void ExecutorThread::run() {
             break;
         case Op::REMOVE_BP:
             breakpoints_.erase(command.param);
+            break;
+        case Op::BREAK_ON_MOVX:
+            breakOnMovx_ = command.param;
             break;
         default:
             break;

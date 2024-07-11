@@ -33,6 +33,7 @@ public:
     void reset();
     void quit();
     void enableBreakpoint(uint16_t addr, bool enabled);
+    void setBreakOnMovX(bool brk);
 
     bool isRunning() const;
 
@@ -56,6 +57,7 @@ private:
         QUIT,
         ADD_BP,
         REMOVE_BP,
+        BREAK_ON_MOVX
     };
 
     struct Command {
