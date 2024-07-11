@@ -1,0 +1,4 @@
+#pragma once
+
+#define VERSION_MAJOR @kosmos-cp1_VERSION_MAJOR@
+#define VERSION_MINOR @kosmos-cp1_VERSION_MINOR@
