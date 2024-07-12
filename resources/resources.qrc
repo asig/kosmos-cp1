@@ -495,33 +495,7 @@
         <file>ui/digits/nodot/7e.png</file>
         <file>ui/digits/nodot/7f.png</file>
         <file>ui/fonts/DejaVuSansMono.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-Black.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-BlackItalic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-Bold.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-BoldItalic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-ExtraBold.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-ExtraBoldItalic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-ExtraLight.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-ExtraLightItalic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-Italic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-Light.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-LightItalic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-Medium.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-MediumItalic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-Regular.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-SemiBold.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-SemiBoldItalic.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-Thin.ttf</file>
-        <file>ui/fonts/Montserrat/Montserrat-ThinItalic.ttf</file>
         <file>ui/fonts/Ubuntu/Ubuntu-Bold.ttf</file>
-        <file>ui/fonts/Ubuntu/Ubuntu-BoldItalic.ttf</file>
-        <file>ui/fonts/Ubuntu/Ubuntu-Italic.ttf</file>
-        <file>ui/fonts/Ubuntu/Ubuntu-Light.ttf</file>
-        <file>ui/fonts/Ubuntu/Ubuntu-LightItalic.ttf</file>
-        <file>ui/fonts/Ubuntu/Ubuntu-Medium.ttf</file>
-        <file>ui/fonts/Ubuntu/Ubuntu-MediumItalic.ttf</file>
-        <file>ui/fonts/Ubuntu/Ubuntu-Regular.ttf</file>
-        <file>ui/fonts/helvetica-black-586c33de4b4d0.otf</file>
         <file>ui/icon-128x128.png</file>
         <file>ui/icon.ico</file>
         <file>ui/kosmos-logo.svg</file>
