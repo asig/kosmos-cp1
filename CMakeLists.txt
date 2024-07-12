@@ -123,7 +123,7 @@ set(PROJECT_SOURCES
 
 configure_file(src/config.h.in config.h)
 
-qt_add_executable(kosmos-cp1-cpp
+qt_add_executable(kosmos-cp1
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
 )
@@ -133,7 +133,7 @@ include_directories(
     ${PROJECT_BINARY_DIR} # for config.h
 )
 
-target_link_libraries(kosmos-cp1-cpp
+target_link_libraries(kosmos-cp1
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Network
@@ -142,7 +142,7 @@ target_link_libraries(kosmos-cp1-cpp
         fmt
 )
 
-set_target_properties(kosmos-cp1-cpp PROPERTIES
+set_target_properties(kosmos-cp1 PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -150,11 +150,11 @@ set_target_properties(kosmos-cp1-cpp PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
-install(TARGETS kosmos-cp1-cpp
+install(TARGETS kosmos-cp1
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-qt_finalize_executable(kosmos-cp1-cpp)
+qt_finalize_executable(kosmos-cp1)
 
 #
 # TOOLS
