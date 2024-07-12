@@ -69,6 +69,8 @@ set(PROJECT_SOURCES
         src/emulation/intel8155.cpp
         src/emulation/ram.h
         src/emulation/ram.cpp
+        src/ui/aboutdialog.h
+        src/ui/aboutdialog.cpp
         src/ui/basewindow.h
         src/ui/basewindow.cpp
         src/ui/panel/cp1colors.h

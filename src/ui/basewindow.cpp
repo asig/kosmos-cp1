@@ -2,8 +2,9 @@
 
 #include <QMenuBar>
 
-namespace kosmos_cp1::ui {
+#include "ui/aboutdialog.h"
 
+namespace kosmos_cp1::ui {
 
 BaseWindow::BaseWindow(WindowManager *windowManager, QWidget *parent)
     : windowManager_(windowManager), QMainWindow{parent}
@@ -33,6 +34,10 @@ void BaseWindow::createMenuBar() {
 
     QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
     QAction *aboutAction = helpMenu->addAction("About...");
+    connect(aboutAction, &QAction::triggered, [this] {
+        AboutDialog dlg(this);
+        dlg.exec();
+    });
     actions_.push_back(aboutAction);
 }
 

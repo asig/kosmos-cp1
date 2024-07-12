@@ -513,8 +513,6 @@
         <file>ui/fonts/Montserrat/Montserrat-SemiBoldItalic.ttf</file>
         <file>ui/fonts/Montserrat/Montserrat-Thin.ttf</file>
         <file>ui/fonts/Montserrat/Montserrat-ThinItalic.ttf</file>
-        <file>ui/fonts/Montserrat/OFL.txt</file>
-        <file>ui/fonts/Ubuntu/UFL.txt</file>
         <file>ui/fonts/Ubuntu/Ubuntu-Bold.ttf</file>
         <file>ui/fonts/Ubuntu/Ubuntu-BoldItalic.ttf</file>
         <file>ui/fonts/Ubuntu/Ubuntu-Italic.ttf</file>
@@ -523,6 +521,7 @@
         <file>ui/fonts/Ubuntu/Ubuntu-Medium.ttf</file>
         <file>ui/fonts/Ubuntu/Ubuntu-MediumItalic.ttf</file>
         <file>ui/fonts/Ubuntu/Ubuntu-Regular.ttf</file>
+        <file>ui/fonts/helvetica-black-586c33de4b4d0.otf</file>
         <file>ui/icon-128x128.png</file>
         <file>ui/icon.ico</file>
         <file>ui/kosmos-logo.svg</file>
