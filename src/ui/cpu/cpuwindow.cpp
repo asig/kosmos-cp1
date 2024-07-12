@@ -204,6 +204,14 @@ void CpuWindow::enableChildren(bool enabled) {
     status8155Extension_->setEnabled(enabled);
 }
 
+void CpuWindow::closeEvent(QCloseEvent *event) {
+    executorThread_->startExecution();
+}
+
+void CpuWindow::showEvent(QShowEvent *event) {
+    executorThread_->stopExectuion();
+}
+
 //    private void createActions() {
 //        resetAction = new ResetAction(executorThread);
 //        breakOnMovxAction = new BreakOnMovxAction(executorThread);

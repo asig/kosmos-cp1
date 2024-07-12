@@ -49,6 +49,10 @@ public slots:
     void onExecutionStopped();
     void onBreakpointHit();
 
+protected:
+     void closeEvent(QCloseEvent *event) override;
+     void showEvent(QShowEvent *event) override;
+
 private:
     Intel8049 *cpu_;
     Intel8155 *pid_;
