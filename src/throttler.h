@@ -19,8 +19,6 @@ public:
 private:
     uint32_t millis_;
     uint32_t next_;
-
-
 };
 
 } // namespace kosmos_cp1

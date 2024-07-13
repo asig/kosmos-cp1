@@ -32,13 +32,8 @@ QCheckBox *makeCheckBox(const QString& t) {
 }
 
 QGroupBox *makeGrp(const QString& title, QLabel *mode, QCheckBox *interruptEnabled, QLabel *val) {
-
     QGroupBox *grp = new QGroupBox(title);
-
     QGridLayout *layout = new QGridLayout();
-
-//    QFontMetrics fm{Resources::dejaVuSansFont()};
-//    int row0W = fm.horizontalAdvance("VALUE: ");
 
     // Row 0
     layout->addWidget(new QLabel("Mode:"), 0, 0, Qt::AlignTop );
@@ -63,7 +58,6 @@ I8155StatusWidget::I8155StatusWidget(const QString& title, Intel8155 *pid, QWidg
     : pid_(pid), QGroupBox(title, parent)
 {
     QFontMetrics fm{Resources::dejaVuSansFont()};
-    int minWidth = fm.horizontalAdvance("XXXXX");
 
     memory_ = new MemoryWidget(pid->ram());
 

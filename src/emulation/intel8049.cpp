@@ -37,9 +37,6 @@ void Intel8049::reset() {
 }
 
 int Intel8049::executeSingleInstr() {
-//    Disassembler::Line l = disassembler_.disassembleSingleLine(state_.pc);
-//    qDebug() << fmt::format("${:04x}", state_.pc).c_str() << ":" << l.disassembly().c_str() << state_.toString().c_str();
-
     int cycles = 1;
     uint8_t op = fetch();
     tick();

@@ -2,8 +2,7 @@
 
 #include <fmt/format.h>
 
-namespace kosmos_cp1 {
-namespace util {
+namespace kosmos_cp1::util {
 
 namespace {
 
@@ -556,5 +555,4 @@ Disassembler::Line Disassembler::line(uint16_t curPos, int bytes, const std::str
     return l;
 }
 
-} // namespace util
-} // namespace kosmos_cp1
+} // namespace kosmos_cp1::util

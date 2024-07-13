@@ -22,7 +22,6 @@ PanelWindow::PanelWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension
 
 void PanelWindow::createWindow() {
     createActions();
-    createToolBar();
     createMenuBar();
     createMainUI();
 
@@ -146,112 +145,6 @@ void PanelWindow::createActions() {
     saveStateAction_ = a;
     connect(saveStateAction_, &QAction::triggered, this, &PanelWindow::onSaveStateClicked);
 }
-
-void PanelWindow::createToolBar() {
-}
-
-void PanelWindow::onLoadStateClicked() {
-}
-
-void PanelWindow::onSaveStateClicked() {
-}
-
-///**
-//     * Open the window.
-//     */
-//public void open() {
-//    createShell();
-//    createActions();
-//    createContent();
-
-//    executorThread.addListener(executionListener);
-//    cpu.getPort(1).addListener(port1Listener);
-//    pid.addListener(pidListener);
-//    shell.addDisposeListener(ev -> {
-//        executorThread.removeListener(executionListener);
-//        cpu.getPort(1).removeListener(port1Listener);
-//        pid.removeListener(pidListener);
-//    });
-
-//    shell.setMenuBar(createMenuBar());
-//    shell.open();
-//    shell.layout();
-//    shell.pack();
-//    fireWindowOpened();
-//}
-
-//@Override
-//    protected Shell getShell() {
-//    return shell;
-//}
-
-//public boolean isDisposed() {
-//    return shell.isDisposed();
-//}
-
-//private void createShell() {
-//    shell = new Shell((Display)null, SWT.SHELL_TRIM | SWT.CENTER);
-//    updateWindowTitle("stopped");
-//    shell.setLayout(new FillLayout(SWT.HORIZONTAL));
-//    Image icon = SWTResources.getImage("/com/asigner/cp1/ui/icon-128x128.png");
-//    shell.setImage(icon);
-//    shell.addDisposeListener(disposeEvent -> fireWindowClosed());
-//}
-
-//private void createActions() {
-//    loadAction = new LoadAction(shell, pid, pidExtension, executorThread);
-//    saveAction = new SaveAction(shell, pid, pidExtension, executorThread);
-//}
-
-///**
-//     * Create contents of the window.
-//     * @wbp.parser.entryPoint
-//     */
-//private void createContent() {
-//    Composite composite = new Composite(shell, SWT.NONE);
-//    GridLayout gl_composite = new GridLayout(1, false);
-//    gl_composite.marginTop = 0;
-//    gl_composite.marginBottom = 0;
-//    gl_composite.marginRight = 0;
-//    gl_composite.marginLeft = 0;
-//    composite.setLayout(gl_composite);
-//    composite.setBackground(CP1Colors.GREEN);
-
-//    cp5 = new CP5Panel(composite, SWT.NONE);
-//    cp5.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-//    cp5.writeLeds(pid.getPaValue());
-//    cpu.getPort(1).write(cp5.readSwitches());
-//    cp5.addSwitchesListener(() -> {
-//        cpu.getPort(1).write(cp5.readSwitches());
-//    });
-
-    //        Label spacer1 = new Label(composite, SWT.NONE);
-    //        spacer1.setLayoutData(GridDataFactory.fillDefaults().hint(-1, 50).create());
-    //        spacer1.setBackground(CP1Colors.GREEN);
-
-//    cp1 = new CP1Panel(composite, SWT.NONE);
-//    cp1.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-//    cp1.getCP1Display().setPid(pid);
-//}
-
-//private Menu createMenuBar() {
-//    Menu menu = new Menu(shell, SWT.BAR);
-
-//    createFileMenu(menu);
-
-//    Menu stateMenu = new Menu(menu);
-//    new ActionMenuItem(stateMenu, SWT.NONE, loadAction);
-//    new ActionMenuItem(stateMenu, SWT.NONE, saveAction);
-
-//    MenuItem stateItem = new MenuItem(menu, SWT.CASCADE);
-//    stateItem.setText("&State");
-//    stateItem.setMenu(stateMenu);
-
-//    createWindowMenu(menu);
-//    createHelpMenu(menu);
-
-//    return menu;
-//}
 
 }
 

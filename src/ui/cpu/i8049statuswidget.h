@@ -11,7 +11,6 @@ namespace kosmos_cp1::ui::cpu {
 
 using ::kosmos_cp1::emulation::Intel8049;
 
-
 class I8049StatusWidget : public QGroupBox
 {
     Q_OBJECT
@@ -39,7 +38,6 @@ private:
     QLabel *port1_;
     QLabel *port2_;
     MemoryWidget *memory_;
-
 };
 
 } // namespace kosmos_cp1::ui::cpu

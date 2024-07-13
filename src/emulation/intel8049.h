@@ -70,57 +70,6 @@ public:
         return state_;
     }
 
-//    void setT(uint8_t t) {
-//        if (t != state_.t) {
-//            state_.t = t;
-//            emit stateChanged(state_);
-//        }
-//    }
-
-//    void setA(uint8_t a) {
-//        if (a != state_.a) {
-//            state_.a = a;
-//            emit stateChanged(state_);
-//        }
-//    }
-
-//    void setPC(uint16_t pc) {
-//        if (pc != state_.pc) {
-//            state_.pc = pc;
-//            emit stateChanged(state_);
-//        }
-//    }
-
-//    void setPSW(uint8_t psw) {
-//        if (psw != state_.psw) {
-//            state_.psw = psw;
-//            emit stateChanged(state_);
-//        }
-//    }
-
-//    void setDBF(uint8_t dbf) {
-//        if (dbf != state_.dbf) {
-//            state_.psw = dbf;
-//            emit stateChanged(state_);
-//        }
-//    }
-
-//    void setF1(uint8_t f1) {
-//        if (f1 != state_.f1) {
-//            state_.psw = f1;
-//            emit stateChanged(state_);
-//        }
-//    }
-
-//    void writeT1(bool t1) {
-//        bool oldT1 = state_.t1;
-//        state_.t1 = t1;
-//        if (state_.counterRunning && oldT1 && !state_.t1) {
-//            // high -> low: count
-//            incCounter();
-//        }
-//    }
-
     const std::vector<std::uint8_t>& rom() {
         return rom_;
     }

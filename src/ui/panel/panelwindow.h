@@ -39,9 +39,6 @@ public slots:
     void onPinProgWritten(uint8_t val);
     void onPort1ValueWritten(uint8_t newVal);
 
-    void onLoadStateClicked();
-    void onSaveStateClicked();
-
 private:
     Intel8049 *cpu_;
     Intel8155 *pid_;
@@ -59,7 +56,6 @@ private:
     QAction* saveStateAction_;
 
     void createActions();
-    void createToolBar();
     void createMainUI();
 
     void updateWindowTitle(const QString& state);

@@ -61,24 +61,10 @@ int main(int argc, char *argv[])
     // Now, reset the CPU
     cpu.reset();
 
-//    Display.setAppName(Window.APP_NAME);
-
-//    WindowManager windowManager = new WindowManager();
-//    CpuWindow cpuWindow = new CpuWindow(windowManager, cpu, pid, pidExtension, executorThread);
-//    KosmosPanelWindow panelWindow = new KosmosPanelWindow(windowManager, cpu, pid, pidExtension, executorThread);
-//    AssemblerWindow assemblerWindow = new AssemblerWindow(windowManager, pid, pidExtension, executorThread);
-//    windowManager.addWindow(cpuWindow);
-//    windowManager.addWindow(panelWindow);
-//    windowManager.addWindow(assemblerWindow);
-
-//    cpuWindow.open();
-//    panelWindow.open();
-
-    WindowManager windowManager;
-
     ExecutorThread executorThread(&cpu, &pid, &pidExtension);
     executorThread.start();
 
+    WindowManager windowManager;
     PanelWindow panelWindow(&cpu, &pid, &pidExtension, &executorThread, &windowManager);
     CpuWindow cpuWindow(&cpu, &pid, &pidExtension, &executorThread, &windowManager);
     AssemblerWindow assemblerWindow(&pid, &pidExtension, &executorThread, &windowManager);

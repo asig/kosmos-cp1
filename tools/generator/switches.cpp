@@ -1,7 +1,6 @@
 #include "switches.h"
 
 #include "save.h"
-#include "colors.h"
 
 #include <QFile>
 #include <QTextStream>

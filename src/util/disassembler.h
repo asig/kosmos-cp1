@@ -58,20 +58,3 @@ private:
 
 } // namespace util
 } // namespace kosmos_cp1
-
-
-
-
-//public static void main(String ... args) {
-//    try {
-//        Rom rom = new Rom(Disassembler.class.getResourceAsStream("/com/asigner/cp1/CP1.bin"));
-//        List<Line> lines = new Disassembler(rom).disassemble(0, 0x800);
-//        for(Line line : lines) {
-//            System.out.printf("$%04x: [ %s ] %s\n", line.getAddress(), line.getBytes(), line.getDisassembly());
-//        }
-//    } catch (IOException e) {
-//        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//    }
-//}
-
-//}

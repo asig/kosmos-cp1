@@ -33,15 +33,7 @@ public:
     void createWindow() override;
     QString windowName() override;
 
-signals:
-
 public slots:
-//    void onPinProgWritten(uint8_t val);
-//    void onPort1ValueChanged(uint8_t oldVal, uint8_t newVal);
-
-//    void onLoadStateClicked();
-//    void onSaveStateClicked();
-
     void onCpuStateChanged();
     void onInstructionExecuted();
     void onResetExecuted();
@@ -60,20 +52,17 @@ private:
 
     ExecutorThread *executorThread_;
 
-    QAction* runAction_;
-    QAction* stopAction_;
-    QAction* singleStepAction_;
-    QAction* resetAction_;
-    QAction* breakOnMovXAction_;
-    QAction* throttleExecutionAction_;
+    QAction *runAction_;
+    QAction *stopAction_;
+    QAction *singleStepAction_;
+    QAction *resetAction_;
+    QAction *breakOnMovXAction_;
+    QAction *throttleExecutionAction_;
 
     I8049DisassemblyWidget *disassembly_;
     I8155StatusWidget *status8155_;
     I8155StatusWidget *status8155Extension_;
     I8049StatusWidget *status8049_;
-
-//    private AboutAction aboutAction;
-//    private CoolBarManager coolBarManager;
 
     void createActions();
     void createToolBar();

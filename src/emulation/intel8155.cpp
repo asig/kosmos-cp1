@@ -58,7 +58,6 @@ void Intel8155::onPinRDLowActiveWritten(uint8_t cur) {
         emit pinsChanged();
         if (prev == 0 && cur == 1) {
             if (ceValue_) {
-//                log(Level.FINEST, () -> String.format("/CE not active, ignoring read from address $%02x", addressLatch));
                 return;
             }
             if (ioValue_) {
@@ -66,22 +65,18 @@ void Intel8155::onPinRDLowActiveWritten(uint8_t cur) {
                 switch (addressLatch_ & 3) {
                 case 0:
                     data = 0; // TODO(asigner): return REAL data
-//                    log(Level.FINEST, () -> String.format("%s: status -> bus: $%02x", data));
                     bus_->write(data);
                     break;
                 case 1:
                     data = paValue_;
-//                    log(Level.FINEST, () -> String.format("%s: pa -> bus: $%02x", data));
                     bus_->write(data);
                     break;
                 case 2:
                     data = pbValue_;
-//                    log(Level.FINEST, () -> String.format("%s: pb -> bus: $%02x", data));
                     bus_->write(data);
                     break;
                 case 3:
                     data = pcValue_;
-//                    log(Level.FINEST, () -> String.format("%s: pc -> bus: $%02x", data));
                     bus_->write(data);
                     break;
                 default:
@@ -89,7 +84,6 @@ void Intel8155::onPinRDLowActiveWritten(uint8_t cur) {
                 }
             } else {
                 uint8_t data = ram_.read(addressLatch_);
-//                log(Level.FINEST, () -> String.format("mem[$%02x] -> bus: $%02x", addressLatch, data));
                 bus_->write(data);
             }
         }
@@ -101,7 +95,6 @@ void Intel8155::onPinWRLowActiveWritten(uint8_t cur) {
         emit pinsChanged();
         if (prev == 0 && cur == 1) {
             if (ceValue_) {
-//                log(Level.FINEST, () -> String.format("/CE not active, ignoring write to address $%02x", addressLatch));
                 return;
             }
             uint8_t data = bus_->read();
@@ -131,24 +124,18 @@ void Intel8155::onPinWRLowActiveWritten(uint8_t cur) {
 
                     emit commandRegisterWritten();
 
-//                    log(Level.FINEST, () ->
-//                                          "Writing to command register: paMode = " + paMode + ", pbMode = " + pbMode + ", pcMode = " + pcMode +
-//                                          ", paInterruptEnabled = " + paInterruptEnabled + ", pbInterruptEnabled = " + pbInterruptEnabled);
                     break;
                 case 1:
                     paValue_ = data;
                     emit portWritten(Port::A, data);
-//                    log(Level.FINEST, () -> String.format("bus -> pa: $%02x", data));
                     break;
                 case 2:
                     pbValue_ = data;
                     emit portWritten(Port::B, data);
-//                    log(Level.FINEST, () -> String.format("bus -> pb: $%02x", data));
                     break;
                 case 3:
                     pcValue_ = data;
                     emit portWritten(Port::C, data);
-//                    log(Level.FINEST, () -> String.format("bus -> pc: $%02x", data));
                     break;
                 default:
                     std::cerr << fmt::format("{}: Unhandled IO write to address ${:02x}", name_, addressLatch_);
@@ -156,7 +143,6 @@ void Intel8155::onPinWRLowActiveWritten(uint8_t cur) {
                 }
             } else {
                 ram_.write(addressLatch_, data);
-//                log(Level.FINEST, () -> String.format("bus -> mem[%02x]: $%02x", addressLatch, data));
             }
         }
 
