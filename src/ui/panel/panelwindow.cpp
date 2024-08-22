@@ -152,17 +152,17 @@ void PanelWindow::onPort1ValueWritten(uint8_t newVal) {
 }
 
 void PanelWindow::createActions() {
-    QAction *a = new QAction(tr("Load state"));
-    a->setShortcut(QKeyCombination(Qt::CTRL | Qt::Key_L));
-    a->setToolTip(a->text() + " (" + tr("Ctrl+L") + ")");
-    loadStateAction_ = a;
-    connect(loadStateAction_, &QAction::triggered, this, &PanelWindow::onLoadStateClicked);
+//    QAction *a = new QAction(tr("Load state"));
+//    a->setShortcut(QKeyCombination(Qt::CTRL | Qt::Key_L));
+//    a->setToolTip(a->text() + " (" + tr("Ctrl+L") + ")");
+//    loadStateAction_ = a;
+//    connect(loadStateAction_, &QAction::triggered, this, &PanelWindow::onLoadStateClicked);
 
-    a = new QAction(tr("Save state"));
-    a->setShortcut(QKeyCombination(Qt::CTRL | Qt::Key_S));
-    a->setToolTip(a->text() + " (" + tr("Ctrl+S") + ")");
-    saveStateAction_ = a;
-    connect(saveStateAction_, &QAction::triggered, this, &PanelWindow::onSaveStateClicked);
+//    a = new QAction(tr("Save state"));
+//    a->setShortcut(QKeyCombination(Qt::CTRL | Qt::Key_S));
+//    a->setToolTip(a->text() + " (" + tr("Ctrl+S") + ")");
+//    saveStateAction_ = a;
+//    connect(saveStateAction_, &QAction::triggered, this, &PanelWindow::onSaveStateClicked);
 }
 
 }
