@@ -127,6 +127,11 @@ qt_add_executable(kosmos-cp1
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
 )
+
+target_compile_definitions(kosmos-cp1 PRIVATE
+  $<$<CONFIG:Release>:QT_NO_DEBUG_OUTPUT>
+)
+
 include_directories(
     deps/fmt/include
     src
