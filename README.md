@@ -49,7 +49,19 @@ Optionally, if you're using a Gnome desktop:
 sudo apt install qt6-gtk-platformtheme adwaita-qt6
 ```
 
-### Building
+### Building the binary
+
+On the command line:
+```
+cmake . -B build/Release -DCMAKE_BUILD_TYPE=Release
+cd build/Release
+make -j$(nproc)
+```
+
+Alternatively, if you want a debug build, just run this:
+```
+cmake . -B build && cd build && make -j$(nproc)
+```
 
 On the command line: `cmake . -B build && cd build && make -j$(nproc)`
 
