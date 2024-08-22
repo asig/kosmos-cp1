@@ -23,6 +23,7 @@ import com.asigner.cp1.ui.AboutDialog;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
 public class AboutAction extends Action {
 
@@ -32,7 +33,18 @@ public class AboutAction extends Action {
 
     @Override
     public void run() {
-    	AboutDialog dlg = new AboutDialog(Display.getDefault().getActiveShell(), SWT.DIALOG_TRIM);
+        Display display = Display.getDefault();
+        Shell result = display.getActiveShell();
+        if (result == null) {
+            Shell[] shells = display.getShells();
+            for (Shell shell : shells) {
+                if (shell.getShells().length == 0) {
+                    result = shell;
+                }
+            }
+        }
+
+    	AboutDialog dlg = new AboutDialog(result, SWT.DIALOG_TRIM);
         dlg.open();
     }
 
