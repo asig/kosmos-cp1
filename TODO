@@ -1,6 +1,25 @@
 TODO
 ====
 
+- [X] Assembler window
+- [X] CPU debugger window
+- [ ] CP5 component
+- [ ] Installer
+      - [ ] for Windows
+      - [ ] for Debian
+- [ ] UI updates: only update things when they changed!
+
+
+BUGS
+====
+- [X] cross-thread-connections: Don't use "Auto"
+- [X] cross-thread-connections: When not using "Auto", UI updates must be executed in the UI thread. Use signals/slots?
+- [ ] Windows: UI update sometimes freeze and then start again when the window is moved. Threading issue?
+
+
+
+Old Java stuff:
+
 [ ] Switch to a simple event bus, get rid of all the listeners
 [ ] more breakpoint types?
 [X] menu bar

@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>fonts/helvetica-light-586c33cdd0018.ttf</file>
+        <file>fonts/helvetica-black-586c33de4b4d0.otf</file>
+        <file>svgs/led-on.svg</file>
+        <file>svgs/led-off.svg</file>
+        <file>svgs/7segment.svg</file>
+        <file>svgs/switch-on.svg</file>
+        <file>svgs/switch-on-pressed.svg</file>
+        <file>svgs/switch-off.svg</file>
+        <file>svgs/switch-off-pressed.svg</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<!--
+  Copyright (c) 2024 Andreas Signer <asigner@gmail.com>
+ 
+  This file is part of kosmos-cp1.
+ 
+  kosmos-cp1 is free software: you can redistribute it and/or
+  modify it under the terms of the GNU General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+ 
+  kosmos-cp1 is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+ 
+  You should have received a copy of the GNU General Public License
+  along with kosmos-cp1.  If not, see <http://www.gnu.org/licenses/>.
+ -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="15.623015mm"
+   height="15.623015mm"
+   viewBox="0 0 55.357141 55.357141"
+   id="svg6398"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="led-on.svg">
+  <defs
+     id="defs6400">
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4169"
+       id="radialGradient4175-1"
+       cx="-0.2525382"
+       cy="547.28589"
+       fx="-0.2525382"
+       fy="547.28589"
+       r="20.357143"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.36429336,0,0,0.35755818,489.52072,-105.69106)" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4169">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4171" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0;"
+         offset="1"
+         id="stop4173" />
+    </linearGradient>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.0875"
+     inkscape:cx="-143.2613"
+     inkscape:cy="88.03963"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="887"
+     inkscape:window-height="373"
+     inkscape:window-x="918"
+     inkscape:window-y="170"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata6403">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-347.32143,-504.68364)">
+    <g
+       transform="translate(-118.87552,438.09517)"
+       id="g5001">
+      <circle
+         r="27.67857"
+         cy="94.267036"
+         cx="493.87552"
+         id="path4136-9"
+         style="opacity:1;fill:#0e100d;fill-opacity:1;stroke:none;stroke-width:0.1;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <g
+         transform="translate(-1.7857056,-1.7857132)"
+         id="g4974">
+        <circle
+           style="opacity:1;fill:#ff0101;fill-opacity:1;stroke:none;stroke-width:0.1;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="path4142-6"
+           cx="495.66122"
+           cy="96.05275"
+           r="20.357143" />
+        <ellipse
+           style="opacity:0.65;fill:url(#radialGradient4175-1);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.1;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           id="path4142-3-0"
+           cx="489.42871"
+           cy="89.995499"
+           rx="7.4159727"
+           ry="7.278863" />
+      </g>
+    </g>
+  </g>
+</svg>

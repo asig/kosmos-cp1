@@ -37,9 +37,34 @@ are included.
 You can find scans of all the manuals at http://www.retrozone.ch/cp1/
 
 ## Building and running
+
+### Dependencies
 ```
-./gradlew run
+sudo apt install build-essential cmake qt6-base-dev qt6-svg-dev nsis
 ```
+
+Optionally, if you're using a Gnome desktop:
+
+```
+sudo apt install qt6-gtk-platformtheme adwaita-qt6
+```
+
+### Building the binary
+
+On the command line:
+```
+cmake . -B build/Release -DCMAKE_BUILD_TYPE=Release
+cd build/Release
+make -j$(nproc)
+```
+
+Alternatively, if you want a debug build, just run this:
+```
+cmake . -B build && cd build && make -j$(nproc)
+```
+
+On the command line: `cmake . -B build && cd build && make -j$(nproc)`
+
 
 ## Usage
 After starting the Kosmos CP1 emulator, you see 2 windows:
