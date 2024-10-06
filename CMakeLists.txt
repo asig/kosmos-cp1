@@ -222,7 +222,6 @@ target_link_libraries(dataport_test
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Test
-        Qt${QT_VERSION_MAJOR}::Widgets
 )
 
 qt_add_executable(assembler_test
@@ -236,5 +235,4 @@ target_link_libraries(assembler_test
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
         Qt${QT_VERSION_MAJOR}::Test
-        Qt${QT_VERSION_MAJOR}::Widgets
 )
