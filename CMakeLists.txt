@@ -225,44 +225,16 @@ target_link_libraries(dataport_test
         Qt${QT_VERSION_MAJOR}::Widgets
 )
 
-#target_link_libraries(disassembler_6502_test
-#    PRIVATE
-#        Qt${QT_VERSION_MAJOR}::Core
-#        Qt${QT_VERSION_MAJOR}::Test
-#)
-#qt_finalize_executable(disassembler_6502_test)
-
-#qt_add_executable(disassembler_z80_test
-#    MANUAL_FINALIZATION
-#    test/disassembler_z80_test.cpp
-#    src/symtab.h
-#    src/symtab.cpp
-#    src/disassembler.h
-#    src/disassembler.cpp
-#    src/disassembler_z80.h
-#    src/disassembler_z80.cpp
-#)
-#add_test(NAME disassembler_z80_test COMMAND disassembler_z80_test)
-
-#target_link_libraries(disassembler_z80_test
-#    PRIVATE
-#        Qt${QT_VERSION_MAJOR}::Core
-#        Qt${QT_VERSION_MAJOR}::Test
-#)
-#qt_finalize_executable(disassembler_z80_test)
-
-
-#qt_add_executable(watches_test
-#    MANUAL_FINALIZATION
-#    test/watches_test.cpp
-#    src/watches.h
-#    src/watches.cpp
-#)
-#add_test(NAME watches_test COMMAND watches_test)
-
-#target_link_libraries(watches_test
-#    PRIVATE
-#        Qt${QT_VERSION_MAJOR}::Core
-#        Qt${QT_VERSION_MAJOR}::Test
-#)
-#qt_finalize_executable(watches_test)
+qt_add_executable(assembler_test
+    MANUAL_FINALIZATION
+    test/assembler_test.cpp
+    src/assembler.h
+    src/assembler.cpp
+)
+add_test(NAME assembler_test COMMAND assembler_test)
+target_link_libraries(assembler_test
+    PRIVATE
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Test
+        Qt${QT_VERSION_MAJOR}::Widgets
+)
