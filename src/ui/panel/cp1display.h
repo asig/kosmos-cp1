@@ -45,7 +45,13 @@ public:
 public slots:
     void onPidPortWritten(Port port, uint8_t val);
 
+    // Slot so that we can call this from a different thread safely.
+    void setSegments(int digit, uint8_t value);
+
 signals:
+    // Used internally so that we can get a direct callback in onPidPortWritten
+    // but then can cross thread boundaries to actually update the UI.
+    void segmentsChanged(int digit, uint8_t value);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

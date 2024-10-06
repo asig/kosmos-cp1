@@ -88,7 +88,10 @@ CP1Display::CP1Display(Intel8155 *pid, QWidget *parent)
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     setFixedSize(sz);
 
+    // port writes need to be handled immediately, as they choose which display digit to update
     connect(pid_, &Intel8155::portWritten, this, &CP1Display::onPidPortWritten, Qt::DirectConnection);
+
+    connect(this, &CP1Display::segmentsChanged, this, &CP1Display::setSegments);
 }
 
 void CP1Display::onPidPortWritten(Port port, uint8_t value) {
@@ -109,11 +112,14 @@ void CP1Display::onPidPortWritten(Port port, uint8_t value) {
             qDebug() << "activeDigit_ == " << activeDigit_ << " is out of range!";
             std::abort();
         }
-        CP1SevenSegmentWidget *digit = digits_[5 - activeDigit_];
-        digit->setSegments(value);
-        update();
+        emit segmentsChanged(5 - activeDigit_, value);
     }
     lastPortWritten_ = port;
+}
+
+void CP1Display::setSegments(int digit, uint8_t value) {
+    digits_[digit]->setSegments(value);
+    update();
 }
 
 void CP1Display::display(const std::string& str) {
