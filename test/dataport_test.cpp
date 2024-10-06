@@ -19,9 +19,6 @@
 
 #include <QTest>
 
-#include <vector>
-#include <algorithm>
-#include <cstdint>
 
 #include "emulation/dataport.h"
 
