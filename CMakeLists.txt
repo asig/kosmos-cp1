@@ -206,22 +206,24 @@ set_target_properties(generator PROPERTIES
 qt_finalize_executable(generator)
 
 
-##
-## TESTS
-##
-#enable_testing(true)
+#
+# TESTS
+#
+enable_testing(true)
 
-#qt_add_executable(disassembler_6502_test
-#    MANUAL_FINALIZATION
-#    test/disassembler_6502_test.cpp
-#    src/symtab.h
-#    src/symtab.cpp
-#    src/disassembler.h
-#    src/disassembler.cpp
-#    src/disassembler_6502.h
-#    src/disassembler_6502.cpp
-#)
-#add_test(NAME disassembler_6502_test COMMAND disassembler_6502_test)
+qt_add_executable(dataport_test
+    MANUAL_FINALIZATION
+    test/dataport_test.cpp
+    src/emulation/dataport.h
+    src/emulation/dataport.cpp
+)
+add_test(NAME dataport_test COMMAND dataport_test)
+target_link_libraries(dataport_test
+    PRIVATE
+        Qt${QT_VERSION_MAJOR}::Core
+        Qt${QT_VERSION_MAJOR}::Test
+        Qt${QT_VERSION_MAJOR}::Widgets
+)
 
 #target_link_libraries(disassembler_6502_test
 #    PRIVATE
