@@ -36,7 +36,7 @@ are included.
 ### Further reading
 You can find scans of all the manuals at http://www.retrozone.ch/cp1/
 
-## Building and running
+## Building (on Linux)
 
 ### Dependencies
 ```
@@ -65,6 +65,20 @@ cmake . -B build && cd build && make -j$(nproc)
 
 On the command line: `cmake . -B build && cd build && make -j$(nproc)`
 
+## Building and running (on Windows)
+
+### Dependencies
+To compile the binary on Windows, you need [Qt](https://www.qt.io/download-open-source).
+When installing, make sure that you also install the included MinGW C++ compiler.
+
+If you also want to build the installer, then you need [NSIS 3](https://sourceforge.net/projects/nsis/)
+as well.
+
+### Building the binary and installer
+The easiest way to build the binary and installer is to run `build_win_release.bat`
+in a command shell. You might need to adjust the `QT_HOME` variable in the script
+to match the Qt version installed on your system, as well as the `NSIS_HOME` variable
+to point to your NSIS installation.
 
 ## Usage
 After starting the Kosmos CP1 emulator, you see 2 windows:
