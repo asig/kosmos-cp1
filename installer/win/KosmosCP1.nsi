@@ -18,7 +18,6 @@
 ; The following values need to be set on the command line.
 ; - ARCH
 ; - VERSION
-; - EXE_PATH
 
 Unicode True
 
@@ -28,9 +27,6 @@ Unicode True
 
 !ifndef VERSION
   !error "VERSION must be defined!"
-!endif
-!ifndef EXE_PATH
-  !error "EXE_PATH must be defined!"
 !endif
 
 ; HM NIS Edit Wizard helper defines
@@ -63,7 +59,7 @@ Unicode True
 !insertmacro MUI_PAGE_WELCOME
 ; License page
 !define MUI_LICENSEPAGE_RADIOBUTTONS
-!insertmacro MUI_PAGE_LICENSE "../../../LICENSE"
+!insertmacro MUI_PAGE_LICENSE "../../LICENSE"
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Instfiles page
