@@ -10,6 +10,7 @@ set PATH_SAVED=%PATH%
 set PATH=%QT_TOOLS%\ninja;%PATH%
 set PATH=%QT_TOOLS%\CMake_64\bin;%PATH%
 set PATH=%QT_TOOLS%\mingw1310_64\bin;%PATH%
+set PATH=%QT_HOME%\mingw_64\bin;%PATH%
 set PATH=%NSIS_HOME%\Bin;%PATH%
 
 cmake.exe ^
