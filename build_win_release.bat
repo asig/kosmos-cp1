@@ -5,9 +5,11 @@ set NSIS_HOME=%ProgramFiles(x86)%\NSIS
 
 set VERSION=0.1
 
+set PATH_SAVED=%PATH%
+
 set PATH=%PATH%;%QT_TOOLS%\ninja
 set PATH=%PATH%;%QT_TOOLS%\CMake_64\bin
-set PATH=%PATH%;%QT_HOME%\mingw_64\bin
+set PATH=%PATH%;%QT_TOOLS%\mingw1310_64\bin
 set PATH=%PATH%;%NSIS_HOME%\Bin
 
 cmake.exe ^
@@ -27,3 +29,5 @@ windeployqt.exe ^
   build\win\Release\kosmos-cp1.exe
 
 makensis -DVERSION=%VERSION% -DARCH=x86_64 installer\win\KosmosCP1.nsi
+
+set PATH=%PATH_SAVED%
