@@ -80,6 +80,9 @@ in a command shell. You might need to adjust the `QT_HOME` variable in the scrip
 to match the Qt version installed on your system, as well as the `NSIS_HOME` variable
 to point to your NSIS installation.
 
+NOTE: Make sure that the path to the source directory _DOES NOT CONTAIN SPACES_. If it
+does, the Windows Resource Compiler will be confused :-/
+
 ## Usage
 After starting the Kosmos CP1 emulator, you see 2 windows:
 - The "CPU" windows containing:
