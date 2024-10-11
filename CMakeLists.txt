@@ -122,6 +122,7 @@ set(PROJECT_SOURCES
 #add_link_options(-fsanitize=address)
 
 configure_file(src/config.h.in config.h)
+configure_file(set_version.bat.in set_version.bat)
 
 set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.rc")
 
