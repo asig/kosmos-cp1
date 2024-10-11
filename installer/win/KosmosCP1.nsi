@@ -1,4 +1,4 @@
-; Copyright (c) 2017 Andreas Signer <asigner@gmail.com>
+; Copyright (c) 2024 Andreas Signer <asigner@gmail.com>
 ;
 ; This file is part of kosmos-cp1.
 ;
@@ -29,14 +29,16 @@ Unicode True
   !error "VERSION must be defined!"
 !endif
 
+!define BUILD_DIR "..\..\build\win\x86_64\Release" 
+
 ; HM NIS Edit Wizard helper defines
-!define PRODUCT_EXE "KosmosCP1.exe"
+!define PRODUCT_EXE "kosmos-cp1.exe"
 !define PRODUCT_DIR "KosmosCP1"
 !define PRODUCT_NAME "Kosmos CP1"
 !define PRODUCT_FILENAME "KosmosCP1"
 !define PRODUCT_VERSION "${VERSION}"
 !define PRODUCT_PUBLISHER "Andreas Signer"
-!define PRODUCT_WEB_SITE "http://www.retrozone.ch/cp1"
+!define PRODUCT_WEB_SITE "https://www.retrozone.ch/cp1"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_EXE}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -78,7 +80,7 @@ Unicode True
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "../../../build/installers/${PRODUCT_FILENAME}-${PRODUCT_VERSION}-${ARCH}-Setup.exe"
+OutFile "../../build/installers/${PRODUCT_FILENAME}-${PRODUCT_VERSION}-${ARCH}-Setup.exe"
 !if ${ARCH} == "x86"
   InstallDir "$PROGRAMFILES32\${PRODUCT_DIR}"
 !else if ${ARCH} == "x86_64"
@@ -97,7 +99,19 @@ FunctionEnd
 Section "Hauptgruppe" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "${EXE_PATH}"
+  File "${BUILD_DIR}\Qt6Core.dll"
+  File "${BUILD_DIR}\Qt6SvgWidgets.dll"
+  File "${BUILD_DIR}\kosmos-cp1.exe"
+  File "${BUILD_DIR}\libstdc++-6.dll"
+  File "${BUILD_DIR}\libwinpthread-1.dll"
+  File "${BUILD_DIR}\Qt6Core.dll"
+  File "${BUILD_DIR}\Qt6Gui.dll"
+  File "${BUILD_DIR}\Qt6Svg.dll"
+  File "${BUILD_DIR}\Qt6Widgets.dll"
+
+  SetOutPath "$INSTDIR\platforms"
+  File "${BUILD_DIR}\platforms\qwindows.dll"
+
   CreateDirectory "$SMPROGRAMS\${PRODUCT_DIR}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_DIR}\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE}"
   CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE}"
@@ -137,6 +151,16 @@ Section Uninstall
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\${PRODUCT_EXE}"
+  Delete "$INSTDIR\Qt6Core.dll"
+  Delete "$INSTDIR\Qt6SvgWidgets.dll"
+  Delete "$INSTDIR\kosmos-cp1.exe"
+  Delete "$INSTDIR\libstdc++-6.dll"
+  Delete "$INSTDIR\libwinpthread-1.dll"
+  Delete "$INSTDIR\Qt6Core.dll"
+  Delete "$INSTDIR\Qt6Gui.dll"
+  Delete "$INSTDIR\Qt6Svg.dll"
+  Delete "$INSTDIR\Qt6Widgets.dll"
+  Delete "$INSTDIR\platforms\qwindows.dll"
 
   Delete "$SMPROGRAMS\${PRODUCT_DIR}\Uninstall.lnk"
   Delete "$SMPROGRAMS\${PRODUCT_DIR}\Website.lnk"
@@ -144,6 +168,7 @@ Section Uninstall
   Delete "$SMPROGRAMS\${PRODUCT_DIR}\${PRODUCT_NAME}.lnk"
 
   RMDir "$SMPROGRAMS\${PRODUCT_DIR}"
+  RMDir "$INSTDIR\platforms"
   RMDir "$INSTDIR"
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
