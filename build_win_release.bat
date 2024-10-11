@@ -7,10 +7,10 @@ set VERSION=0.1
 
 set PATH_SAVED=%PATH%
 
-set PATH=%PATH%;%QT_TOOLS%\ninja
-set PATH=%PATH%;%QT_TOOLS%\CMake_64\bin
-set PATH=%PATH%;%QT_TOOLS%\mingw1310_64\bin
-set PATH=%PATH%;%NSIS_HOME%\Bin
+set PATH=%QT_TOOLS%\ninja;%PATH%
+set PATH=%QT_TOOLS%\CMake_64\bin;%PATH%
+set PATH=%QT_TOOLS%\mingw1310_64\bin;%PATH%
+set PATH=%NSIS_HOME%\Bin;%PATH%
 
 cmake.exe ^
   -DQt6_DIR=%QT_HOME%\mingw_64\lib\cmake\Qt6 ^
