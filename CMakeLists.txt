@@ -123,9 +123,12 @@ set(PROJECT_SOURCES
 
 configure_file(src/config.h.in config.h)
 
+set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.rc")
+
 qt_add_executable(kosmos-cp1
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
+    ${app_icon_resource_windows}
 )
 
 target_compile_definitions(kosmos-cp1 PRIVATE
