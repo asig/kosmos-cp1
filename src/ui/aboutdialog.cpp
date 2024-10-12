@@ -47,7 +47,7 @@ void AboutDialog::setupUI() {
     title->setFont(font);
 
     vLayout->addWidget(title, 0, Qt::AlignHCenter);
-    vLayout->addWidget(new QLabel(QString::asprintf("Version %d.%d", VERSION_MAJOR, VERSION_MINOR)), 0, Qt::AlignHCenter);
+    vLayout->addWidget(new QLabel(QString::asprintf("Version %d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)), 0, Qt::AlignHCenter);
     vLayout->addWidget(new QLabel("© 2024 Andreas Signer <asigner@gmail.com>"), 0, Qt::AlignHCenter);
     vLayout->addWidget(new QLabel("<a href=\"https://github.com/asig/kosmos-cp1\">https://github.com/asig/kosmos-cp1</a>"), 0, Qt::AlignHCenter);
     auto okBtn = new QPushButton("Ok");

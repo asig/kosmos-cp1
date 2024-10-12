@@ -21,3 +21,4 @@
 
 #define VERSION_MAJOR @kosmos-cp1_VERSION_MAJOR@
 #define VERSION_MINOR @kosmos-cp1_VERSION_MINOR@
+#define VERSION_PATCH @kosmos-cp1_VERSION_PATCH@
