@@ -1,3 +1,5 @@
+@rem Builds kosmos-cp1 for Windows and creates an Installer
+
 @set QT_DIR=C:\Qt
 @set QT_HOME=%QT_DIR%\6.7.3
 @set QT_TOOLS=%QT_DIR%\Tools
