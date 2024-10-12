@@ -63,8 +63,6 @@ Alternatively, if you want a debug build, just run this:
 cmake . -B build && cd build && make -j$(nproc)
 ```
 
-On the command line: `cmake . -B build && cd build && make -j$(nproc)`
-
 ## Building and running (on Windows)
 
 ### Dependencies
@@ -81,20 +79,21 @@ to match the Qt version installed on your system, as well as the `NSIS_HOME` var
 to point to your NSIS installation.
 
 NOTE: Make sure that the path to the source directory _DOES NOT CONTAIN SPACES_. If it
-does, the Windows Resource Compiler will be confused :-/
+does, MinGW's Resource Compiler will be confused :-/
 
 ## Usage
-After starting the Kosmos CP1 emulator, you see 2 windows:
+After starting the Kosmos CP1 emulator, you'll see the "Panel" window that
+shows the display and controls of the CP1 main unit, as well as the LEDs and
+switches of the CP5 universal I/O interface.
+
+In the "Windows" menu, you can choose other windows as well:
 - The "CPU" windows containing:
    - The disassembly of the Kosmos CP1's EEPROM,
    - the complete state and memory of the main Intel 8049,
    - the complete state and memory of the main unit's 8155, and finally
    - the complete state and memory of the CP3's 8155.
-- The "Panel" window that shows the display and controls of the CP1 main unit,
-  as well as the LEDs and switches of the CP5 universal I/O interface
-
-Additionally, there is an "Assembler" window (not visible after startup) that
-you can use to write programs in CP1 assembly language.
+- An "Assembler" window that you can use to write programs in CP1 
+  assembly language.
 
 ### CPU Window
 The emulator will start in "trace execution" mode. This means that the state is
