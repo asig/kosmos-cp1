@@ -3,8 +3,8 @@
 
         .ORG 1
 
-		; Setup
-		LDA start_addr      ; Start-Adresse...
+        ; Setup
+        LDA start_addr      ; Start-Adresse...
         ABS cur_addr        ; ... als aktuelle Adresse speichern
 
 loop   	LIA cur_addr        ; Aktuelles Pattern lesen
@@ -22,14 +22,14 @@ endloop ABS cur_addr        ; Neue Adresse als aktuelle Adresse speichern
         SPU loop            ; Und zurueck zur Anzeige
 
         ; Daten-Bereich
-inc         .DB 1       ; Inkrement
+inc             .DB 1       ; Inkrement
 start_addr	.DB data_start  ; Start-Adresse
-end_addr    .DB data_end    ; End-Adresse
-cur_addr    .DB ?           ; Aktuelle Adresse
+end_addr        .DB data_end    ; End-Adresse
+cur_addr        .DB ?           ; Aktuelle Adresse
 data_start	.DB  16,  16,  16,  32,  32,  32,  32,  64,  64,  64,  64, 128, 128, 128, 128, 128
-            .DB 128, 128, 128, 128, 128, 128,  64,  64,  64,  64,  32,  32,  32,  32,  16,  16
-            .DB  16,   8,   8,   4,   4,   4,   4,   2,   2,   2,   2,   1,   1,   1,   1,   1
-            .DB   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   4,   4,   4,   4,   8,   8
+                .DB 128, 128, 128, 128, 128, 128,  64,  64,  64,  64,  32,  32,  32,  32,  16,  16
+                .DB  16,   8,   8,   4,   4,   4,   4,   2,   2,   2,   2,   1,   1,   1,   1,   1
+                .DB   1,   1,   1,   1,   1,   1,   2,   2,   2,   2,   4,   4,   4,   4,   8,   8
 data_end
 
         ; Die Bit-Patterns wurden mit folgendem Python-Skript errechnet:
