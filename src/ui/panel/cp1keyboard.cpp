@@ -131,8 +131,8 @@ CP1Keyboard::CP1Keyboard(QWidget *parent)
 
 CP1Button* CP1Keyboard::makeBtn(const QString& str, int row, int col, int btnCode) {
     CP1Button *btn = new CP1Button(str, row, col);
-    connect(btn, &CP1Button::keyPressed, this, &CP1Keyboard::onKeyPressed);
-    connect(btn, &CP1Button::keyReleased, this, &CP1Keyboard::onKeyReleased);
+    connect(btn, &CP1Button::keyPressed, this, &CP1Keyboard::onKeyPressed, Qt::DirectConnection);
+    connect(btn, &CP1Button::keyReleased, this, &CP1Keyboard::onKeyReleased, Qt::DirectConnection);
     if (btnCode != -1) {
         buttons_[btnCode] = btn;
     }

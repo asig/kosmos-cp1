@@ -57,6 +57,8 @@ signals:
 public slots:
     void onPinProgWritten(uint8_t val);
     void onPort1ValueWritten(uint8_t newVal);
+    void on8155PortWritten(Port port, uint8_t val);
+    void onSwitchesChanged(uint8_t val);
 
 private:
     Intel8049 *cpu_;

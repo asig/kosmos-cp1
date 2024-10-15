@@ -68,14 +68,9 @@ void PanelWindow::createWindow() {
 
     connect(cpu_->port(1).get(), &DataPort::valueWritten, this, &PanelWindow::onPort1ValueWritten, Qt::DirectConnection);
 
-    connect(pid_, &Intel8155::portWritten, [this](Port port, uint8_t val) {
-        if (port != Port::B) return;
-        cp5Panel_->writeLeds(val);
-    });
-    connect(cp5Panel_, &CP5PanelWidget::switchesChanged, [this](uint8_t val) {
-        cpu_->port(1)->write(val);
-    });
-
+    connect(pid_, &Intel8155::portWritten, this, &PanelWindow::on8155PortWritten, Qt::DirectConnection);
+    connect(cp5Panel_, &CP5PanelWidget::switchesChanged, this, &PanelWindow::onSwitchesChanged, Qt::DirectConnection);
+    
     updateWindowTitle("stopped");
 }
 
@@ -150,6 +145,16 @@ void PanelWindow::onPort1ValueWritten(uint8_t newVal) {
     cpu_->port(1)->write(cp5Panel_->readSwitches());
     inPort1ValueWritten_ = false;
 }
+
+void PanelWindow::on8155PortWritten(Port port, uint8_t val) {
+    if (port != Port::B) return;
+    cp5Panel_->writeLeds(val);
+}
+
+void PanelWindow::onSwitchesChanged(uint8_t val) {
+    cpu_->port(1)->write(val);
+}
+
 
 void PanelWindow::createActions() {
 //    QAction *a = new QAction(tr("Load state"));
