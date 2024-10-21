@@ -165,7 +165,6 @@ void Assembler::handleLine(int lineNo, QString line) {
     while (curPos < line.length() && line.at(curPos).isLetterOrNumber()) {
         opcode += line.at(curPos++);
     }
-    qDebug() << "OPCODE: " << opcode;
 
     // skip whitespace
     while (curPos < line.length() && line.at(curPos).isSpace()) {
@@ -175,14 +174,10 @@ void Assembler::handleLine(int lineNo, QString line) {
     // parameters
     std::vector<QString> params;
     QString rawParams = line.sliced(curPos).trimmed();
-    qDebug() << "curPos == " << curPos;
-    qDebug() << "LINE = " << line;
-    qDebug() << "rawParams = " << rawParams;
 
     if (!rawParams.isEmpty()) {
         auto split = rawParams.split(',');
         for (auto s : split) {
-            qDebug() << "PARAM: " << s.trimmed();
             params.push_back(s.trimmed());
         }
     }
