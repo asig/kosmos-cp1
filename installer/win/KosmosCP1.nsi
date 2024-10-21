@@ -99,14 +99,14 @@ FunctionEnd
 Section "Hauptgruppe" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "${BUILD_DIR}\Qt6Core.dll"
-  File "${BUILD_DIR}\Qt6SvgWidgets.dll"
   File "${BUILD_DIR}\kosmos-cp1.exe"
+  File "${BUILD_DIR}\libgcc_s_seh-1.dll"
   File "${BUILD_DIR}\libstdc++-6.dll"
   File "${BUILD_DIR}\libwinpthread-1.dll"
   File "${BUILD_DIR}\Qt6Core.dll"
   File "${BUILD_DIR}\Qt6Gui.dll"
   File "${BUILD_DIR}\Qt6Svg.dll"
+  File "${BUILD_DIR}\Qt6SvgWidgets.dll"
   File "${BUILD_DIR}\Qt6Widgets.dll"
 
   SetOutPath "$INSTDIR\platforms"
@@ -151,14 +151,14 @@ Section Uninstall
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
   Delete "$INSTDIR\${PRODUCT_EXE}"
-  Delete "$INSTDIR\Qt6Core.dll"
-  Delete "$INSTDIR\Qt6SvgWidgets.dll"
-  Delete "$INSTDIR\kosmos-cp1.exe"
+
+  Delete "$INSTDIR\libgcc_s_seh-1.dll"
   Delete "$INSTDIR\libstdc++-6.dll"
   Delete "$INSTDIR\libwinpthread-1.dll"
   Delete "$INSTDIR\Qt6Core.dll"
   Delete "$INSTDIR\Qt6Gui.dll"
   Delete "$INSTDIR\Qt6Svg.dll"
+  Delete "$INSTDIR\Qt6SvgWidgets.dll"
   Delete "$INSTDIR\Qt6Widgets.dll"
   Delete "$INSTDIR\platforms\qwindows.dll"
 
