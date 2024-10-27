@@ -115,6 +115,10 @@ Section "Hauptgruppe" SEC01
   SetOutPath "$INSTDIR\platforms"
   File "${BUILD_DIR}\platforms\qwindows.dll"
 
+  # Set out path to $INSTDIR again so that we don't get the "Execute in" entry in the Desktop shortcut set to "platform".
+  # No idea why this is necessary...
+  SetOutPath "$INSTDIR"
+
   CreateDirectory "$SMPROGRAMS\${PRODUCT_DIR}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_DIR}\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE}"
   CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_EXE}"
