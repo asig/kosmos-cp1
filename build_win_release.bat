@@ -15,20 +15,21 @@
 @set PATH=%NSIS_HOME%\Bin;%PATH%
 
 @set ARCH=x86_64
+@set BUILD_DIR=build\win\%ARCH%\Release
 
 cmake.exe ^
   -DQt6_DIR=%QT_HOME%\mingw_64\lib\cmake\Qt6 ^
   -DQT_DIR=%QT_HOME%\mingw_64\lib\cmake\Qt6 ^
   -DCMAKE_BUILD_TYPE=Release ^
   -G "Ninja" ^
-  -B build\win\%ARCH%\Release\ ^
+  -B %BUILD_DIR% ^
   .
 
-call build\win\%ARCH%\Release\set_version.bat
+call %BUILD_DIR%\set_version.bat
 
-cd build\win\%ARCH%\Release
-ninja
-cd ..\..\..\..
+rem cd build\win\%ARCH%\Release
+ninja -C %BUILD_DIR%
+rem cd ..\..\..\..
 
 @rem windeployqt copies the mingw runtime dlls from %QT_HOME%\mingw_64 which
 @rem happens to be the mingw1120... Apparently, there is no way to tell it
@@ -37,10 +38,11 @@ cd ..\..\..\..
 windeployqt.exe ^
   --release ^
   --no-compiler-runtime ^
-  build\win\%ARCH%\Release\kosmos-cp1.exe
-copy %QT_TOOLS%\mingw1310_64\bin\*.dll build\win\%ARCH%\Release\
+  %BUILD_DIR%\kosmos-cp1.exe
+copy %QT_TOOLS%\mingw1310_64\bin\*.dll %BUILD_DIR%\
 
 mkdir build\installers
-makensis /INPUTCHARSET UTF8 -DVERSION=%VERSION% -DARCH=%ARCH% installer\win\KosmosCP1.nsi
+cd .
+makensis /NOCD /INPUTCHARSET UTF8 /DVERSION=%VERSION% /DARCH=%ARCH% /DBUILD_DIR=%BUILD_DIR% installer\win\KosmosCP1.nsi
 
 @set PATH=%PATH_SAVED%
