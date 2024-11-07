@@ -25,6 +25,24 @@
 
 #include <QString>
 
+/*
+
+ASSEMBLER SYNTAX
+----------------
+
+line := [ident ] [directive | instr] "\n" .
+instr = ident [ param ] .
+param = number | ident .
+directive = orgDirective | dbDirective | equDirective | rawDirective .
+orgDirective = ".ORG" (number | ident ) .
+dbDirective = ".DB" byteSpec { "," byteSpec }.
+equDirective = ".EQU" ident "," (ident | number) .
+byteSpec = number | ident | "?" .
+rawDirective = ".RAW" rawSpec { "," rawSpec }.
+rawSpec = number "." number .
+
+*/
+
 namespace kosmos_cp1::assembler {
 
 class Assembler
