@@ -34,10 +34,14 @@ Unicode True
   !error "BUILD_DIR must be defined!"
 !endif
 
+!ifndef INSTALLER_NAME
+  !error "INSTALLER_NAME must be defined!"
+!endif
+
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_EXE "kosmos-cp1.exe"
 !define PRODUCT_DIR "KosmosCP1"
-!define PRODUCT_NAME "Kosmos CP1"
+!define PRODUCT_NAME "Kosmos CP1 Emulator"
 !define PRODUCT_FILENAME "KosmosCP1"
 !define PRODUCT_VERSION "${VERSION}"
 !define PRODUCT_PUBLISHER "Andreas Signer"
@@ -83,7 +87,8 @@ Unicode True
 ; MUI end ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "build/installers/${PRODUCT_FILENAME}-${PRODUCT_VERSION}-${ARCH}-Setup.exe"
+OutFile "${BUILD_DIR}\${INSTALLER_NAME}"
+
 !if ${ARCH} == "x86"
   InstallDir "$PROGRAMFILES32\${PRODUCT_DIR}"
 !else if ${ARCH} == "x86_64"
