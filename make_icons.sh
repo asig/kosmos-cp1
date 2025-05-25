@@ -26,3 +26,10 @@ for sz in 16 32 128 256 512; do
     convert ${TMPDIR}/t.png -gravity center -background none -extent ${sz2}x${sz2} ${f}
 done
 png2icns resources/ui/icon.icns ${TMPDIR}/icon.iconset/*.png
+
+# Create PNG files for Linux
+for sz in 16 24 32 48 64 128 256; do
+    f=resources/ui/icon-${sz}x${sz}.png
+    inkscape -w ${sz} artwork/icon.svg -o ${f}
+    convert ${f} -gravity center -background none -extent ${sz}x${sz} ${f}
+done
