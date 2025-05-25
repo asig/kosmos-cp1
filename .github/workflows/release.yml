@@ -1,0 +1,152 @@
+# Cut a release whenever a new tag is pushed to the repo.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+    
+jobs:
+  variables: 
+    outputs:
+      version: ${{ steps.var.outputs.version}}
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Setting global variables
+        uses: actions/github-script@v6
+        id: var
+        with:
+          script: |
+            const ref = '${{ github.ref_name }}';
+            const version = ref.substring(1);
+            core.setOutput('version', version);
+
+  build-win-release:    
+    uses: ./.github/workflows/build-win.yml
+    needs: variables
+    with:
+      artifact-retention-days: 1
+      version: ${{ needs.variables.outputs.version }}
+
+  # build-mac-release:
+  #   uses: ./.github/workflows/build-mac.yml
+  #   needs: variables
+  #   with:
+  #     artifact-retention-days: 1
+  #     version: ${{ needs.variables.outputs.version }}
+          
+  # build-linux-release:
+  #   uses: ./.github/workflows/build-linux.yml
+  #   needs: variables
+  #   with:
+  #     artifact-retention-days: 1
+  #     version: ${{ needs.variables.outputs.version }}
+
+  create-release:
+    name: Create Release
+    needs: [variables, build-win-release]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get tag name
+        id: get_tag
+        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Download Windows binary
+        id: download-windows
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binary
+          path: ./artifacts/
+          
+      - name: Download Mac binary
+        id: download-mac
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-binary
+          path: ./artifacts/
+
+      - name: Download Linux binary
+        id: download-linux
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-binary
+          path: ./artifacts/
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Generate "filter" script to extract changes from CHANGELOG.md
+          cat >filter.py <<EOF
+          import sys
+          file = sys.argv[1]
+          version = sys.argv[2]
+          printing = False
+          with open(file, 'r') as f:
+              for line in f:
+                  if line.startswith(f"## v{version}"):
+                      printing = True
+                      continue
+                  if line.startswith("## "):
+                      printing = False
+                  if printing:
+                      print(line, end="")
+          EOF
+
+          # Extract changes from CHANGELOG.md
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV 
+          echo "# Release ${{ env.TAG_NAME }}" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "## Changes" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          python3 filter.py CHANGELOG.md ${{ needs.variables.outputs.version }} >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
+          body: ${{ env.CHANGELOG }}
+          draft: false
+          prerelease: ${{ contains(env.TAG_NAME, '-alpha') || contains(env.TAG_NAME, '-beta') || contains(env.TAG_NAME, '-rc') }}
+
+
+      # - name: Upload Mac Release Asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./artifacts/${{ needs.build-mac-release.outputs.artifact-name }}
+      #     asset_name: ${{ needs.build-mac-release.outputs.artifact-name }}
+      #     asset_content_type: ${{ needs.build-mac-release.outputs.artifact-content-type }}
+
+      - name: Upload Windows Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/${{ needs.build-win-release.outputs.artifact-name }}
+          asset_name: ${{ needs.build-win-release.outputs.artifact-name }}
+          asset_content_type: ${{ needs.build-win-release.outputs.artifact-content-type }}
+
+      # - name: Upload Linux Release Asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./artifacts/${{ needs.build-linux-release.outputs.artifact-name }}
+      #     asset_name: ${{ needs.build-linux-release.outputs.artifact-name }}
+      #     asset_content_type: ${{ needs.build-linux-release.outputs.artifact-content-type }}
+  
+  
