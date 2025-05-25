@@ -35,16 +35,16 @@ jobs:
   #     artifact-retention-days: 1
   #     version: ${{ needs.variables.outputs.version }}
           
-  # build-linux-release:
-  #   uses: ./.github/workflows/build-linux.yml
-  #   needs: variables
-  #   with:
-  #     artifact-retention-days: 1
-  #     version: ${{ needs.variables.outputs.version }}
+  build-linux-release:
+    uses: ./.github/workflows/build-linux.yml
+    needs: variables
+    with:
+      artifact-retention-days: 1
+      version: ${{ needs.variables.outputs.version }}
 
   create-release:
     name: Create Release
-    needs: [variables, build-win-release]
+    needs: [variables, build-win-release, build-linux-release]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -139,14 +139,14 @@ jobs:
           asset_name: ${{ needs.build-win-release.outputs.artifact-name }}
           asset_content_type: ${{ needs.build-win-release.outputs.artifact-content-type }}
 
-      # - name: Upload Linux Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./artifacts/${{ needs.build-linux-release.outputs.artifact-name }}
-      #     asset_name: ${{ needs.build-linux-release.outputs.artifact-name }}
-      #     asset_content_type: ${{ needs.build-linux-release.outputs.artifact-content-type }}
+      - name: Upload Linux Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/${{ needs.build-linux-release.outputs.artifact-name }}
+          asset_name: ${{ needs.build-linux-release.outputs.artifact-name }}
+          asset_content_type: ${{ needs.build-linux-release.outputs.artifact-content-type }}
   
   

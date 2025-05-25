@@ -1,0 +1,135 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: Build Linux binaries
+
+on:
+  workflow_call:
+    inputs:
+      artifact-retention-days:
+        description: 'Number of days to retain artifacts'
+        default: 1
+        required: false
+        type: number
+      version:
+        description: 'Version to build'
+        required: true
+        type: string
+    outputs:
+      artifact-name:
+        value: ${{ jobs.build-linux.outputs.artifact-name }}
+      artifact-content-type:
+        value: ${{ jobs.build-linux.outputs.artifact-content-type }}
+
+      
+  workflow_dispatch:
+    inputs:
+      artifact-retention-days:
+        description: 'Number of days to retain artifacts'
+        default: 1
+        required: false
+        type: number
+      version:
+        description: 'Version to build'
+        required: true
+        type: string
+ 
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  EXECUTABLE_NAME: kosmos-cp1
+  PRODUCT_NAME: "Kosmos CP1 Emulator"
+  APPIMAGE_NAME: "KosmosCP1Emulator-${{ inputs.version }}-x86_64.AppImage"
+  QT_VERSION: '6.8.3'
+  VERSION: ${{ inputs.version }}
+  BUILD_DIR: ${{ github.workspace }}/build
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-24.04
+    outputs:
+      artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
+      artifact-content-type: ${{ steps.set-outputs.outputs.artifact-content-type }}
+    steps:
+      - uses: actions/checkout@v4
+   
+      - name: Install dependencies
+        id: deps
+        shell: bash
+        run: |
+          sudo apt-get install -y build-essential cmake qt6-base-dev qt6-svg-dev
+  
+      - name: Build & Test
+        run: |
+          echo "Running on Linux"
+          echo "artifact-retention-days: ${{ inputs.artifact-retention-days }}"
+          echo "version: ${{ inputs.version }}"
+          echo "Env-vars:"
+          env | sort
+
+          mkdir -p ${{ env.BUILD_DIR }}
+          cd ${{ env.BUILD_DIR }}
+          
+          # Generate makefiles
+          cmake -B . -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -S ${{ github.workspace }}
+
+          # Build
+          make -j$(nproc)
+
+          # Test
+          ctest --build-config ${{env.BUILD_TYPE}}
+
+      - name: Create AppImage
+        working-directory: ${{ env.BUILD_DIR }}
+        run: |
+          # Download tools
+
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          wget -q https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
+
+          # Prepare desktop file
+
+          cat > ${{ env.EXECUTABLE_NAME }}.desktop << EOF
+          [Desktop Entry]
+          Type=Application
+          Name=${{ env.PRODUCT_NAME }}
+          Exec=${{ env.EXECUTABLE_NAME }}
+          Icon=${{ env.EXECUTABLE_NAME }}
+          Categories=Utility;
+          Terminal=false
+          EOF
+
+          # Prepare Icon
+
+          cp ../resources/ui/icon-256x256.png ${{ env.EXECUTABLE_NAME }}.png
+
+          # Create AppImage
+
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable ${{ env.EXECUTABLE_NAME }} \
+            --icon-file ${{ env.EXECUTABLE_NAME }}.png \
+            --desktop-file ${{ env.EXECUTABLE_NAME }}.desktop \
+            --output appimage
+
+      - id: set-outputs
+        run: |
+          echo "artifact-name=${{ env.APPIMAGE_NAME }}" >> "$GITHUB_OUTPUT"
+          echo "artifact-content-type=application/octet-stream" >> "$GITHUB_OUTPUT"
+
+      - run: |
+          echo "Build directory: ${{ env.BUILD_DIR }}"
+          echo "AppImage name: ${{ env.APPIMAGE_NAME }}"
+          ls -la ${{ env.BUILD_DIR }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-binary
+          path: ${{ env.BUILD_DIR }}/${{ env.APPIMAGE_NAME }}
+          retention-days: ${{ github.event.inputs.artifact-retention-days }}
+          if-no-files-found: error
+          overwrite: true
+
+
