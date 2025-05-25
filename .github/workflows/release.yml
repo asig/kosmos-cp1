@@ -62,12 +62,12 @@ jobs:
           name: windows-binary
           path: ./artifacts/
           
-      - name: Download Mac binary
-        id: download-mac
-        uses: actions/download-artifact@v4
-        with:
-          name: mac-binary
-          path: ./artifacts/
+      # - name: Download Mac binary
+      #   id: download-mac
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: mac-binary
+      #     path: ./artifacts/
 
       - name: Download Linux binary
         id: download-linux
