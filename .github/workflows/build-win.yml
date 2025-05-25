@@ -92,7 +92,7 @@ jobs:
       - run: copy ${{ env.QT_ROOT_DIR }}/../../Tools/mingw1310_64/bin/*.dll ${{ env.BUILD_DIR }}/ 
       
       # Build installer
-      - run: makensis /INPUTCHARSET UTF8  /NOCD /DVERSION=0.0.1 /DARCH=x86_64 /DINSTALLER_NAME=${{ env.INSTALLER_NAME }} /DSOURCE_DIR=${{ github.workspace }} /DBUILD_DIR=${{ env.BUILD_DIR }} installer/win/installer.nsi
+      - run: makensis /INPUTCHARSET UTF8  /NOCD /DVERSION=${{ env.VERSION }} /DARCH=x86_64 /DINSTALLER_NAME=${{ env.INSTALLER_NAME }} /DSOURCE_DIR=${{ github.workspace }} /DBUILD_DIR=${{ env.BUILD_DIR }} installer/win/installer.nsi
 
       - id: set-outputs
         shell: bash
