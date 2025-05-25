@@ -2,10 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is losely based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## Unreleased 
+## v2.0.0 - 2025-05-25
 
-- Complete rewrite in C++ (Java didn't age well, especially on Linux...)
-
-
+- Completely rewritten in C++ (as Java didn't age well, especially on Linux...)
