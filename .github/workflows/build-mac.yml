@@ -1,0 +1,128 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: Build Mac binaries
+
+on:
+  workflow_call:
+    inputs:
+      artifact-retention-days:
+        description: 'Number of days to retain artifacts'
+        default: 1
+        required: false
+        type: number
+      version:
+        description: 'Version to build'
+        required: true
+        type: string
+      run-on:
+        description: 'Operating system to run the build on (e.g., macos-13, macos-latest)'
+        required: true
+        type: string
+    outputs:
+      artifact-name:
+        value: ${{ jobs.build-mac.outputs.artifact-name }}
+      artifact-content-type:
+        value: ${{ jobs.build-mac.outputs.artifact-content-type }}
+
+      
+  workflow_dispatch:
+    inputs:
+      artifact-retention-days:
+        description: 'Number of days to retain artifacts'
+        default: 1
+        required: false
+        type: number
+      version:
+        description: 'Version to build'
+        required: true
+        type: string
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  APP_NAME: helloworld
+  QT_VERSION: '6.8.3'
+  PRODUCT_NAME: "My Qt Application"
+  BUNDLE_ID: "com.example.myqtapp"
+  DMG_TITLE: "Install QtPlayground"
+  DMG_BASE_NAME: "QtPlayground-${{ inputs.version }}"
+  VERSION: ${{ inputs.version }}
+  BUILD_DIR: ${{ github.workspace }}/build
+
+jobs:
+  build-mac:
+    runs-on: ${{ inputs.run-on }}
+    outputs:
+      artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
+      artifact-content-type: ${{ steps.set-outputs.outputs.artifact-content-type }}
+    steps:
+      - run: |
+          echo "Running on macOS $(sw_vers -productVersion)"
+          echo "artifact-retention-days: ${{ inputs.artifact-retention-days }}"
+          echo "version: ${{ inputs.version }}"
+  
+      - name: Set DMG name and arch
+        run: |
+          echo "DMG_ARCH=$(uname -m)" >> $GITHUB_ENV
+          echo "DMG_NAME=${{ env.DMG_BASE_NAME }}-$(uname -m).dmg" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+  
+      # Install other dependencies
+      - run: |
+           brew install --formula cmake create-dmg
+
+      # # Install ninja
+      # - uses: seanmiddleditch/gha-setup-ninja@master
+
+      # Install qt
+      - uses: jurplel/install-qt-action@v4
+        with:
+            aqtversion: '==3.1.*'
+            version: ${{ env.QT_VERSION }}
+            host: 'mac'
+            target: 'desktop'
+            arch: 'clang_64'
+            install-deps: true
+    
+      - name: Build binary and dmg
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -S ${{ github.workspace }}
+          cd ${{ env.BUILD_DIR }}
+          cmake --build . --config ${{env.BUILD_TYPE}}
+          macdeployqt "${{ env.APP_NAME }}.app" -codesign=- -verbose=4 
+
+          # Create DMG
+          mkdir -p dmg_contents
+          cp -R "${{ env.APP_NAME }}.app" dmg_contents/
+          create-dmg \
+            --volname "${{ env.DMG_TITLE }}" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "${{ env.APP_NAME }}.app" 200 190 \
+            --app-drop-link 600 185 \
+            --no-internet-enable \
+            "${{ env.DMG_NAME }}" \
+            "dmg_contents/" \
+            || true  # create-dmg returns 1 when it creates the DMG successfully
+            #         --volicon "../resources/AppIcon.icns" \
+
+      - id: set-outputs
+        run: |
+          echo "artifact-name=${{ env.DMG_NAME }}" >> "$GITHUB_OUTPUT"
+          echo "artifact-content-type=application/x-dmg" >> "$GITHUB_OUTPUT"
+
+      - run: |
+          echo "Build directory: ${{ env.BUILD_DIR }}"
+          echo "DMG name: ${{ env.DMG_NAME }}"
+          ls -la ${{ env.BUILD_DIR }}
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-binary-${{ env.DMG_ARCH }}
+          path: "${{ env.BUILD_DIR }}/${{ env.DMG_NAME }}"
+          retention-days: ${{ inputs.artifact-retention-days }}
+          if-no-files-found: error
+          overwrite: true

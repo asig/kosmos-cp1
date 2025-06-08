@@ -28,12 +28,21 @@ jobs:
       artifact-retention-days: 1
       version: ${{ needs.variables.outputs.version }}
 
-  # build-mac-release:
-  #   uses: ./.github/workflows/build-mac.yml
-  #   needs: variables
-  #   with:
-  #     artifact-retention-days: 1
-  #     version: ${{ needs.variables.outputs.version }}
+  build-mac-arm64-release:
+    uses: ./.github/workflows/build-mac.yml
+    needs: variables
+    with:
+      artifact-retention-days: 1
+      version: ${{ needs.variables.outputs.version }}
+      run-on: macos-latest
+          
+  build-mac-x86-release:
+    uses: ./.github/workflows/build-mac.yml
+    needs: variables
+    with:
+      artifact-retention-days: 1
+      version: ${{ needs.variables.outputs.version }}
+      run-on: macos-13
           
   build-linux-release:
     uses: ./.github/workflows/build-linux.yml
@@ -44,7 +53,7 @@ jobs:
 
   create-release:
     name: Create Release
-    needs: [variables, build-win-release, build-linux-release]
+    needs: [variables, build-win-release, build-mac-arm64-release, build-mac-x86-release, build-linux-release]
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
@@ -62,12 +71,19 @@ jobs:
           name: windows-binary
           path: ./artifacts/
           
-      # - name: Download Mac binary
-      #   id: download-mac
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: mac-binary
-      #     path: ./artifacts/
+      - name: Download Mac arm64 binary
+        id: download-mac-arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-binary-arm64
+          path: ./artifacts/
+
+      - name: Download Mac x86 binary
+        id: download-mac-x86_64
+        uses: actions/download-artifact@v4
+        with:
+          name: mac-binary-x86_64
+          path: ./artifacts/
 
       - name: Download Linux binary
         id: download-linux
@@ -119,15 +135,25 @@ jobs:
           prerelease: ${{ contains(env.TAG_NAME, '-alpha') || contains(env.TAG_NAME, '-beta') || contains(env.TAG_NAME, '-rc') }}
 
 
-      # - name: Upload Mac Release Asset
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: ./artifacts/${{ needs.build-mac-release.outputs.artifact-name }}
-      #     asset_name: ${{ needs.build-mac-release.outputs.artifact-name }}
-      #     asset_content_type: ${{ needs.build-mac-release.outputs.artifact-content-type }}
+      - name: Upload Mac arm64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/${{ needs.build-mac-arm64-release.outputs.artifact-name }}
+          asset_name: ${{ needs.build-mac-arm64-release.outputs.artifact-name }}
+          asset_content_type: ${{ needs.build-mac-arm64-release.outputs.artifact-content-type }}
+
+      - name: Upload Mac x86_64 Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/${{ needs.build-mac-x86-release.outputs.artifact-name }}
+          asset_name: ${{ needs.build-mac-x86-release.outputs.artifact-name }}
+          asset_content_type: ${{ needs.build-mac-x86-release.outputs.artifact-content-type }}
 
       - name: Upload Windows Release Asset
         uses: actions/upload-release-asset@v1
@@ -148,5 +174,4 @@ jobs:
           asset_path: ./artifacts/${{ needs.build-linux-release.outputs.artifact-name }}
           asset_name: ${{ needs.build-linux-release.outputs.artifact-name }}
           asset_content_type: ${{ needs.build-linux-release.outputs.artifact-content-type }}
-  
   
