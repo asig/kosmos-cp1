@@ -36,6 +36,10 @@ on:
         description: 'Version to build'
         required: true
         type: string
+      run-on:
+        description: 'Operating system to run the build on (e.g., macos-13, macos-latest)'
+        required: true
+        type: string
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
