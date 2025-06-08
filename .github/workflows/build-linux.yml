@@ -56,8 +56,9 @@ jobs:
         id: deps
         shell: bash
         run: |
+          sudo apt-get update
           sudo apt-get install -y build-essential cmake qt6-base-dev qt6-svg-dev
-  
+      
       - name: Build & Test
         run: |
           echo "Running on Linux"
