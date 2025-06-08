@@ -40,12 +40,12 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  APP_NAME: helloworld
+  APP_NAME: kosmos-cp1
   QT_VERSION: '6.8.3'
-  PRODUCT_NAME: "My Qt Application"
-  BUNDLE_ID: "com.example.myqtapp"
-  DMG_TITLE: "Install QtPlayground"
-  DMG_BASE_NAME: "QtPlayground-${{ inputs.version }}"
+  PRODUCT_NAME: "Kosmos CP1 Emulator"
+  BUNDLE_ID: "ch.retrozone.kosmos-cp1"
+  DMG_TITLE: "Install Kosmos CP1 Emulator"
+  DMG_BASE_NAME: "Kosmos_CP1_Emulator-${{ inputs.version }}"
   VERSION: ${{ inputs.version }}
   BUILD_DIR: ${{ github.workspace }}/build
 
