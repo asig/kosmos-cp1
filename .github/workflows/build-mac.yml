@@ -96,9 +96,6 @@ jobs:
           cmake --build . --config ${{env.BUILD_TYPE}}
           macdeployqt ${{ env.APP_NAME }}.app -codesign=- 
 
-          # cmake creates kosmos-cp1.app, but we prefer a nicer name
-          mv ${{ env.APP_NAME }}.app "${{ env.APP_NAME }}.app"
-
           # Create DMG
           mkdir -p dmg_contents
           cp -R "${{ env.APP_NAME }}.app" dmg_contents/
