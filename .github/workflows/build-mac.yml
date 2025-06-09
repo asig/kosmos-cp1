@@ -44,7 +44,8 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  APP_NAME: 'Kosmos CP1'
+  APP_NAME: kosmos-cp1
+  NICE_APP_NAME: 'Kosmos CP1'
   QT_VERSION: '6.8.3'
   PRODUCT_NAME: "Kosmos CP1 Emulator"
   BUNDLE_ID: "ch.retrozone.kosmos-cp1"
@@ -94,20 +95,20 @@ jobs:
           cmake -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -S ${{ github.workspace }}
           cd ${{ env.BUILD_DIR }}
           cmake --build . --config ${{env.BUILD_TYPE}}
+          macdeployqt ${{ env.APP_NAME }}.app -codesign=- 
           # cmake creates kosmos-cp1.app, but we prefer a nicer name
-          mv kosmos-cp1.app "${{ env.APP_NAME }}.app"
-          macdeployqt "${{ env.APP_NAME }}.app" -codesign=- -verbose=4 
+          mv ${{ env.APP_NAME }}.app "${{ env.NICE_APP_NAME }}.app"
 
           # Create DMG
           mkdir -p dmg_contents
-          cp -R "${{ env.APP_NAME }}.app" dmg_contents/
+          cp -R "${{ env.NICE_APP_NAME }}.app" dmg_contents/
           create-dmg \
             --volname "${{ env.DMG_TITLE }}" \
             --volicon "../resources/ui/icon.icns" \
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
-            --icon "${{ env.APP_NAME }}.app" 200 190 \
+            --icon "${{ env.NICE_APP_NAME }}.app" 200 190 \
             --app-drop-link 600 185 \
             --no-internet-enable \
             "${{ env.DMG_NAME }}" \
