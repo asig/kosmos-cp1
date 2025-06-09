@@ -126,6 +126,12 @@ configure_file(set_version.bat.in set_version.bat)
 
 set(app_icon_resource_windows "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.rc")
 
+set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/resources/ui/icon.icns")
+set_source_files_properties(${app_icon_macos} PROPERTIES
+    MACOSX_PACKAGE_LOCATION "Resources"
+)
+target_sources(${PROJECT_NAME} PRIVATE ${app_icon_macos})
+
 qt_add_executable(kosmos-cp1
     MANUAL_FINALIZATION
     ${PROJECT_SOURCES}
@@ -152,9 +158,10 @@ target_link_libraries(kosmos-cp1
 )
 
 set_target_properties(kosmos-cp1 PROPERTIES
-    MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
+    MACOSX_BUNDLE_GUI_IDENTIFIER kosmos-cp1.retrozone.ch
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+    MACOSX_BUNDLE_ICON_FILE icon.icns
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
