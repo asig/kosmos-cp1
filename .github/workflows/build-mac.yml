@@ -44,7 +44,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  APP_NAME: kosmos-cp1
+  APP_NAME: 'kosmos-cp1'
   QT_VERSION: '6.8.3'
   PRODUCT_NAME: "Kosmos CP1 Emulator"
   BUNDLE_ID: "ch.retrozone.kosmos-cp1"
@@ -94,7 +94,7 @@ jobs:
           cmake -B ${{ env.BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -S ${{ github.workspace }}
           cd ${{ env.BUILD_DIR }}
           cmake --build . --config ${{env.BUILD_TYPE}}
-          macdeployqt ${{ env.APP_NAME }}.app -codesign=- 
+          macdeployqt "${{ env.APP_NAME }}.app" -codesign=- -verbose=2
 
           # Create DMG
           mkdir -p dmg_contents
