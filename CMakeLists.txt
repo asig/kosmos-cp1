@@ -130,7 +130,7 @@ set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/resources/ui/icon.icns")
 set_source_files_properties(${app_icon_macos} PROPERTIES
     MACOSX_PACKAGE_LOCATION "Resources"
 )
-target_sources(${PROJECT_NAME} PRIVATE ${app_icon_macos})
+target_sources(kosmos-cp1 PRIVATE ${app_icon_macos})
 
 qt_add_executable(kosmos-cp1
     MANUAL_FINALIZATION
