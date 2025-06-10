@@ -12,7 +12,7 @@ on:
         description: 'Version, e.g. v0.0.0-alpha'
         required: true
         type: string
-      
+
 jobs:
   variables:
     outputs:
@@ -28,7 +28,7 @@ jobs:
             const version = ref.substring(1);
             core.setOutput('version', version);
 
-  build-win-release:    
+  build-win-release:
     uses: ./.github/workflows/build-win.yml
     needs: variables
     with:
@@ -42,7 +42,7 @@ jobs:
       artifact-retention-days: 1
       version: ${{ needs.variables.outputs.version }}
       run-on: macos-latest
-          
+
   build-mac-x86-release:
     uses: ./.github/workflows/build-mac.yml
     needs: variables
@@ -50,7 +50,7 @@ jobs:
       artifact-retention-days: 1
       version: ${{ needs.variables.outputs.version }}
       run-on: macos-13
-          
+
   build-linux-release:
     uses: ./.github/workflows/build-linux.yml
     needs: variables
@@ -77,7 +77,7 @@ jobs:
         with:
           name: windows-binary
           path: ./artifacts/
-          
+
       - name: Download Mac arm64 binary
         id: download-mac-arm64
         uses: actions/download-artifact@v4
@@ -120,7 +120,7 @@ jobs:
           EOF
 
           # Extract changes from CHANGELOG.md
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV 
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           echo "# Release ${{ env.TAG_NAME }}" >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "## Changes" >> $GITHUB_ENV
@@ -181,4 +181,3 @@ jobs:
           asset_path: ./artifacts/${{ needs.build-linux-release.outputs.artifact-name }}
           asset_name: ${{ needs.build-linux-release.outputs.artifact-name }}
           asset_content_type: ${{ needs.build-linux-release.outputs.artifact-content-type }}
-  

@@ -17,7 +17,7 @@ on:
         value: ${{ jobs.build-win.outputs.artifact-name }}
       artifact-content-type:
         value: ${{ jobs.build-win.outputs.artifact-content-type }}
-        
+
   workflow_dispatch:
       inputs:
         artifact-retention-days:
@@ -29,8 +29,7 @@ on:
           description: 'Version to build'
           required: true
           type: string
-              
- 
+
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -47,8 +46,8 @@ jobs:
     outputs:
       artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
       artifact-content-type: ${{ steps.set-outputs.outputs.artifact-content-type }}
-    steps:           
-      - run: |          
+    steps:
+      - run: |
           echo "Running on Windows"
           echo "artifact-retention-days: ${{ inputs.artifact-retention-days }}"
           echo "version: ${{ inputs.version }}"
@@ -56,7 +55,7 @@ jobs:
           env
 
       - uses: actions/checkout@v4
-   
+
       # Install ninja
       - uses: seanmiddleditch/gha-setup-ninja@master
 
@@ -70,7 +69,6 @@ jobs:
             arch: 'win64_mingw'
             tools: 'tools_mingw1310'
             install-deps: true
-    
 
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -84,13 +82,13 @@ jobs:
 
       # build binary
       - run: cmake --build ${{ env.BUILD_DIR }} --config ${{env.BUILD_TYPE}}
-      
+
       # Copy QT DLLs to the build dir
       - run: windeployqt.exe --release ${{ env.BUILD_DIR }}/${{ env.EXE_NAME }}
-      
+
       # winqtdeploy seems to pick the wrong mingw runtime libs. Copy them manually
-      - run: copy ${{ env.QT_ROOT_DIR }}/../../Tools/mingw1310_64/bin/*.dll ${{ env.BUILD_DIR }}/ 
-      
+      - run: copy ${{ env.QT_ROOT_DIR }}/../../Tools/mingw1310_64/bin/*.dll ${{ env.BUILD_DIR }}/
+
       # Build installer
       - run: makensis /INPUTCHARSET UTF8  /NOCD /DVERSION=${{ env.VERSION }} /DARCH=x86_64 /DINSTALLER_NAME=${{ env.INSTALLER_NAME }} /DSOURCE_DIR=${{ github.workspace }} /DBUILD_DIR=${{ env.BUILD_DIR }} installer/win/installer.nsi
 
