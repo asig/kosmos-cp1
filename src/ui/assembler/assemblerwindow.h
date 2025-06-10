@@ -57,6 +57,7 @@ private slots:
 private:
 
     struct SampleCode {
+        QString category;
         QString name;
         QString code;
     };

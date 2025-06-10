@@ -58,6 +58,8 @@ AssemblerWindow::SampleCode AssemblerWindow::loadSample(const QString& name) {
         QString line = in.readLine();
         if (line.startsWith("; ") && sc.name.isEmpty()) {
             sc.name = line.last(line.length() - 2).trimmed();
+            int spacePos = sc.name.indexOf(' ');
+            sc.category = spacePos > 0 ? sc.name.left(spacePos) : QString();
         }
         sc.code += line + "\n";
     }
@@ -79,7 +81,12 @@ void AssemblerWindow::createMainUI() {
 
     sampleCombo_ = new QComboBox();
     sampleCombo_->addItem("", QVariant(""));
+    QString curCategory("<NONE>");
     for (const SampleCode& sc : samples_) {
+        if (sc.category != curCategory) {
+            sampleCombo_->insertSeparator(sampleCombo_->count());
+            curCategory = sc.category;
+        }
         sampleCombo_->addItem(sc.name, QVariant(sc.code));
     }
     sourceCode_ = new QTextEdit();
