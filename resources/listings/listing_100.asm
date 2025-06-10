@@ -7,7 +7,7 @@
         LDA start_addr      ; Start-Adresse...
         ABS cur_addr        ; ... als aktuelle Adresse speichern
 
-loop   	LIA cur_addr        ; Aktuelles Pattern lesen
+loop    LIA cur_addr        ; Aktuelles Pattern lesen
         P2A 000             ; An P2 ausgeben
         VZG 10              ; und ein bisschen warten.
 
