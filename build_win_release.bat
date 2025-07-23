@@ -43,6 +43,6 @@ copy %QT_TOOLS%\mingw1310_64\bin\*.dll %BUILD_DIR%\
 
 mkdir build\installers
 cd .
-makensis /NOCD /INPUTCHARSET UTF8 /DVERSION=%VERSION% /DARCH=%ARCH% /DBUILD_DIR=%BUILD_DIR% installer\win\KosmosCP1.nsi
+makensis /NOCD /INPUTCHARSET UTF8 /DVERSION=%VERSION% /DARCH=%ARCH% /DINSTALLER_NAME=KosmosCP1Emulator-%VERSION%-%ARCH%.exe /DBUILD_DIR=%BUILD_DIR% installer\win\installer.nsi
 
 @set PATH=%PATH_SAVED%
