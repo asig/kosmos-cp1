@@ -137,7 +137,7 @@ private:
     uint16_t setBit(uint16_t val, uint8_t bit, uint8_t bitVal);
     void setCarry(bool carry);
     void setAuxCarry(bool carry);
-    void addToAcc(uint8_t value);
+    void addToAcc(uint8_t value, bool carryIn);
 
     std::vector<uint8_t> rom_;
     Ram ram_;

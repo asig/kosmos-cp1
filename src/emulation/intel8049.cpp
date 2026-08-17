@@ -74,7 +74,7 @@ int Intel8049::executeSingleInstr() {
         uint8_t data = fetch();
         cycles++;
         tick();
-        addToAcc(data);
+        addToAcc(data, false);
     }
     break;
 
@@ -152,8 +152,8 @@ int Intel8049::executeSingleInstr() {
         uint8_t data = fetch();
         cycles++;
         tick();
-        uint8_t carry = (state_.psw & (1<<CY_BIT)) ? 1 : 0;
-        addToAcc(carry + data);
+        bool carry = getBit(state_.psw, CY_BIT);
+        addToAcc(data, carry);
     }
     break;
 
@@ -404,7 +404,7 @@ int Intel8049::executeSingleInstr() {
 
     case 0x60: case 0x61: { // ADD A, @Rr
         uint8_t pos = readReg(op & 0x1);
-        addToAcc(ram_.read(pos));
+        addToAcc(ram_.read(pos), false);
     }
     break;
 
@@ -429,14 +429,14 @@ int Intel8049::executeSingleInstr() {
 
     case 0x68: case 0x69: case 0x6a: case 0x6b: case 0x6c: case 0x6d: case 0x6e: case 0x6f: {
         // ADD A, Rr
-        addToAcc(readReg(op & 0x7));
+        addToAcc(readReg(op & 0x7), false);
     }
     break;
 
     case 0x70: case 0x71: { // ADDC A, @Rr
         uint8_t pos = readReg(op & 0x1) & 0x7f;
-        uint8_t carry = getBit(state_.psw, CY_BIT);
-        addToAcc(carry + ram_.read(pos));
+        bool carry = getBit(state_.psw, CY_BIT);
+        addToAcc(ram_.read(pos), carry);
     }
     break;
 
@@ -465,8 +465,8 @@ int Intel8049::executeSingleInstr() {
 
     case 0x78: case 0x79: case 0x7a: case 0x7b: case 0x7c: case 0x7d: case 0x7e: case 0x7f: {
         // ADDC A, Rr
-        uint8_t carry = getBit(state_.psw, CY_BIT);
-        addToAcc(carry + readReg(op & 0x7));
+        bool carry = getBit(state_.psw, CY_BIT);
+        addToAcc(readReg(op & 0x7), carry);
     }
     break;
 
@@ -862,7 +862,7 @@ int Intel8049::executeSingleInstr() {
         std::cerr << fmt::format("Illegal op-code 0x{:02x} at {:04x}", op, state_.pc - 1) << std::endl;
         break;
     }
-    
+
     handleInterrupts();
     emit instructionExecuted();
     return cycles;
@@ -947,13 +947,16 @@ void Intel8049::setAuxCarry(bool carry) {
     state_.psw = setBit(state_.psw, AC_BIT, carry ? 1 : 0);
 }
 
-void Intel8049::addToAcc(uint8_t value) {
-    uint8_t oldA = state_.a;
-    uint8_t oldLoNibble = state_.a & 0xf;
-    state_.a = state_.a + value;
-    uint8_t loNibble = state_.a & 0xf;
-    setCarry(oldA > state_.a);
-    setAuxCarry(oldLoNibble > loNibble);
+void Intel8049::addToAcc(uint8_t value, bool carryIn) {
+    uint16_t carry = carryIn ? 1 : 0;
+
+    uint16_t res = state_.a + value + carry;
+    setCarry(res > 0xff);
+
+    uint16_t halfRes = (state_.a & 0x0f) + (value & 0x0f) + carry;
+    setAuxCarry(halfRes > 0x0f);
+
+    state_.a = res & 0xff;
 }
 
 void Intel8049::handleInterrupts() {
