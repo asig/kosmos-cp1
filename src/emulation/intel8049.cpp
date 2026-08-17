@@ -384,7 +384,7 @@ int Intel8049::executeSingleInstr() {
 
     case 0x57: { // DA A
         if ( (state_.a & 0x0f) > 9 || getBit(state_.psw, AC_BIT) > 0) {
-            state_.a += 9;
+            state_.a += 6;
         }
         uint8_t hiNibble = (state_.a & 0xf0) >> 4;
         if (hiNibble > 9 || getBit(state_.psw, CY_BIT) > 0) {
