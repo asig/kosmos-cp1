@@ -400,6 +400,7 @@ int Intel8049::executeSingleInstr() {
         uint8_t r = op & 0x7;
         state_.a &= readReg(r);
     }
+    break;
 
     case 0x60: case 0x61: { // ADD A, @Rr
         uint8_t pos = readReg(op & 0x1);
@@ -442,6 +443,7 @@ int Intel8049::executeSingleInstr() {
     case 0x75: { // ENT0 CLK
         std::cerr << "ENT0 CLK is not implemented" << std::endl;
     }
+    break;
 
     case 0x76: { // JF1 addr
         uint16_t addr = fetch();
@@ -860,6 +862,7 @@ int Intel8049::executeSingleInstr() {
         std::cerr << fmt::format("Illegal op-code 0x{:02x} at {:04x}", op, state_.pc - 1) << std::endl;
         break;
     }
+    
     handleInterrupts();
     emit instructionExecuted();
     return cycles;
