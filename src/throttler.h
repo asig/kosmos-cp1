@@ -31,13 +31,13 @@ class Throttler : public QObject
 {
     Q_OBJECT
 public:
-    explicit Throttler(uint32_t millis, QObject *parent = nullptr);
+    explicit Throttler(uint64_t nanos, QObject *parent = nullptr);
 
     void throttle();
 
 private:
-    uint32_t millis_;
-    uint32_t next_;
+    uint64_t nanos_;
+    uint64_t next_;
 };
 
 } // namespace kosmos_cp1

@@ -25,18 +25,18 @@
 namespace kosmos_cp1 {
 
 using std::chrono::duration_cast;
-using std::chrono::milliseconds;
+using std::chrono::nanoseconds;
 using std::chrono::system_clock;
 
 namespace {
-uint32_t now() {
-    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+uint64_t now() {
+    return duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count();
 }
 
 }
 
-Throttler::Throttler(uint32_t millis, QObject *parent)
-    : QObject{parent}, millis_(millis), next_(now() + millis)
+Throttler::Throttler(uint64_t nanos, QObject *parent)
+    : QObject{parent}, nanos_(nanos), next_(now() + nanos)
 {
 }
 
@@ -44,7 +44,7 @@ void Throttler::throttle() {
     while (now() < next_) {
         std::this_thread::yield();
     }
-    next_ = now() + millis_;
+    next_ = now() + nanos_;
 }
 
 } // namespace kosmos_cp1

@@ -26,7 +26,7 @@ namespace {
     // Throttling happens on timer interrupts. Timer interrupts happen every 2560 μs, so let's just throttle
     // every other interrupt, and approximate the delay with 5 ms (instead of 5120 μs) so that we can use the fast
     // currentTimeMillis() method.
-    constexpr const int32_t THROTTLE_INTERVAL_MS = 5;
+    constexpr const int64_t THROTTLE_INTERVAL_NS = 5120000; // 5120 μs in nanoseconds
     constexpr const int32_t THROTTLE_INTERRUPTS = 2;
 }
 
@@ -34,7 +34,7 @@ namespace kosmos_cp1 {
 
 ExecutorThread::ExecutorThread(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, QObject *parent)
     : QThread{parent},
-    cpu_(cpu),  pid_(pid), pidExtension_(pidExtension), breakOnMovx_(false), isThrottled_(true), isRunning_(false), interruptsSeen_(0), throttler_(THROTTLE_INTERVAL_MS)
+    cpu_(cpu),  pid_(pid), pidExtension_(pidExtension), breakOnMovx_(false), isThrottled_(true), isRunning_(false), interruptsSeen_(0), throttler_(THROTTLE_INTERVAL_NS)
 {
     setObjectName("ExecutorThread");
 }
