@@ -28,6 +28,15 @@
 
 namespace kosmos_cp1::ui {
 
+namespace {
+constexpr int compileYear() {
+    return (__DATE__[7] - '0') * 1000 +
+           (__DATE__[8] - '0') * 100  +
+           (__DATE__[9] - '0') * 10   +
+           (__DATE__[10] - '0');
+}
+}
+
 AboutDialog::AboutDialog(QWidget* parent) : QDialog(parent) {
     setupUI();
     setWindowTitle("About...");
@@ -48,7 +57,7 @@ void AboutDialog::setupUI() {
 
     vLayout->addWidget(title, 0, Qt::AlignHCenter);
     vLayout->addWidget(new QLabel(QString::asprintf("Version %d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH)), 0, Qt::AlignHCenter);
-    vLayout->addWidget(new QLabel("© 2025 Andreas Signer <asigner@gmail.com>"), 0, Qt::AlignHCenter);
+    vLayout->addWidget(new QLabel(QString::asprintf("© 2012 - %d Andreas Signer <asigner@gmail.com>", compileYear())), 0, Qt::AlignHCenter);
     vLayout->addWidget(new QLabel("<a href=\"https://github.com/asig/kosmos-cp1\">https://github.com/asig/kosmos-cp1</a>"), 0, Qt::AlignHCenter);
     auto okBtn = new QPushButton("Ok");
     connect(okBtn, &QPushButton::clicked, this, [this] {
