@@ -153,11 +153,13 @@ class string_scan_buffer final : public scan_buffer {
 
 class file_scan_buffer final : public scan_buffer {
  private:
-  template <typename F, FMT_ENABLE_IF(sizeof(F::_IO_read_ptr) != 0)>
+  template <typename F, FMT_ENABLE_IF(sizeof(F::_IO_read_ptr) != 0 &&
+                                      !FMT_USE_FALLBACK_FILE)>
   static auto get_file(F* f, int) -> glibc_file<F> {
     return f;
   }
-  template <typename F, FMT_ENABLE_IF(sizeof(F::_p) != 0)>
+  template <typename F,
+            FMT_ENABLE_IF(sizeof(F::_p) != 0 && !FMT_USE_FALLBACK_FILE)>
   static auto get_file(F* f, int) -> apple_file<F> {
     return f;
   }
@@ -190,7 +192,10 @@ class file_scan_buffer final : public scan_buffer {
     flockfile(f);
     fill();
   }
-  ~file_scan_buffer() { funlockfile(file_); }
+  ~file_scan_buffer() {
+    FILE* f = file_;
+    funlockfile(f);
+  }
 };
 }  // namespace detail
 
@@ -548,7 +553,7 @@ struct scan_handler {
     return begin;
   }
 
-  void on_error(const char* message) { report_error(message); }
+  FMT_NORETURN void on_error(const char* message) { report_error(message); }
 };
 
 void vscan(detail::scan_buffer& buf, string_view fmt, scan_args args) {
