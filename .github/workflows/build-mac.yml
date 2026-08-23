@@ -44,7 +44,7 @@ env:
   BUILD_TYPE: Release
   BINARY_NAME: kosmos-cp1
   APP_NAME: 'Kosmos CP1'
-  QT_VERSION: '6.8.3'
+  QT_VERSION: '6.8.8'
   PRODUCT_NAME: "Kosmos CP1 Emulator"
   BUNDLE_ID: "ch.retrozone.kosmos-cp1"
   DMG_TITLE: "Install Kosmos CP1 Emulator"
