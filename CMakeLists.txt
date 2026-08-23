@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(
     kosmos-cp1
-    VERSION 2.0.0
+    VERSION 2.1.0
     LANGUAGES CXX
 )
 
