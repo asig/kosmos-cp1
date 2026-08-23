@@ -35,7 +35,7 @@ using kosmos_cp1::assembler::Assembler;
 using kosmos_cp1::emulation::Ram;
 
 AssemblerWindow::AssemblerWindow(Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, WindowManager *windowManager, QWidget *parent)
-    : pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), BaseWindow{windowManager, parent}
+    : pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), BaseWindow{executorThread, windowManager, parent}
 {
     QDirIterator it(":/listings");
     std::vector<QString> names;

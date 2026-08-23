@@ -21,6 +21,8 @@
 
 #include <mutex>
 
+#include <QSemaphore>
+
 namespace {
 
     // Throttling happens on timer interrupts. Timer interrupts happen every 2560 μs, so let's just throttle
@@ -77,6 +79,28 @@ bool ExecutorThread::isRunning() const {
     return isRunning_;
 }
 
+void ExecutorThread::loadState(const EmulatorState& state) {
+    QSemaphore done;
+    postCommand(Command{
+                    .op = Op::LOAD_STATE,
+                    .state = const_cast<EmulatorState*>(&state) ,
+                    .done = &done,
+                });
+    done.acquire();
+}
+
+EmulatorState ExecutorThread::saveState() {
+    QSemaphore done;  
+    EmulatorState state;      
+    postCommand(Command{ 
+        .op = Op::SAVE_STATE,
+        .state = &state,
+        .done = &done,
+    });
+    done.acquire();
+    return state;
+}
+
 void ExecutorThread::postCommand(Command cmd) {
     std::unique_lock<std::mutex> lock(commandsMutex_);
     commands_.push_back(cmd);
@@ -88,13 +112,13 @@ void ExecutorThread::run() {
         Command command = fetchCommand();
         switch(command.op) {
         case Op::NIL: {
-            bool wasInInterrupt = cpu_->state().inInterrupt;
+            bool wasInInterrupt = cpu_->inInterrupt();
             uint32_t executed = doExecuteInstr();
-            bool isInInterrupt = cpu_->state().inInterrupt;
+            bool isInInterrupt = cpu_->inInterrupt();
             performanceMeasurer_.registerExecution(executed);
             if (!wasInInterrupt && isInInterrupt) {
                 // Kosmos CP1 uses a timer interrupt that fires every 2560 μs, so let's try and sync
-                // on 5 millis every 2 interrupts.
+                // on 5120 μs every 2 interrupts.
                 interruptsSeen_ = (interruptsSeen_ + 1) % THROTTLE_INTERRUPTS;
                 if (interruptsSeen_ == 0) {
                     if (isThrottled_) {
@@ -131,6 +155,18 @@ void ExecutorThread::run() {
         case Op::BREAK_ON_MOVX:
             breakOnMovx_ = command.param;
             break;
+            case Op::LOAD_STATE:
+                cpu_->initFromState(command.state->cpu);
+                pid_->initFromState(command.state->pid);
+                pidExtension_->initFromState(command.state->pidExtension);
+                command.done->release();
+                break;
+            case Op::SAVE_STATE:
+                command.state->cpu = cpu_->saveToState();
+                command.state->pid = pid_->saveToState();
+                command.state->pidExtension = pidExtension_->saveToState();
+                command.done->release();
+                break;
         default:
             break;
         }
@@ -190,13 +226,13 @@ uint32_t ExecutorThread::doExecuteInstr() {
         int op = cpu_->peek();
         if (op == 0x80 || op == 0x81 || op == 0x90 || op == 0x91) {
             isRunning_ = false;
-                emit breakpointHit(cpu_->state().pc);
+                emit breakpointHit(cpu_->pc());
             emit executionStopped();
         }
     }
-    if (breakpoints_.contains(cpu_->state().pc)) {
+    if (breakpoints_.contains(cpu_->pc())) {
         isRunning_ = false;
-        emit breakpointHit(cpu_->state().pc);
+        emit breakpointHit(cpu_->pc());
         emit executionStopped();
     }
     return cycles;

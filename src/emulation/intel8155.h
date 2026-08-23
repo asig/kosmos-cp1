@@ -51,8 +51,33 @@ class Intel8155 : public QObject {
     Q_OBJECT
 
 public:
+    struct State {
+        uint8_t addressLatch;
+        bool ioValue;
+        bool ceValue;
+        bool aleValue;
+        bool rdValue;
+        bool wrValue;
+
+        uint8_t paValue;
+        uint8_t pbValue;
+        uint8_t pcValue;
+
+        PortMode paMode;
+        PortMode pbMode;
+        PortCMode pcMode;
+
+        bool paInterruptEnabled;
+        bool pbInterruptEnabled;
+
+        std::vector<uint8_t> ram;
+    };
+
     Intel8155(const std::string& name, std::shared_ptr<DataPort> bus);
 
+    void initFromState(const State& state);
+    State saveToState() const;
+    
     void reset();
 
     bool ioValue() const {

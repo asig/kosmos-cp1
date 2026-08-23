@@ -29,7 +29,7 @@ namespace kosmos_cp1::ui::cpu {
 
 
 CpuWindow::CpuWindow(Intel8049 *cpu, Intel8155 *pid, Intel8155 *pidExtension, ExecutorThread *executorThread, WindowManager *windowManager, QWidget *parent)
-    : cpu_(cpu), pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), BaseWindow{windowManager, parent}
+    : cpu_(cpu), pid_(pid), pidExtension_(pidExtension), executorThread_(executorThread), BaseWindow{executorThread, windowManager, parent}
 {
 }
 
@@ -43,7 +43,7 @@ void CpuWindow::createWindow() {
     connect(cpu_->port(1).get(), &DataPort::valueWritten, this, &CpuWindow::onCpuStateChanged);
     connect(cpu_->port(2).get(), &DataPort::valueWritten, this, &CpuWindow::onCpuStateChanged);
 
-    connect(cpu_, &Intel8049::stateChanged, this, &CpuWindow::onCpuStateChanged);
+    connect(cpu_, &Intel8049::registersChanged, this, &CpuWindow::onCpuStateChanged);
     connect(cpu_, &Intel8049::instructionExecuted, this, &CpuWindow::onInstructionExecuted);
     connect(cpu_, &Intel8049::resetExecuted, this, &CpuWindow::onResetExecuted);
 
@@ -135,7 +135,7 @@ void CpuWindow::onBreakpointHit() {
 }
 
 void CpuWindow::updateView() {
-    disassembly_->setAddress(cpu_->state().pc);
+    disassembly_->setAddress(cpu_->pc());
 }
 
 void CpuWindow::update8155States() {

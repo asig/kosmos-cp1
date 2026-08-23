@@ -116,7 +116,7 @@ I8049StatusWidget::I8049StatusWidget(const QString& title, Intel8049 *cpu, QWidg
 
 void I8049StatusWidget::updateState() {
     memory_->update();
-    Intel8049::State state = cpu_->state();
+    Intel8049::Registers state = cpu_->regs();
 
     cy_->setText(state.psw & 0x80 ? "1" : "0");
     ac_->setText(state.psw & 0x40 ? "1" : "0");

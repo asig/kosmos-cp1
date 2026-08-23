@@ -53,6 +53,9 @@ add_subdirectory(deps/fmt)
 set(PROJECT_SOURCES
         src/assembler.h
         src/assembler.cpp
+        src/emulation/emulatorstate.h
+        src/emulation/emulatorstate.cpp
+        src/executorthread.cpp
         src/executorthread.h
         src/executorthread.cpp
         src/main.cpp

@@ -22,13 +22,16 @@
 #include <deque>
 #include <cstdint>
 #include <set>
+#include <atomic>
 #include <condition_variable>
 
 #include <QObject>
 #include <QThread>
+#include <QSemaphore>
 
 #include "emulation/intel8049.h"
 #include "emulation/intel8155.h"
+#include "emulation/emulatorstate.h"
 
 #include "performancemeasurer.h"
 #include "throttler.h"
@@ -54,6 +57,9 @@ public:
     void enableBreakpoint(uint16_t addr, bool enabled);
     void setBreakOnMovX(bool brk);
 
+    EmulatorState saveState();
+    void loadState(const EmulatorState& state);
+    
     bool isRunning() const;
 
 signals:
@@ -76,12 +82,19 @@ private:
         QUIT,
         ADD_BP,
         REMOVE_BP,
-        BREAK_ON_MOVX
+        BREAK_ON_MOVX,
+        LOAD_STATE,
+        SAVE_STATE,
     };
 
     struct Command {
         Op op;
+
         uint32_t param;
+
+        // Used for LOAD_STATE and SAVE_STATE commands
+        EmulatorState* state;
+        QSemaphore* done; // Signal done
     };
 
     std::mutex commandsMutex_;

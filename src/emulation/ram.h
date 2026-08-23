@@ -31,11 +31,22 @@ class Ram : public QObject
     Q_OBJECT
 public:
     explicit Ram(std::uint16_t size, QObject *parent = nullptr);
-
+   
     void clear();
 
     int size() const {
         return content_.size();
+    }
+
+    void copyFrom(const std::vector<uint8_t>& content) {
+        content_ = content;
+        for (std::uint16_t i = 0; i < content_.size(); ++i) {
+            emit memoryWritten(i, content_[i]);
+        }
+    }
+
+    const std::vector<uint8_t>& content() const {
+        return content_;
     }
 
     std::uint8_t read(std::uint16_t addr) const;

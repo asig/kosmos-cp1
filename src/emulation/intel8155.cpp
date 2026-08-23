@@ -46,6 +46,56 @@ Intel8155::Intel8155(const std::string& name, std::shared_ptr<DataPort> bus)
 }
 
 
+void Intel8155::initFromState(const Intel8155::State& state) {
+    addressLatch_ = state.addressLatch;
+    ioValue_ = state.ioValue;
+    ceValue_ = state.ceValue;
+    aleValue_ = state.aleValue;
+    rdValue_ = state.rdValue;
+    wrValue_ = state.wrValue;
+
+    paValue_ = state.paValue;
+    pbValue_ = state.pbValue;
+    pcValue_ = state.pcValue;
+
+    paMode_ = state.paMode;
+    pbMode_ = state.pbMode;
+    pcMode_ = state.pcMode;
+
+    paInterruptEnabled_ = state.paInterruptEnabled;
+    pbInterruptEnabled_ = state.pbInterruptEnabled;
+
+    ram_.copyFrom(state.ram);
+    
+    // Pretend a reset so that we don't have to emit changes for every single change.
+    emit resetExecuted();
+}
+
+Intel8155::State Intel8155::saveToState() const {
+    State state;
+    state.addressLatch = addressLatch_;
+    state.ioValue = ioValue_;
+    state.ceValue = ceValue_;
+    state.aleValue = aleValue_;
+    state.rdValue = rdValue_;
+    state.wrValue = wrValue_;
+
+    state.paValue = paValue_;
+    state.pbValue = pbValue_;
+    state.pcValue = pcValue_;
+
+    state.paMode = paMode_;
+    state.pbMode = pbMode_;
+    state.pcMode = pcMode_;
+
+    state.paInterruptEnabled = paInterruptEnabled_;
+    state.pbInterruptEnabled = pbInterruptEnabled_;
+
+    state.ram = ram_.content();
+
+    return state;
+}
+
 void Intel8155::reset() {
     paMode_ = PortMode::INPUT;
     pbMode_ = PortMode::INPUT;

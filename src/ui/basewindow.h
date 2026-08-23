@@ -24,22 +24,31 @@
 
 #include "ui/windowmanager.h"
 
+#include "executorthread.h"
+
 namespace kosmos_cp1::ui {
+
+using ::kosmos_cp1::ExecutorThread;
 
 class BaseWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit BaseWindow(WindowManager *windowManager, QWidget *parent = nullptr);
+    explicit BaseWindow(ExecutorThread *executorThread, WindowManager *windowManager, QWidget *parent = nullptr);
     virtual ~BaseWindow();
 
     virtual void createWindow() = 0;
     virtual QString windowName() = 0;
 
+private slots:
+    void onLoadStateClicked();
+    void onSaveStateClicked();
+
 protected:
     void createMenuBar();
 
 private:
+    ExecutorThread *executorThread_;
     WindowManager *windowManager_;
 
     std::vector<QAction*> actions_;

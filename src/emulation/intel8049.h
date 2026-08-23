@@ -22,6 +22,7 @@
 #include <cstdint>
 
 #include <QObject>
+#include <vector>
 
 #include "emulation/dataport.h"
 #include "emulation/ram.h"
@@ -40,7 +41,17 @@ class Intel8049 : public QObject {
     Q_OBJECT
 
 public:
+    struct Registers {
+        uint8_t t;
+        uint8_t a;
+        uint16_t pc;
+        uint8_t psw;
+        uint8_t dbf;
+        uint8_t f1;
+    };
+
     struct State {
+
         // Interrupt pins and flipflops
         bool tf; // Timer Flag
         bool notInt;
@@ -48,12 +59,7 @@ public:
         bool t0;
         bool t1;
 
-        uint8_t t;
-        uint8_t a;
-        uint16_t pc;
-        uint8_t psw;
-        uint8_t dbf;
-        uint8_t f1;
+        Registers regs;
 
         bool externalInterruptsEnabled;
         bool tcntInterruptsEnabled;
@@ -62,21 +68,76 @@ public:
         uint8_t cyclesUntilCount;
         bool inInterrupt;
 
-        std::string toString() {
-            return fmt::format("State("
-                               "tf={}, notInt={}, timerInterruptRequested={}, "
-                               "t0={}, t1={}, t={}, a={}, pc={}, psw={}, dbf={}, "
-                               "f1={}, extIE={}, tcntIE={}, counterRunning={}, timerRunning={}, cyclesUntilCount={}, inInterrupt={})",
-                               tf, notInt, timerInterruptRequested, t0, t1, t, a, pc, psw, dbf,
-                               f1, externalInterruptsEnabled, tcntInterruptsEnabled, counterRunning, timerRunning, cyclesUntilCount, inInterrupt);
-        }
+        std::vector<uint8_t> rom;
+        std::vector<uint8_t> ram;
+        
+        // std::string toString() {
+        //     return fmt::format("State("
+        //                        "tf={}, notInt={}, timerInterruptRequested={}, "
+        //                        "t0={}, t1={}, t={}, a={}, pc={}, psw={}, dbf={}, "
+        //                        "f1={}, extIE={}, tcntIE={}, counterRunning={}, timerRunning={}, cyclesUntilCount={}, inInterrupt={})",
+        //                        tf, notInt, timerInterruptRequested, t0, t1, t, a, pc, psw, dbf,
+        //                        f1, externalInterruptsEnabled, tcntInterruptsEnabled, counterRunning, timerRunning, cyclesUntilCount, inInterrupt);
+        // }
     };
 
     Intel8049(const std::vector<uint8_t>& rom, std::shared_ptr<DataPort> bus, std::shared_ptr<DataPort> p1, std::shared_ptr<DataPort> p2) :
         rom_(rom), ram_(128) {
         ports_ = {bus, p1, p2};
-        state_.t = 0; // T is not affected by reset, need to be initialized explicitly
+        regs_.t = 0; // T is not affected by reset, need to be initialized explicitly
         reset();
+    }
+
+    void initFromState(const State& state) {    
+        tf_ = state.tf;
+        notInt_ = state.notInt;
+        timerInterruptRequested_ = state.timerInterruptRequested;
+        t0_ = state.t0;
+        t1_ = state.t1;
+        regs_ = state.regs;
+        externalInterruptsEnabled_ = state.externalInterruptsEnabled;
+        tcntInterruptsEnabled_ = state.tcntInterruptsEnabled;
+        counterRunning_ = state.counterRunning;
+        timerRunning_ = state.timerRunning;
+        cyclesUntilCount_ = state.cyclesUntilCount;
+        inInterrupt_ = state.inInterrupt;
+
+        ram_.copyFrom(state.ram);
+        rom_ = state.rom;
+    }
+
+    State saveToState() const {
+        State state;
+        state.tf = tf_;
+        state.notInt = notInt_;
+        state.timerInterruptRequested = timerInterruptRequested_;
+
+        state.t0 = t0_;
+        state.t1 = t1_;
+        state.regs = regs_;
+        state.externalInterruptsEnabled = externalInterruptsEnabled_;
+        state.tcntInterruptsEnabled = tcntInterruptsEnabled_;
+        state.counterRunning = counterRunning_;
+        state.timerRunning = timerRunning_;
+        state.cyclesUntilCount = cyclesUntilCount_;
+        state.inInterrupt = inInterrupt_;
+
+        state.ram = ram_.content();
+        state.rom = rom_;
+
+        return state;
+    }
+
+    uint16_t pc() const {
+        return regs_.pc;
+    }
+
+    bool inInterrupt() const {
+        return inInterrupt_;
+    }
+
+    const Registers& regs() const {
+        return regs_;
     }
 
     std::shared_ptr<DataPort> port(int i) {
@@ -85,9 +146,6 @@ public:
 
     void reset();
 
-    const State& state() const {
-        return state_;
-    }
 
     const std::vector<std::uint8_t>& rom() {
         return rom_;
@@ -98,14 +156,14 @@ public:
     }
 
     uint8_t peek() {
-        return rom_[state_.pc];
+        return rom_[regs_.pc];
     }
 
     int executeSingleInstr();
     void execute(int cycles);
 
 signals:
-    void stateChanged(const State& state);
+    void registersChanged(const Registers& regs);
     void instructionExecuted();
     void resetExecuted();
 
@@ -139,10 +197,27 @@ private:
     void setAuxCarry(bool carry);
     void addToAcc(uint8_t value, bool carryIn);
 
+    std::vector<std::shared_ptr<DataPort>> ports_;
+
     std::vector<uint8_t> rom_;
     Ram ram_;
-    std::vector<std::shared_ptr<DataPort>> ports_;
-    State state_;
+
+    // Interrupt pins and flipflops
+    bool tf_; // Timer Flag
+    bool notInt_;
+    bool timerInterruptRequested_;
+    bool t0_;
+    bool t1_;
+
+    Registers regs_;
+
+    bool externalInterruptsEnabled_;
+    bool tcntInterruptsEnabled_;
+    bool counterRunning_;
+    bool timerRunning_;
+    uint8_t cyclesUntilCount_;
+    bool inInterrupt_;
+
 };
 
 }
