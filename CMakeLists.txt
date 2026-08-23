@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10...3.30)
 
 project(
     kosmos-cp1
@@ -23,17 +23,6 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n")
 endif()
 
-
-find_package(QT
-    NAMES Qt6
-    REQUIRED COMPONENTS
-        Core
-        Network
-        Svg
-        SvgWidgets
-        Test
-        Widgets
-)
 
 find_package(Qt6
     REQUIRED COMPONENTS
