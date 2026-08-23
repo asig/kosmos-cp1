@@ -34,7 +34,7 @@ env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   EXE_NAME: kosmos-cp1.exe
-  QT_VERSION: '6.11.2'
+  QT_VERSION: '6.8.2'
   PRODUCT_NAME: "Kosmos CP1 Emulator"
   INSTALLER_NAME: "KosmosCP1Emulator-${{ inputs.version }}-x86_64.exe"
   VERSION: ${{ inputs.version }}
