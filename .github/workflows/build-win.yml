@@ -57,8 +57,9 @@ jobs:
       - uses: actions/checkout@v4
 
 
-      # Install ninja
-      - uses: joncloud/makensis-action@v4
+       # Install NSIS
+      - run: |
+          choco install nsis -y      - uses: joncloud/makensis-action@v4
 
       # Install ninja
       - uses: seanmiddleditch/gha-setup-ninja@master
