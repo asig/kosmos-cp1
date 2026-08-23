@@ -6,6 +6,7 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## Next
 
+- Add load/save-state functionality
 - Cosmetics: Separate sample code groups in the Assembler window's Sample Code dropdown.
 - Installer for macos added
 
