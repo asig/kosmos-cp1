@@ -6,9 +6,15 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 ## Next
 
-- Add load/save-state functionality
-- Cosmetics: Separate sample code groups in the Assembler window's Sample Code dropdown.
+### Added
+
+- load/save-state functionality
 - Installer for macos added
+
+### Fixed
+
+- Cosmetics: Separate sample code groups in the Assembler window's Sample Code dropdown.
+- Better throttling, not based on millisecond resolution anymore
 
 ## v2.0.0 - 2025-05-25
 
