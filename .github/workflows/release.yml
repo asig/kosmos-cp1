@@ -16,17 +16,24 @@ on:
 jobs:
   variables:
     outputs:
-      version: ${{ steps.var.outputs.version}}
-    runs-on: "ubuntu-latest"
+      version: ${{ steps.var.outputs.version }}
+      tag: ${{ steps.var.outputs.tag }}
+    runs-on: ubuntu-latest
     steps:
       - name: Setting global variables
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: var
         with:
           script: |
-            const ref = '${{ github.ref_name }}';
-            const version = ref.substring(1);
+            let tag = '';
+            if (context.eventName === 'workflow_dispatch') {
+              tag = context.payload.inputs.version;
+            } else {
+              tag = context.ref.replace('refs/tags/', '');
+            }
+            const version = tag.startsWith('v') ? tag.substring(1) : tag;
             core.setOutput('version', version);
+            core.setOutput('tag', tag);
 
   build-win-release:
     uses: ./.github/workflows/build-win.yml
@@ -49,7 +56,7 @@ jobs:
     with:
       artifact-retention-days: 1
       version: ${{ needs.variables.outputs.version }}
-      run-on: macos-13
+      run-on: macos-15-intel
 
   build-linux-release:
     uses: ./.github/workflows/build-linux.yml
@@ -66,10 +73,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Get tag name
-        id: get_tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Download Windows binary
         id: download-windows
@@ -121,7 +124,7 @@ jobs:
 
           # Extract changes from CHANGELOG.md
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "# Release ${{ env.TAG_NAME }}" >> $GITHUB_ENV
+          echo "# Release ${{ needs.variables.outputs.tag }}" >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
           echo "## Changes" >> $GITHUB_ENV
           echo "" >> $GITHUB_ENV
@@ -135,49 +138,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
+          tag_name: ${{ needs.variables.outputs.tag }}
+          name: Release ${{ needs.variables.outputs.tag }}
           body: ${{ env.CHANGELOG }}
           draft: false
-          prerelease: ${{ contains(env.TAG_NAME, '-alpha') || contains(env.TAG_NAME, '-beta') || contains(env.TAG_NAME, '-rc') }}
-
-
-      - name: Upload Mac arm64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/${{ needs.build-mac-arm64-release.outputs.artifact-name }}
-          asset_name: ${{ needs.build-mac-arm64-release.outputs.artifact-name }}
-          asset_content_type: ${{ needs.build-mac-arm64-release.outputs.artifact-content-type }}
-
-      - name: Upload Mac x86_64 Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/${{ needs.build-mac-x86-release.outputs.artifact-name }}
-          asset_name: ${{ needs.build-mac-x86-release.outputs.artifact-name }}
-          asset_content_type: ${{ needs.build-mac-x86-release.outputs.artifact-content-type }}
-
-      - name: Upload Windows Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/${{ needs.build-win-release.outputs.artifact-name }}
-          asset_name: ${{ needs.build-win-release.outputs.artifact-name }}
-          asset_content_type: ${{ needs.build-win-release.outputs.artifact-content-type }}
-
-      - name: Upload Linux Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/${{ needs.build-linux-release.outputs.artifact-name }}
-          asset_name: ${{ needs.build-linux-release.outputs.artifact-name }}
-          asset_content_type: ${{ needs.build-linux-release.outputs.artifact-content-type }}
+          prerelease: ${{ contains(needs.variables.outputs.tag, '-alpha') || contains(needs.variables.outputs.tag, '-beta') || contains(needs.variables.outputs.tag, '-rc') }}
+          files: |
+            ./artifacts/${{ needs.build-mac-arm64-release.outputs.artifact-name }}
+            ./artifacts/${{ needs.build-mac-x86-release.outputs.artifact-name }}
+            ./artifacts/${{ needs.build-win-release.outputs.artifact-name }}
+            ./artifacts/${{ needs.build-linux-release.outputs.artifact-name }}
