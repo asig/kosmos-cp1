@@ -36,7 +36,7 @@ env:
   EXECUTABLE_NAME: kosmos-cp1
   PRODUCT_NAME: "Kosmos CP1 Emulator"
   APPIMAGE_NAME: "Kosmos_CP1_Emulator-${{ inputs.version }}-x86_64.AppImage"
-  QT_VERSION: '6.8.8'
+  QT_VERSION: '6.11.2'
   VERSION: ${{ inputs.version }}
   BUILD_DIR: ${{ github.workspace }}/build
 
