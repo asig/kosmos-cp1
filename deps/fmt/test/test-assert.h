@@ -1,6 +1,6 @@
 // Formatting library for C++ - test version of FMT_ASSERT
 //
-// Copyright (c) 2012 - present, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -12,7 +12,7 @@
 
 void throw_assertion_failure(const char* message);
 #define FMT_ASSERT(condition, message) \
-  if (!(condition)) throw_assertion_failure(message);
+  ((condition) ? (void)0 : throw_assertion_failure(message))
 
 #include "gtest/gtest.h"
 

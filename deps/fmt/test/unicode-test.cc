@@ -1,6 +1,6 @@
 // Formatting library for C++ - Unicode tests
 //
-// Copyright (c) 2012 - present, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -15,7 +15,7 @@
 
 using testing::Contains;
 
-TEST(unicode_test, use_utf8) { EXPECT_TRUE(fmt::detail::use_utf8()); }
+TEST(unicode_test, use_utf8) { EXPECT_TRUE(fmt::detail::use_utf8); }
 
 TEST(unicode_test, legacy_locale) {
   auto loc = get_locale("be_BY.CP1251", "Belarusian_Belarus.1251");

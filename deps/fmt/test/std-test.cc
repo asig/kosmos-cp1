@@ -1,6 +1,6 @@
 // Formatting library for C++ - tests of formatters for standard library types
 //
-// Copyright (c) 2012 - present, Victor Zverovich
+// Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors
 // All rights reserved.
 //
 // For the license information refer to format.h.
@@ -20,6 +20,11 @@
 TEST(std_test, path) {
   using std::filesystem::path;
   EXPECT_EQ(fmt::format("{}", path("/usr/bin")), "/usr/bin");
+
+  // see #4303
+  const path p = "/usr/bin";
+  EXPECT_EQ(fmt::format("{}", p), "/usr/bin");
+
   EXPECT_EQ(fmt::format("{:?}", path("/usr/bin")), "\"/usr/bin\"");
   EXPECT_EQ(fmt::format("{:8}", path("foo")), "foo     ");
 
@@ -34,10 +39,17 @@ TEST(std_test, path) {
   EXPECT_EQ(fmt::format("{}", path(L"\x0428\x0447\x0443\x0447\x044B\x043D\x0448"
                                    L"\x0447\x044B\x043D\x0430")),
             "Шчучыншчына");
-  EXPECT_EQ(fmt::format("{}", path(L"\xd800")), "�");
-  EXPECT_EQ(fmt::format("{:?}", path(L"\xd800")), "\"\\ud800\"");
+  EXPECT_EQ(fmt::format("{}", path(L"\xD800")), "\xED\xA0\x80");
+  EXPECT_EQ(fmt::format("{}", path(L"[\xD800]")), "[\xED\xA0\x80]");
+  EXPECT_EQ(fmt::format("{}", path(L"[\xD83D\xDE00]")), "[\xF0\x9F\x98\x80]");
+  EXPECT_EQ(fmt::format("{}", path(L"[\xD83D\xD83D\xDE00]")),
+            "[\xED\xA0\xBD\xF0\x9F\x98\x80]");
+  EXPECT_EQ(fmt::format("{:?}", path(L"\xD800")), "\"\\ud800\"");
 #  endif
 }
+
+// Intentionally delayed include to test #4303
+#  include "fmt/ranges.h"
 
 // Test ambiguity problem described in #2954.
 TEST(ranges_std_test, format_vector_path) {
@@ -86,6 +98,9 @@ TEST(std_test, complex) {
   EXPECT_EQ(fmt::format("{: }", std::complex<double>(1, 2.2)), "( 1+2.2i)");
   EXPECT_EQ(fmt::format("{: }", std::complex<double>(1, -2.2)), "( 1-2.2i)");
 
+  EXPECT_EQ(fmt::format("{:8}", std::complex<double>(1, 2)), "(1+2i)  ");
+  EXPECT_EQ(fmt::format("{:-<8}", std::complex<double>(1, 2)), "(1+2i)--");
+
   EXPECT_EQ(fmt::format("{:>20.2f}", std::complex<double>(1, 2.2)),
             "        (1.00+2.20i)");
   EXPECT_EQ(fmt::format("{:<20.2f}", std::complex<double>(1, 2.2)),
@@ -130,11 +145,13 @@ TEST(std_test, optional) {
   EXPECT_FALSE((fmt::is_formattable<unformattable>::value));
   EXPECT_FALSE((fmt::is_formattable<std::optional<unformattable>>::value));
   EXPECT_TRUE((fmt::is_formattable<std::optional<int>>::value));
+  EXPECT_TRUE((fmt::is_formattable<std::optional<const int>>::value));
 #endif
 }
 
 TEST(std_test, expected) {
 #ifdef __cpp_lib_expected
+  EXPECT_EQ(fmt::format("{}", std::expected<void, int>{}), "expected()");
   EXPECT_EQ(fmt::format("{}", std::expected<int, int>{1}), "expected(1)");
   EXPECT_EQ(fmt::format("{}", std::expected<int, int>{std::unexpected(1)}),
             "unexpected(1)");
@@ -158,6 +175,15 @@ TEST(std_test, expected) {
   EXPECT_FALSE(
       (fmt::is_formattable<std::expected<int, unformattable2>>::value));
   EXPECT_TRUE((fmt::is_formattable<std::expected<int, int>>::value));
+  EXPECT_TRUE((fmt::is_formattable<std::expected<void, int>>::value));
+
+  EXPECT_EQ(fmt::format("{}", std::unexpected{1}), "unexpected(1)");
+  EXPECT_EQ(fmt::format("{}", std::unexpected<std::string>{"test"}),
+            "unexpected(\"test\")");
+
+  EXPECT_EQ(fmt::format("{}", std::unexpected<char>{'a'}), "unexpected('a')");
+
+  EXPECT_FALSE((fmt::is_formattable<std::unexpected<unformattable2>>::value));
 #endif
 }
 
@@ -179,7 +205,33 @@ class my_class {
     return fmt::to_string(elm.av);
   }
 };
+
+class my_class_int {
+ public:
+  int av;
+
+ private:
+  friend auto format_as(const my_class_int& elm) -> int { return elm.av; }
+};
 }  // namespace my_nso
+
+TEST(std_test, expected_format_as) {
+#ifdef __cpp_lib_expected
+  EXPECT_EQ(
+      fmt::format(
+          "{}", std::expected<my_nso::my_number, int>{my_nso::my_number::one}),
+      "expected(\"first\")");
+  EXPECT_EQ(
+      fmt::format("{}",
+                  std::expected<my_nso::my_class, int>{my_nso::my_class{7}}),
+      "expected(\"7\")");
+  EXPECT_EQ(fmt::format("{}",
+                        std::expected<my_nso::my_class_int, int>{
+                            my_nso::my_class_int{8}}),
+            "expected(8)");
+#endif
+}
+
 TEST(std_test, optional_format_as) {
 #ifdef __cpp_lib_optional
   EXPECT_EQ(fmt::format("{}", std::optional<my_nso::my_number>{}), "none");
@@ -188,6 +240,8 @@ TEST(std_test, optional_format_as) {
   EXPECT_EQ(fmt::format("{}", std::optional<my_nso::my_class>{}), "none");
   EXPECT_EQ(fmt::format("{}", std::optional{my_nso::my_class{7}}),
             "optional(\"7\")");
+  EXPECT_EQ(fmt::format("{}", std::optional{my_nso::my_class_int{8}}),
+            "optional(8)");
 #endif
 }
 
@@ -257,16 +311,42 @@ TEST(std_test, variant) {
 #endif
 }
 
+TEST(std_test, variant_format_as) {
+#ifdef __cpp_lib_variant
+
+  EXPECT_EQ(fmt::format("{}", std::variant<my_nso::my_number>{}),
+            "variant(\"first\")");
+  EXPECT_EQ(fmt::format(
+                "{}", std::variant<my_nso::my_number>{my_nso::my_number::one}),
+            "variant(\"first\")");
+  EXPECT_EQ(
+      fmt::format("{}", std::variant<my_nso::my_class>{my_nso::my_class{7}}),
+      "variant(\"7\")");
+  EXPECT_EQ(
+      fmt::format("{}",
+                  std::variant<my_nso::my_class_int>{my_nso::my_class_int{8}}),
+      "variant(8)");
+#endif
+}
+
 TEST(std_test, error_code) {
-  EXPECT_EQ("generic:42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(42, std::generic_category())));
-  EXPECT_EQ("system:42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(42, fmt::system_category())));
-  EXPECT_EQ("system:-42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(-42, fmt::system_category())));
+  auto& generic = std::generic_category();
+  EXPECT_EQ(fmt::format("{}", std::error_code(42, generic)), "generic:42");
+  EXPECT_EQ(fmt::format("{:>12}", std::error_code(42, generic)),
+            "  generic:42");
+  EXPECT_EQ(fmt::format("{:12}", std::error_code(42, generic)), "generic:42  ");
+  EXPECT_EQ(fmt::format("{}", std::error_code(42, fmt::system_category())),
+            "system:42");
+  EXPECT_EQ(fmt::format("{}", std::error_code(-42, fmt::system_category())),
+            "system:-42");
+  auto ec = std::make_error_code(std::errc::value_too_large);
+  EXPECT_EQ(fmt::format("{:s}", ec), ec.message());
+  EXPECT_EQ(fmt::format("{:?}", std::error_code(42, generic)),
+            "\"generic:42\"");
+  EXPECT_EQ(fmt::format("{}",
+                        std::map<std::error_code, int>{
+                            {std::error_code(42, generic), 0}}),
+            "{\"generic:42\": 0}");
 }
 
 template <typename Catch> void exception_test() {
@@ -331,6 +411,42 @@ TEST(std_test, type_info) {
 }
 #endif
 
+#if FMT_USE_BITINT
+FMT_PRAGMA_CLANG(diagnostic ignored "-Wbit-int-extension")
+
+TEST(std_test, bitint) {
+  using fmt::detail::bitint;
+  using fmt::detail::ubitint;
+
+  EXPECT_EQ(fmt::format("{}", ubitint<3>(7)), "7");
+  EXPECT_EQ(fmt::format("{}", bitint<7>()), "0");
+
+  EXPECT_EQ(fmt::format("{}", ubitint<15>(31000)), "31000");
+  EXPECT_EQ(fmt::format("{}", bitint<16>(INT16_MIN)), "-32768");
+  EXPECT_EQ(fmt::format("{}", bitint<16>(INT16_MAX)), "32767");
+
+  EXPECT_EQ(fmt::format("{}", ubitint<32>(4294967295)), "4294967295");
+
+  EXPECT_EQ(fmt::format("{}", ubitint<47>(140737488355327ULL)),
+            "140737488355327");
+  EXPECT_EQ(fmt::format("{}", bitint<47>(-40737488355327LL)),
+            "-40737488355327");
+
+  // Check lvalues and const
+  auto a = bitint<8>(0);
+  auto b = ubitint<32>(4294967295);
+  const auto c = bitint<7>(0);
+  const auto d = ubitint<32>(4294967295);
+  EXPECT_EQ(fmt::format("{}", a), "0");
+  EXPECT_EQ(fmt::format("{}", b), "4294967295");
+  EXPECT_EQ(fmt::format("{}", c), "0");
+  EXPECT_EQ(fmt::format("{}", d), "4294967295");
+
+  static_assert(fmt::is_formattable<bitint<64>, char>{}, "");
+  static_assert(fmt::is_formattable<ubitint<64>, char>{}, "");
+}
+#endif
+
 TEST(std_test, format_bit_reference) {
   std::bitset<2> bs(1);
   EXPECT_EQ(fmt::format("{} {}", bs[0], bs[1]), "true false");
@@ -352,6 +468,14 @@ TEST(std_test, format_bitset) {
   EXPECT_EQ(fmt::format("{:-^12}", bs), "---101010---");
 }
 
+#ifdef __cpp_lib_byte
+TEST(base_test, format_byte) {
+  auto s = std::string();
+  fmt::format_to(std::back_inserter(s), "{}", std::byte(42));
+  EXPECT_EQ(s, "42");
+}
+#endif
+
 TEST(std_test, format_atomic) {
   std::atomic<bool> b(false);
   EXPECT_EQ(fmt::format("{}", b), "false");
@@ -362,11 +486,12 @@ TEST(std_test, format_atomic) {
 
 #ifdef __cpp_lib_atomic_flag_test
 TEST(std_test, format_atomic_flag) {
-  std::atomic_flag f = ATOMIC_FLAG_INIT;
+  std::atomic_flag f;
   (void)f.test_and_set();
   EXPECT_EQ(fmt::format("{}", f), "true");
 
-  const std::atomic_flag cf = ATOMIC_FLAG_INIT;
+  f.clear();
+  const std::atomic_flag& cf = f;
   EXPECT_EQ(fmt::format("{}", cf), "false");
 }
 #endif  // __cpp_lib_atomic_flag_test
@@ -387,4 +512,35 @@ TEST(std_test, format_shared_ptr) {
   std::shared_ptr<int> sp(new int(1));
   EXPECT_EQ(fmt::format("{}", fmt::ptr(sp.get())),
             fmt::format("{}", fmt::ptr(sp)));
+}
+
+TEST(std_test, format_reference_wrapper) {
+  int num = 35;
+  EXPECT_EQ(fmt::to_string(std::cref(num)), "35");
+  EXPECT_EQ(fmt::to_string(std::ref(num)), "35");
+  EXPECT_EQ(fmt::format("{}", std::cref(num)), "35");
+  EXPECT_EQ(fmt::format("{}", std::ref(num)), "35");
+}
+
+// Regression test for https://github.com/fmtlib/fmt/issues/4424.
+struct type_with_format_as {};
+int format_as(type_with_format_as) { return 20; }
+
+TEST(std_test, format_reference_wrapper_with_format_as) {
+  type_with_format_as t;
+  EXPECT_EQ(fmt::to_string(std::cref(t)), "20");
+  EXPECT_EQ(fmt::to_string(std::ref(t)), "20");
+  EXPECT_EQ(fmt::format("{}", std::cref(t)), "20");
+  EXPECT_EQ(fmt::format("{}", std::ref(t)), "20");
+}
+
+struct type_with_format_as_string {};
+std::string format_as(type_with_format_as_string) { return "foo"; }
+
+TEST(std_test, format_reference_wrapper_with_format_as_string) {
+  type_with_format_as_string t;
+  EXPECT_EQ(fmt::to_string(std::cref(t)), "foo");
+  EXPECT_EQ(fmt::to_string(std::ref(t)), "foo");
+  EXPECT_EQ(fmt::format("{}", std::cref(t)), "foo");
+  EXPECT_EQ(fmt::format("{}", std::ref(t)), "foo");
 }

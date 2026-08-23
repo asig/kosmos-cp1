@@ -7,11 +7,10 @@ permissions:
 
 jobs:
   build:
-    # Use Ubuntu 20.04 because doxygen 1.8.13 from Ubuntu 18.04 is broken.
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
     - name: Add Ubuntu mirrors
       run: |
@@ -25,7 +24,7 @@ jobs:
       run: |
         sudo apt update
         sudo apt install doxygen
-        pip install mkdocs-material==9.5.25 mkdocstrings==0.25.1 mike==2.1.1
+        pip install --require-hashes -r support/doc-requirements.txt
         cmake -E make_directory ${{runner.workspace}}/build
         # Workaround https://github.com/actions/checkout/issues/13:
         git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
@@ -38,6 +37,6 @@ jobs:
     - name: Deploy
       env:
         KEY: "${{secrets.KEY}}"
-      if: env.KEY != '' && github.ref == 'refs/heads/master'
+      if: env.KEY != '' && github.ref == 'refs/heads/main'
       working-directory: ${{runner.workspace}}/fmt/build/fmt.dev
       run: git push https://$KEY@github.com/fmtlib/fmt.dev.git

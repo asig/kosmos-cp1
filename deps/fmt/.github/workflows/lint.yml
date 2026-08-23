@@ -2,55 +2,44 @@ name: lint
 
 on:
   pull_request:
-    paths:
-      - '**.h'
-      - '**.cc'
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
-  format_code:
+  clang-format:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
     - name: Install clang-format
-      uses: aminya/setup-cpp@290824452986e378826155f3379d31bce8753d76 # v0.37.0
-      with:
-        clangformat: 17.0.5
+      run: |
+        sudo install -D -m 0644 support/llvm-snapshot.gpg.key \
+          /etc/apt/keyrings/apt.llvm.org.asc
+        codename=$(lsb_release -cs)
+        echo "deb [signed-by=/etc/apt/keyrings/apt.llvm.org.asc]" \
+             "https://apt.llvm.org/$codename/" \
+             "llvm-toolchain-$codename-21 main" \
+          | sudo tee /etc/apt/sources.list.d/llvm.list
+        sudo apt-get update
+        sudo apt-get install -y clang-format-21
 
     - name: Run clang-format
-      id: clang_format
       run: |
-        find include src -name '*.h' -o -name '*.cc' |  xargs clang-format -i -style=file -fallback-style=none
-        git diff | tee fmt.patch
-        if [ -s fmt.patch ]; then
-          exit 1
-        fi
-    - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
-      if: failure() && steps.clang_format.outcome == 'failure'
-      with:
-        github-token: ${{ secrets.KEY }}
-        script: |
-          const fs = require('fs');
-          const patch = fs.readFileSync('fmt.patch', { encoding: 'utf8' });
-          const comment = `clang-format 17.0.5 found issues in the formatting in your code:
-          <details>
-          <summary>
-          View the diff from clang-format:
-          </summary>
+        find include src -name '*.h' -o -name '*.cc' | \
+          xargs clang-format-21 -i -style=file -fallback-style=none
+        git diff --exit-code
 
-          \`\`\`diff
-          ${patch}
-          \`\`\`
+  cmake-format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
 
-          </details>
-          `;
-          await github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: comment
-          });
+    - name: Install cmake-format
+      run: pip install --require-hashes -r support/cmake-format-requirements.txt
+
+    - name: Run cmake-format
+      run: |
+        find . -name CMakeLists.txt -o -name '*.cmake' | \
+          xargs cmake-format -i
+        git diff --exit-code
