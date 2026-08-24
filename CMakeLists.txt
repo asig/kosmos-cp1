@@ -40,74 +40,73 @@ add_subdirectory(deps/fmt)
 # Main
 #
 set(PROJECT_SOURCES
-        src/assembler.h
+        resources/resources.qrc
         src/assembler.cpp
-        src/emulation/emulatorstate.h
+        src/assembler.h
+        src/emulation/dataport.cpp
+        src/emulation/dataport.h
         src/emulation/emulatorstate.cpp
+        src/emulation/emulatorstate.h
+        src/emulation/intel8049.cpp
+        src/emulation/intel8049.h
+        src/emulation/intel8155.cpp
+        src/emulation/intel8155.h
+        src/emulation/ram.cpp
+        src/emulation/ram.h
+        src/executorthread.cpp
         src/executorthread.cpp
         src/executorthread.h
-        src/executorthread.cpp
         src/main.cpp
-        src/performancemeasurer.h
         src/performancemeasurer.cpp
+        src/performancemeasurer.h
         src/throttler.cpp
         src/throttler.h
-        src/throttler.cpp
-        src/emulation/dataport.h
-        src/emulation/dataport.cpp
-        src/emulation/intel8049.h
-        src/emulation/intel8049.cpp
-        src/emulation/intel8155.h
-        src/emulation/intel8155.cpp
-        src/emulation/ram.h
-        src/emulation/ram.cpp
-        src/ui/aboutdialog.h
         src/ui/aboutdialog.cpp
-        src/ui/basewindow.h
-        src/ui/basewindow.cpp
-        src/ui/panel/cp1colors.h
-        src/ui/panel/cp1colors.cpp
-        src/ui/panel/cp1panelwidget.h
-        src/ui/panel/cp1panelwidget.cpp
-        src/ui/panel/cp1button.h
-        src/ui/panel/cp1button.cpp
-        src/ui/panel/cp1display.h
-        src/ui/panel/cp1display.cpp
-        src/ui/panel/cp1keyboard.h
-        src/ui/panel/cp1keyboard.cpp
-        src/ui/panel/cp1sevensegmentwidget.h
-        src/ui/panel/cp1sevensegmentwidget.cpp
-        src/ui/panel/cp5leds.h
-        src/ui/panel/cp5leds.cpp
-        src/ui/panel/cp5panelwidget.h
-        src/ui/panel/cp5panelwidget.cpp
-        src/ui/panel/cp5switches.h
-        src/ui/panel/cp5switches.cpp
-        src/ui/panel/cp5switch.h
-        src/ui/panel/cp5switch.cpp
-        src/ui/panel/panelwindow.h
-        src/ui/panel/panelwindow.cpp
-        src/ui/assembler/assemblerwindow.h
+        src/ui/aboutdialog.h
         src/ui/assembler/assemblerwindow.cpp
-        src/ui/cpu/cpuwindow.h
-        src/ui/cpu/cpuwindow.cpp
-        src/ui/cpu/checkboxaction.h
+        src/ui/assembler/assemblerwindow.h
+        src/ui/basewindow.cpp
+        src/ui/basewindow.h
         src/ui/cpu/checkboxaction.cpp
-        src/ui/cpu/i8049disassemblywidget.h
+        src/ui/cpu/checkboxaction.h
+        src/ui/cpu/cpuwindow.cpp
+        src/ui/cpu/cpuwindow.h
         src/ui/cpu/i8049disassemblywidget.cpp
-        src/ui/cpu/i8049statuswidget.h
+        src/ui/cpu/i8049disassemblywidget.h
         src/ui/cpu/i8049statuswidget.cpp
-        src/ui/cpu/i8155statuswidget.h
+        src/ui/cpu/i8049statuswidget.h
         src/ui/cpu/i8155statuswidget.cpp
-        src/ui/cpu/memorywidget.h
+        src/ui/cpu/i8155statuswidget.h
         src/ui/cpu/memorywidget.cpp
-        src/ui/windowmanager.h
-        src/ui/windowmanager.cpp
-        src/ui/resources.h
+        src/ui/cpu/memorywidget.h
+        src/ui/panel/cp1button.cpp
+        src/ui/panel/cp1button.h
+        src/ui/panel/cp1colors.cpp
+        src/ui/panel/cp1colors.h
+        src/ui/panel/cp1display.cpp
+        src/ui/panel/cp1display.h
+        src/ui/panel/cp1keyboard.cpp
+        src/ui/panel/cp1keyboard.h
+        src/ui/panel/cp1panelwidget.cpp
+        src/ui/panel/cp1panelwidget.h
+        src/ui/panel/cp1sevensegmentwidget.cpp
+        src/ui/panel/cp1sevensegmentwidget.h
+        src/ui/panel/cp5leds.cpp
+        src/ui/panel/cp5leds.h
+        src/ui/panel/cp5panelwidget.cpp
+        src/ui/panel/cp5panelwidget.h
+        src/ui/panel/cp5switch.cpp
+        src/ui/panel/cp5switch.h
+        src/ui/panel/cp5switches.cpp
+        src/ui/panel/cp5switches.h
+        src/ui/panel/panelwindow.cpp
+        src/ui/panel/panelwindow.h
         src/ui/resources.cpp
-        src/util/disassembler.h
+        src/ui/resources.h
+        src/ui/windowmanager.cpp
+        src/ui/windowmanager.h
         src/util/disassembler.cpp
-        resources/resources.qrc
+        src/util/disassembler.h
 )
 
 #add_compile_options(-fsanitize=address)
